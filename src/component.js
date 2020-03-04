@@ -1,13 +1,13 @@
-import {h, getProp, und} from './utils'
+import {h, getProp, Wrapper, und} from './utils'
 
 
 export function createComponent(componentClass, app, parent, obj, seq) {
   let component = new componentClass(app, parent, obj, seq)
   //(app, box, bubble, el, s, seq, watch)
   //v.init(v.app, v.box.bind(v), v.bubble.bind(v), v.el.bind(v), v, v.seq, v.watch.bind(v))
-  // TODO restore this
-  // could even create the literal object here...
-  component._draw_()
+  // TODO restore the above
+  // could even create the literal object here..?
+  component.build()
   return component
 }
 
@@ -25,12 +25,37 @@ export class Component {
 
     // Internal state objects
     s._nested_ = []         // Array of arrays of nested views
-    s._previous_ = {}       // The previous values for watches to compare against    
-    
-    s.root = null // this is a real DOM element
+    s._previous_ = {}       // The previous values for watches to compare against  
+
+    // These will be set by _build_()
+    s.root = null           // the root wrapper, will be set by _build_
+    s._elements_ = null     // the named wrappers, will be set by _build_
   }
-  _draw_() {
-    this.root = h('div').text('hi')
+  _lookup_(path) {
+    return new Wrapper(path.reduce((acc, index) => {
+      return acc.childNodes[index]
+    }, this.root.e))
+  }
+
+
+
+
+
+
+
+
+  _cloneNode_() {
+    let ct = this._ct_
+    if (!ct._template_) {
+      let throwAway = document.createElement('template')
+      // let tidy = raw.replace(/\n/g, "")
+      //   .replace(/[\t ]+\</g, "<")
+      //   .replace(/\>[\t ]+\</g, "><")
+      //   .replace(/\>[\t ]+$/g, ">")
+      throwAway.innerHTML = ct.html.trim()
+      ct._template_ = throwAway.content.firstChild
+    }
+    return ct._template_.cloneNode(true)
   }
 }
 
@@ -107,19 +132,7 @@ export class ComponentOld {
     s.root = s._buildComponent_()
   }
   
-  // _cloneNode_() {
-  //   let ct = this._ct_
-  //   if (!ct._template_) {
-  //     let throwAway = document.createElement('template')
-  //     // let tidy = raw.replace(/\n/g, "")
-  //     //   .replace(/[\t ]+\</g, "<")
-  //     //   .replace(/\>[\t ]+\</g, "><")
-  //     //   .replace(/\>[\t ]+$/g, ">")
-  //     throwAway.innerHTML = ct.html.trim()
-  //     ct._template_ = throwAway.content.firstChild
-  //   }
-  //   return ct._template_.cloneNode(true)
-  // }
+
   
   // _createPathFn_(path) {
   //   let intString = path.replace(/^\D+/g, '')

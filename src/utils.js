@@ -15,6 +15,9 @@ export class Wrapper {
   append(item) {
     return this._append(item)
   }
+  _append(item) {
+    return this.e.appendChild(item.e)
+  }
   att(name, value) {
     this.e.setAttribute(name, value)
     return this
