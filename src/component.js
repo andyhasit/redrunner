@@ -8,6 +8,7 @@ export function createComponent(componentClass, app, parent, obj, seq) {
   // TODO restore the above
   // could even create the literal object here..?
   component.build()
+  component.init()
   return component
 }
 
@@ -15,8 +16,6 @@ export function createComponent(componentClass, app, parent, obj, seq) {
 export class Component {
   constructor(app, parent, obj, seq) {
     let s = this
-    let type = s.constructor
-    //type._initialise_(type)
 
     s.app = app             // Reference to the containing app. This is static
     s.parent = parent       // The parent view
@@ -34,12 +33,92 @@ export class Component {
   _lookup_(path) {
     return new Wrapper(path.reduce((acc, index) => {
       return acc.childNodes[index]
-    }, this.root.e))
+    }, this.root.e), this)
   }
+  init() {} // probably overriden
+  update(newObj) {
+    /*  
+     *   The external call to update the view. 
+     *   @newObj -- new object, else it keeps its old (which is fine)
+     */
+    if (newObj) {
+      this.o = newObj
+    }
+    this._updateWatches_()
+    this._updateNested_()
+  }
+  emit(name, args) {
+    let target = this
+    while (!und(target)) {
+      let handlers = target._handlers_
+      if (name in handlers) {
+        return handlers[name].apply(target, args)
+      }
+      target = target.parent
+    }
+  }
+  watch(path, callback) {
+    /*
+    Watch a property and call the callback during update if it has changed.
 
+    @path -- A dotted path to the value
 
+      e.g. 'user.id'
+    
+    @callback -- a function to be called with (newValue, oldValue)
+    
+      e.g. (n,o) => alert(`Value changed from ${o} to ${n}`)
 
-
+    */
+    if (!this._watches_.hasOwnProperty(path)) {
+      this._watches_[path] = []
+    }
+    this._watches_[path].push(callback)
+    return this // Keep this because people may use it like on the wrapper.
+  }
+  _updateNested_() {
+    this._nested_.forEach(child => {
+      if (child._attached_()) {
+         child.update()
+      }
+    })
+  }
+  _updateWatches_() {
+    /*
+     * Iterates through watches. If the value has changed, call callback.
+     */
+    let path, newValue, previousValue, callbacks
+    for (path in this._watches_) {
+      callbacks = this._watches_[path]
+      newValue = getProp(this, path)
+      previousValue = this._previous_[path]
+      if (path === '' || previousValue !== newValue) {
+        for (var i=0, il=callbacks.length; i<il; i++) {
+          callbacks[i](newValue, previousValue)
+        }
+      }
+      this._previous_[path] = newValue
+    }
+  }
+  _attached_() {
+    let el = this
+    // TODO: loop until parent or app
+    // let element = 
+    // while (element != document && element.parentNode) {
+    //   /* jump to the parent element */
+    //   element = element.parentNode;
+    // }
+    return el.root.e.parentNode
+  }
+  box(componentClass, obj) {
+    /*
+     * Builds a nested view of the specified class.
+     * No caching is used. Use a cache object returned by this.cache() if you need caching.
+     */
+    let child = createComponent(componentClass, this.app, this, obj, 0)
+    this._nested_.push(child)
+    return child
+  }
 
 
 
@@ -183,23 +262,8 @@ export class ComponentOld {
     }
     return new Wrapper(element, this)
   }
-  bubble(name, args) {
-    let target = this
-    while (!und(target)) {
-      if (name in target) {
-        return target[name].apply(target, args)
-      }
-      target = target.parent
-    }
-  }
-  box(viewClass, obj) {
-    /*
-     * Builds a nested view of the specified class.
-     * No caching is used. Use a cache object returned by this.cache() if you need caching.
-     */
-    let view = createComponent(viewClass, this.app, this, obj, 0)
-    return view
-  }
+
+
   // h(desc, atts, inner) {
   //   /*
   //    * Returns a new Wrapper around a new DOM element.
@@ -219,63 +283,7 @@ export class ComponentOld {
   //   cls.forEach(i => i.startsWith('#') ? w.att('id', i.slice(1)) : w.clsAdd(i)) 
   //   return w.atts(atts).inner(inner)
   // }
-  update(newObj) {
-    /*  
-     *   The external call to update the view. 
-     *   @newObj -- new object, else it keeps its old (which is fine)
-     */
-    if (newObj) {
-      this.o = newObj
-    }
-    this._updateWatches_()
-    this._updateNested_()
-  }
-  watch(path, callback) {
-    /*
-    Watch a property and call the callback during update if it has changed.
 
-    @path -- A dotted path to the value
 
-      e.g. 'user.id'
-    
-    @callback -- a function to be called with (newValue, oldValue)
-    
-      e.g. (n,o) => alert(`Value changed from ${o} to ${n}`)
 
-    */
-    if (!this._watches_.hasOwnProperty(path)) {
-      this._watches_[path] = []
-    }
-    this._watches_[path].push(callback)
-    return this // Keep this because people will use it like on the wrapper.
-  }
-  _updateNested_() {
-    this._nested_.forEach(views => {
-      for (var i=0, il=views.length; i<il; i++) {
-        views[i].update()
-      }
-    })
-  }
-  _getNest() {
-    let nest = []
-    this._nested_.push(nest)
-    return nest
-  }
-  _updateWatches_() {
-    /*
-     * Iterates through watches. If the value has changed, call callback.
-     */
-    let path, newValue, previousValue, callbacks
-    for (path in this._watches_) {
-      callbacks = this._watches_[path]
-      newValue = getProp(this, path)
-      previousValue = this._previous_[path]
-      if (path === '' || previousValue !== newValue) {
-        for (var i=0, il=callbacks.length; i<il; i++) {
-          callbacks[i](newValue, previousValue)
-        }
-      }
-      this._previous_[path] = newValue
-    }
-  }
 }

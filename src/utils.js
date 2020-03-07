@@ -8,45 +8,13 @@ export class Wrapper {
     this._n = undefined
     this.view = view
   }
-  get Value() {
-    /* Returns the value of the element */
-    return this.e.value
-  }
+  
+  // Methods which potentially change the containing component's nested components 
   append(item) {
     return this._append(item)
   }
   _append(item) {
     return this.e.appendChild(item.e)
-  }
-  att(name, value) {
-    this.e.setAttribute(name, value)
-    return this
-  }
-  atts(atts) {
-    for (let name in atts) {
-      this.att(name, atts[name])
-    }
-    return this
-  }
-  checked(value) {
-    this.e.checked = value
-    return this
-  }
-  href(value) {
-    return this.att('href', value)
-  }
-  id(value) {
-    return this.att('id', value)
-  }
-  src(value) {
-    return this.att('src', value)
-  }
-  value(value) {
-    return this.att('value', value)
-  }
-  text(value) {
-    this.e.textContent = value
-    return this
   }
   child(item) {
     this.clear()
@@ -59,68 +27,6 @@ export class Wrapper {
     this.e.innerHTML = ''
     this.e.textContent = ''
     this.e.value = ''
-    return this
-  }
-  cls(style) {
-    this.e.className = style
-    return this
-  }
-  clsAdd(style) {
-    this.e.classList.add(style)
-    return this
-  }
-  clsAddTrans(style) {
-    return this.transition(_ => this.e.classList.add(style))
-  }
-  clsRemove(style) {
-    this.e.classList.remove(style)
-    return this
-  }
-  clsRemoveTrans(style) {
-    return this.transition(_ => this.e.classList.remove(style))
-  }
-  clsToggle(style) {
-    this.e.classList.toggle(style)
-    return this
-  }
-  f(desc, callback) {
-    /*
-     *   Follow a value and do something if it has changed.
-     * 
-     *   This method has two forms.
-     * 
-     *   If desc does not contain ":" then the callback is simply called if the value 
-     *   changes (during the component's update() call)
-     *
-     *   The callback parameters are (newVal, oldVal, wrapper) 
-     *   E.g.
-     *
-     *      h('div').f('clickCount', (n,o,w) => w.text(n))
-     *
-     *   If the desc contains ":" (e.g. "text:clickCount") then we assume what is to 
-     *   the left of : to be a method of the wrapper to call if the value has changed.
-     *   E.g.
-     *
-     *       h('div').f('text:clickCount')  // equates to wrapper.text(newValue)
-     *   
-     *   In this form, a callback may be provided to transform the value before it is
-     *   used. Its parameters are (newVal, oldVal) 
-     *   
-     *    E.g.
-     *
-     *       h('div').f('text:clickCount', (n,o) => `Click count is ${n}`)
-     *   
-     */
-    let path, func, chunks = desc.split(':')
-    if (chunks.length === 1) {
-      path = chunks[0]
-      func = (n,o) => callback(n,o,this)
-    } else {
-      let method = chunks[0]
-      path = chunks[1]
-      func = und(callback) ? n => this[method](n) : (n,o) => this[method](callback(n,o,this)) 
-    }
-    this.view.watch(path, func)
     return this
   }
   html(html) {
@@ -162,6 +68,107 @@ export class Wrapper {
   }
   _done() {
     this.visible(true)
+    return this
+  }
+
+
+  f(desc, callback) {
+    /*
+     *   Follow a value and do something if it has changed.
+     * 
+     *   This method has two forms.
+     * 
+     *   If desc does not contain ":" then the callback is simply called if the value 
+     *   changes (during the component's update() call)
+     *
+     *   The callback parameters are (newVal, oldVal, wrapper) 
+     *   E.g.
+     *
+     *      h('div').f('clickCount', (n,o,w) => w.text(n))
+     *
+     *   If the desc contains ":" (e.g. "text:clickCount") then we assume what is to 
+     *   the left of : to be a method of the wrapper to call if the value has changed.
+     *   E.g.
+     *
+     *       h('div').f('text:clickCount')  // equates to wrapper.text(newValue)
+     *   
+     *   In this form, a callback may be provided to transform the value before it is
+     *   used. Its parameters are (newVal, oldVal) 
+     *   
+     *    E.g.
+     *
+     *       h('div').f('text:clickCount', (n,o) => `Click count is ${n}`)
+     *   
+     */
+    let path, func, chunks = desc.split(':')
+    if (chunks.length === 1) {
+      path = chunks[0]
+      func = (n,o) => callback(n,o,this)
+    } else {
+      let method = chunks[0]
+      path = chunks[1]
+      func = und(callback) ? n => this[method](n) : (n,o) => this[method](callback(n,o,this)) 
+    }
+    this.view.watch(path, func)
+    return this
+  }
+
+  // These methods are mostly simple DOM wrappers
+
+  get Value() {
+    /* Returns the value of the element */
+    return this.e.value
+  }
+  cls(style) {
+    this.e.className = style
+    return this
+  }
+  clsAdd(style) {
+    this.e.classList.add(style)
+    return this
+  }
+  clsAddTrans(style) {
+    return this.transition(_ => this.e.classList.add(style))
+  }
+  clsRemove(style) {
+    this.e.classList.remove(style)
+    return this
+  }
+  clsRemoveTrans(style) {
+    return this.transition(_ => this.e.classList.remove(style))
+  }
+  clsToggle(style) {
+    this.e.classList.toggle(style)
+    return this
+  }
+  att(name, value) {
+    this.e.setAttribute(name, value)
+    return this
+  }
+  atts(atts) {
+    for (let name in atts) {
+      this.att(name, atts[name])
+    }
+    return this
+  }
+  checked(value) {
+    this.e.checked = value
+    return this
+  }
+  href(value) {
+    return this.att('href', value)
+  }
+  id(value) {
+    return this.att('id', value)
+  }
+  src(value) {
+    return this.att('src', value)
+  }
+  value(value) {
+    return this.att('value', value)
+  }
+  text(value) {
+    this.e.textContent = value
     return this
   }
   on(event, callback) {
