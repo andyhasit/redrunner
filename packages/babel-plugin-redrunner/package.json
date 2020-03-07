@@ -1,0 +1,17 @@
+{
+  "name": "babel-plugin-redrunner",
+  "version": "0.0.1",
+  "description": "A babel plugin for RedRunner",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Andrew Buchan",
+  "license": "ISC",
+  "dependencies": {
+    "node-html-parser": "^1.2.8"
+  }
+}
