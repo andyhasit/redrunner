@@ -1,6 +1,30 @@
 /*
- *   A babel plugin for the pillbug framework.
+ *   A babel plugin for RedRunner.
  */
+
+const parse = require('node-html-parser');
+
+function processItems(items) {
+  console.log(8888)
+}
+
+
+module.exports = () => {
+  return {
+    visitor: {
+      CallExpression(path) {
+        processItems(path.node.arguments)
+      },
+      Function(path) {
+        processItems(path.node.params)
+      }
+    }
+  };
+};
+
+/*
+
+Old arg parsing stuff...
 
 oldArgs = '__args__'
 newArgs = 'app, box, bubble, build, el, h, s, seq, watch'
@@ -30,3 +54,4 @@ module.exports = () => {
     }
   };
 };
+*/

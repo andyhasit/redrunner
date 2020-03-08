@@ -7,11 +7,16 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/index.js"
   },
   "author": "Andrew Buchan",
   "license": "ISC",
   "dependencies": {
     "node-html-parser": "^1.2.8"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.7",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "print-diff": "^1.0.0"
   }
 }
