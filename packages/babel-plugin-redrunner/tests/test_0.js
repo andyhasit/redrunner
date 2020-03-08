@@ -5,6 +5,7 @@ class Main extends Component {
       <button:btn class="button">Click me</button>
     </div>
   `
+  foo() {}
 }
 
 //----------------------------------------------------
@@ -20,4 +21,5 @@ class Main extends Component {
       'btn': this._lookup_([2]),
     }
   }
+  foo() {}
 }

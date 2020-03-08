@@ -23,8 +23,9 @@ const FgGreen = "\x1b[32m";
 const FgRed = "\x1b[31m";
 
 const transformOptions = {plugins: [
-	["@babel/plugin-proposal-class-properties"],
-	[redRunnerBabelPlugin]
+	["@babel/plugin-syntax-class-properties"],  // Enable class properties syntax without touching
+	[redRunnerBabelPlugin],
+	["@babel/plugin-proposal-class-properties"] // Transforms them
 ]};
 
 
@@ -51,18 +52,22 @@ function splitFile(filePath) {
 	return [sourceLines.join(EOL), expectedOutputlines.join(EOL)]
 }
 
+function stripBlankLines(contents) {
+	return contents.split(EOL).filter(line => line.trim() !== '').join(EOL);
+}
+
 /* Tests that the expected output matches.
  * Prints diff to terminal
  */
 function testFile(filePath) {
 	let [input, expectedOutput] = splitFile(filePath);
-	let output = babel.transform(input, transformOptions).code;
-	if (output === expectedOutput) {
+	let tranformedCode = stripBlankLines(babel.transform(input, transformOptions).code);
+	if (tranformedCode === expectedOutput) {
 		print(FgGreen, 'PASS: ' + filePath)
 	} else {
 		ExitCode = 1;
 		print(FgRed, 'FAIL: ' + filePath)
-		printDiff(output, expectedOutput)
+		printDiff(tranformedCode, expectedOutput)
 	}
 }
 
