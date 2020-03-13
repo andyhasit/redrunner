@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "node tests/index.js"
+    "test": "node tests/internal.js && node tests/integration.js"
   },
   "author": "Andrew Buchan",
   "license": "ISC",

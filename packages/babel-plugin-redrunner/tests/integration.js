@@ -1,14 +1,15 @@
 /*
-A simple test runner. Just create files in this directory which start with "test_"
-and have the following format:
+A test runner for the plugin's overall operation.
+
+Just create files in this directory which start with "test_" and have the following format:
 
 	foo() {} // code to be parsed
 	//---------------------------
 	foo() {} // expected output
 
 The runner will warn if the tranformed output is not as expected and show a diff.
-Note that this is done as text so we can print a diff. If it fails, we can maybe
-look at comparing ASTs instead and still print text diff.
+Note that this is a simple text comparison, and that babel does some minor corrections
+with spacing, commas etc...
 */
 
 const babel = require('@babel/core');
