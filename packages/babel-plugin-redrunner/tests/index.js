@@ -61,7 +61,9 @@ function stripBlankLines(contents) {
  */
 function testFile(filePath) {
 	let [input, expectedOutput] = splitFile(filePath);
+	//c.log(input)
 	let tranformedCode = stripBlankLines(babel.transform(input, transformOptions).code);
+	//c.log(tranformedCode)
 	if (tranformedCode === expectedOutput) {
 		print(FgGreen, 'PASS: ' + filePath)
 	} else {

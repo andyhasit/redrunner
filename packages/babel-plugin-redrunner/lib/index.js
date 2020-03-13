@@ -9,33 +9,66 @@ actual transformation, which you can apply after this plugin.
 
 CODE NOTES
 
-We want to visit ClassProperty elements (like __html__ which is used in RedRunner). 
-However it doesn't seem to be possible to do so, possibly because it is not a
-standard JS thing, possibly because another plugin replaces it before we have 
-the chance to.
+Transforming 
 
-The solution is to visit the Class and then call path.traverse
+class A() {
+  __html__ = '<div></div>'
+}
+
+Into:
+
+class A() {
+  build() {...}
+}
+
+Is difficult as babel plain text replacement is difficult, and so with a method as its
+not valid JS, so we're adding the newly build function on the prototype instead:
+
+
+class A() {
+  ...
+}
+A.prototype.build = function () {...}
 
 */
 
-const parse = require('node-html-parser');
+const babel = require('@babel/core');
+const parse = require('@babel/parser');
+const EOL = require('os').EOL;
+const htmlparse = require('node-html-parser');
 const c = console;
 
 
 /* Generates the source code of the method which will replace the __html__ class property */
 function generateHtmlMethod(htmlString) {
-  return `function build() {
-      return a + b;
-    }`
+  let dom = htmlparse.parse(htmlString)
+  let startNode = undefined
+  let lines = []
+
+  function processNode(node) {
+    let text
+    if (node.tagName) {
+      if (startNode) {
+        text = `  n.child(h('${node.tagName}'))`
+      } else {
+        text = `  let n = h('${node.tagName}')`
+        startNode = 1
+      }
+      lines.push(text)
+    }
+    node.childNodes.forEach(processNode)
+  }
+
+  processNode(dom)
+  return lines.join(EOL)
 }
 
 /* This is a visitor definition that is used for a path.traverse call
  * inside the Class visitor
  */
-const HtmlClassPropertyVisitor = {
+const RemoveClassPropertyVisitor = {
   ClassProperty(path) {
-    let code = generateHtmlMethod(this.htmlString)
-    path.replaceWithSourceString(code);
+    path.remove()
   }
 };
 
@@ -44,12 +77,17 @@ module.exports = () => {
     visitor: {
       Class(path, state) {
         if (path.type == 'ClassDeclaration') {
+          let className = path.node.id.name;
           for (node of path.node.body.body) {
             let propName = node.key.name;
             if (propName == '__html__') {
               // has raw and cooked - what is cooked?
               let htmlString = node.value.quasis[0].value.raw;
-              path.traverse(HtmlClassPropertyVisitor, {htmlString}); // This is how we pass parameters
+              path.traverse(RemoveClassPropertyVisitor); // This is how we pass parameters
+              let functionBody = generateHtmlMethod(htmlString)
+              let statement = [`${className}.prototype.build = function(){`, functionBody, '};'].join(EOL)
+              // Note that ast adds spacing between brackets...
+              path.insertAfter(babel.template.ast(statement))
             }
           }
         }
