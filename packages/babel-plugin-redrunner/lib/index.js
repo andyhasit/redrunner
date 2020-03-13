@@ -54,10 +54,7 @@ function generateBuildFunctionBody(htmlString) {
     .replace(/[\t ]+\</g, "<")
     .replace(/\>[\t ]+\</g, "><")
     .replace(/\>[\t ]+$/g, ">")
-  let lines = [
-    'm.root = wrap(`' + strippedHtml + '`);'
-  ]
-
+  let lines = ['m.root = wrap(`' + strippedHtml + '`);']
   let namedElements = []
   let stack = []
 
@@ -66,15 +63,14 @@ function generateBuildFunctionBody(htmlString) {
     let name = extractName(node.rawAttrs)
     if (name) {
       // the last comma is magically removed by babel (...)
-      namedElements.push(`${name}: m.__lookup([${stack}]),`) 
+      namedElements.push(`${name}: m.__lookup([${stack.slice(2)}]),`) 
     } 
     node.childNodes.forEach(processNode)
     stack.pop()
   }
 
   let dom = htmlparse.parse(strippedHtml)
-  dom.childNodes.forEach(processNode)
-
+  processNode(dom)
   if (namedElements.length > 0) {
     lines.push('m.dom = {')
     namedElements.forEach(n => lines.push(n))
