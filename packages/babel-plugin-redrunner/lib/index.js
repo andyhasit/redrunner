@@ -38,7 +38,9 @@ const EOL = require('os').EOL;
 const htmlparse = require('node-html-parser');
 const c = console;
 
-
+/* 
+ * Extracts the name from rawAttrs (e.g. 'as:count class="danger"' > 'count')
+ */
 function extractName(rawAttrs) {
   if (rawAttrs) {
     let match = rawAttrs.split(' ').find(el => el.startsWith('as:'))
@@ -48,16 +50,54 @@ function extractName(rawAttrs) {
   }
 }
 
+
+/*
+ * Find locations of text in string
+ */
+function findLocations(html) {
+  var regexp = / as:/g;
+  var match, locations = [];
+  while ((match = regexp.exec(html)) != null) {
+    locations.push(match.index);
+  }
+  return locations
+}
+
+
+function findCut(html, start) {
+  let cut, nextSpace = html.indexOf(' ', start + 1), nextClosingTag = html.indexOf('>', start);
+  if (nextSpace == -1) {
+    cut = nextClosingTag
+  } else if (nextClosingTag == -1) {
+    cut = nextSpace
+  } else {
+    cut = (nextSpace > nextClosingTag)? nextClosingTag : nextSpace;
+  }
+  return cut
+}
+
+/*
+ * Strips redrunner specific data from html, because fuck regex.
+ */
+function cleanHtml(html) {
+  let remove = [], locations = findLocations(html)
+  locations.forEach(loc => {
+    let cut = findCut(html, loc)
+    remove.push(html.substring(loc, cut))
+  })
+  remove.forEach(w => html = html.replace(w, ''))
+  return html
+}
+
 /* Generates the source code of the build method */
 function generateBuildFunctionBody(htmlString) {
   let strippedHtml = htmlString.replace(/\n/g, "")
     .replace(/[\t ]+\</g, "<")
     .replace(/\>[\t ]+\</g, "><")
     .replace(/\>[\t ]+$/g, ">")
-  let lines = ['m.root = wrap(`' + strippedHtml + '`);']
+
   let namedElements = []
   let stack = []
-
   function processNode(node, i) {
     stack.push(i)
     let name = extractName(node.rawAttrs)
@@ -68,9 +108,11 @@ function generateBuildFunctionBody(htmlString) {
     node.childNodes.forEach(processNode)
     stack.pop()
   }
-
   let dom = htmlparse.parse(strippedHtml)
   processNode(dom)
+
+  // Build function body line by line
+  let lines = ['m.root = wrap(`' + cleanHtml(strippedHtml) + '`);']
   if (namedElements.length > 0) {
     lines.push('m.dom = {')
     namedElements.forEach(n => lines.push(n))

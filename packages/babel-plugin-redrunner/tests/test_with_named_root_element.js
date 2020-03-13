@@ -13,7 +13,7 @@ class MyComponent extends Component {
 }
 
 MyComponent.prototype.__build = function (m, wrap) {
-  m.root = wrap(`<div as:main></div>`);
+  m.root = wrap(`<div></div>`);
   m.dom = {
     main: m.__lookup([])
   };
