@@ -39,27 +39,49 @@ const htmlparse = require('node-html-parser');
 const c = console;
 
 
-/* Generates the source code of the method which will replace the __html__ class property */
-function generateHtmlMethod(htmlString) {
-  let dom = htmlparse.parse(htmlString)
-  let startNode = undefined
-  let lines = []
-
-  function processNode(node) {
-    let text
-    if (node.tagName) {
-      if (startNode) {
-        text = `  n.child(h('${node.tagName}'))`
-      } else {
-        text = `  let n = h('${node.tagName}')`
-        startNode = 1
-      }
-      lines.push(text)
+function extractName(rawAttrs) {
+  if (rawAttrs) {
+    let match = rawAttrs.split(' ').find(el => el.startsWith('as:'))
+    if (match) {
+      return match.substr(3)
     }
+  }
+}
+
+/* Generates the source code of the build method */
+function generateBuildFunctionBody(htmlString) {
+  let strippedHtml = htmlString.replace(/\n/g, "")
+    .replace(/[\t ]+\</g, "<")
+    .replace(/\>[\t ]+\</g, "><")
+    .replace(/\>[\t ]+$/g, ">")
+  let lines = [
+    'm.root = wrap(`' + strippedHtml + '`);'
+  ]
+
+  let namedElements = []
+  let stack = []
+
+  function processNode(node, i) {
+    stack.push(i)
+    let name = extractName(node.rawAttrs)
+    if (name) {
+      // the last comma is magically removed by babel (...)
+      namedElements.push(`${name}: m.__lookup([${stack}]),`) 
+    } 
     node.childNodes.forEach(processNode)
+    stack.pop()
   }
 
-  processNode(dom)
+  let dom = htmlparse.parse(strippedHtml)
+  dom.childNodes.forEach(processNode)
+
+  if (namedElements.length > 0) {
+    lines.push('m.dom = {')
+    namedElements.forEach(n => lines.push(n))
+    lines.push('};')
+  } else {
+    lines.push('m.dom = {};')
+  }
   return lines.join(EOL)
 }
 
@@ -84,8 +106,8 @@ module.exports = () => {
               // has raw and cooked - what is cooked?
               let htmlString = node.value.quasis[0].value.raw;
               path.traverse(RemoveClassPropertyVisitor); // This is how we pass parameters
-              let functionBody = generateHtmlMethod(htmlString)
-              let statement = [`${className}.prototype.build = function(){`, functionBody, '};'].join(EOL)
+              let functionBody = generateBuildFunctionBody(htmlString)
+              let statement = [`${className}.prototype.__build = function(m, wrap){`, functionBody, '};'].join(EOL)
               // Note that ast adds spacing between brackets...
               path.insertAfter(babel.template.ast(statement))
             }

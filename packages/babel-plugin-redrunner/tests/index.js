@@ -45,8 +45,11 @@ function splitFile(filePath) {
 	contents.split(EOL).forEach(line => {
 		if (line.startsWith('//---')) {
 			addTo = expectedOutputlines;
-		} else if (line.trim() !== '') {
-			addTo.push(line)
+		} else {
+			let trimmed = line.trim()
+		  if ( trimmed !== '' && !trimmed.startsWith('//')) {
+				addTo.push(line)
+			}
 		}
 	});
 	return [sourceLines.join(EOL), expectedOutputlines.join(EOL)]
