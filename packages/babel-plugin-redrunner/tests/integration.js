@@ -3,9 +3,12 @@ A test runner for the plugin's overall operation.
 
 Just create files in this directory which start with "test_" and have the following format:
 
-	foo() {} // code to be parsed
-	//---------------------------
-	foo() {} // expected output
+foo() {} // code to be parsed
+//---------------------------
+foo() {} // expected output
+
+The line starting with //--- is deemed the splitter.
+Blank lines and lines starting with // are ignored (but multiline and inline comments aren't)
 
 The runner will warn if the tranformed output is not as expected and show a diff.
 Note that this is a simple text comparison, and that babel does some minor corrections
@@ -17,11 +20,9 @@ const fs = require('fs');
 const redRunnerBabelPlugin = require('../lib/index');
 const EOL = require('os').EOL;
 const printDiff = require('print-diff');
-
+const {green, red, reset} = require('./utils');
 const c = console;
-const ColourReset = "\x1b[0m";
-const FgGreen = "\x1b[32m";
-const FgRed = "\x1b[31m";
+
 
 const transformOptions = {plugins: [
 	["@babel/plugin-syntax-class-properties"],  // Enable class properties syntax without touching
@@ -30,11 +31,6 @@ const transformOptions = {plugins: [
 ]};
 
 
-/* Prints in colour */
-function print(colour, text) {
-	c.log(colour, text)
-	c.log(ColourReset)
-}
 
 /* Splits a file in two parts on the line starting with "//---"
  * Returns two strings.
@@ -69,12 +65,13 @@ function testFile(filePath) {
 	let tranformedCode = stripBlankLines(babel.transform(input, transformOptions).code);
 	//c.log(tranformedCode)
 	if (tranformedCode === expectedOutput) {
-		print(FgGreen, 'PASS: ' + filePath)
+		green('PASS: ' + filePath)
 	} else {
 		ExitCode = 1;
-		print(FgRed, 'FAIL: ' + filePath)
+		red('FAIL: ' + filePath)
 		printDiff(tranformedCode, expectedOutput)
 	}
+	reset()
 }
 
 /* Main run test and notify of results */
@@ -87,6 +84,6 @@ function testAllFilesInDir() {
 	
 }
 
-let ExitCode = 0;
-testAllFilesInDir();
-process.exit(ExitCode);
+let ExitCode = 0
+testAllFilesInDir()
+process.exit(ExitCode)

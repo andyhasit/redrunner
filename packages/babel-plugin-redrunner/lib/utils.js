@@ -1,12 +1,17 @@
 /*
 The functions which actually do the work
 */
-const babel = require('@babel/core');
-const parse = require('@babel/parser');
 const EOL = require('os').EOL;
 const htmlparse = require('node-html-parser');
 const c = console;
 
+
+/** Generates the statement adding the build method to the class
+ */
+function buildStatement(className, htmlString) {
+  let functionBody = generateBuildFunctionBody(htmlString)
+  return [`${className}.prototype.__build = function(m, wrap){`, functionBody, '};'].join(EOL)
+}
 
 /** Generates the source code of the build method.
  */
@@ -28,7 +33,7 @@ function generateBuildFunctionBody(htmlString) {
 
   function processNode(node, i) {
     stack.push(i)
-    let saveAs = extracSaveAsName(node.rawAttrs)
+    let saveAs = extractSaveAsName(node.rawAttrs)
     let tagName = node.tagName
 
     if (tagName && /[A-Z]/.test(tagName[0])) {
@@ -75,7 +80,7 @@ function generateBuildFunctionBody(htmlString) {
 
 /** Extracts the name from rawAttrs (e.g. 'as:count class="danger"' > 'count')
  */
-function extracSaveAsName(rawAttrs) {
+function extractSaveAsName(rawAttrs) {
   if (rawAttrs) {
     let match = rawAttrs.split(' ').find(el => el.startsWith('as:'))
     if (match) {
@@ -88,9 +93,12 @@ function extracSaveAsName(rawAttrs) {
  */
 function extractArgsStr(rawAttrs) {
   if (rawAttrs) {
-    let match = rawAttrs.indexOf('args=')
-    if (match) {
-      return match.substr(3)
+    let start = rawAttrs.indexOf('args=')
+    if (start >= 0) {
+      let firstQuotePosition = start + 5
+      let quoteSymbol = rawAttrs[firstQuotePosition] // ' or "
+      let lastQuotePosition = rawAttrs.indexOf(quoteSymbol, start + 6)
+      return rawAttrs.substring(start + 6, lastQuotePosition)
     }
   }
 }
@@ -136,8 +144,9 @@ function cleanHtml(html) {
 
 /* Exporting everything we want to test because TDD */
 module.exports = {
+  buildStatement,
   extractArgsStr,
-  extracSaveAsName,
+  extractSaveAsName,
   cleanHtml,
   findCut,
   findLocations,
