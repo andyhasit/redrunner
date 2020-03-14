@@ -16,16 +16,4 @@ function reset(text) {
   c.log(ColourReset)
 }
 
-function test(name, input, output) {
-	if (input == output) {
-		green(`PASS: "${name}"`)
-	} else {
-		red(`FAIL: "${name}"`)
-		red('> expected: ' + output)
-		red('> got:      ' + input)
-		ExitCode = 1;
-	}
-	reset()
-}
-
-module.exports = {green, red, reset, test}
+module.exports = {green, red, reset}

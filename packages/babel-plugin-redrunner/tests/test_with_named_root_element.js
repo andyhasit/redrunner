@@ -1,6 +1,6 @@
 class MyComponent extends Component {
   __html__ = `
-    <div as:main>
+    <div as=main>
     </div>
   `
   foo() {}

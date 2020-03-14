@@ -1,10 +1,10 @@
 class MyComponent extends Component {
   __html__ = `
     <div>
-      <span as:count>0</span>
+      <span as=count>0</span>
       <div>
         <div>
-          <button as:btn class="button">Click me</button>
+          <button as=btn class="button">Click me</button>
         </div>
       </div>
     </div>

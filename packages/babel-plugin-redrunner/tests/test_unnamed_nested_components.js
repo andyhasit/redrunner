@@ -1,7 +1,7 @@
 class MyComponent extends Component {
   __html__ = `
     <div>
-      <br/>
+      <br />
       <NestedComponent />
     </div>
   `
@@ -15,7 +15,7 @@ class MyComponent extends Component {
 }
 
 MyComponent.prototype.__build = function (m, wrap) {
-  m.root = wrap(`<div><br/><NestedComponent /></div>`);
+  m.root = wrap(`<div><br /><NestedComponent></NestedComponent></div>`);
   m.__lookup([1]).replace(m.box(NestedComponent).root.e);
   m.dom = {};
 };

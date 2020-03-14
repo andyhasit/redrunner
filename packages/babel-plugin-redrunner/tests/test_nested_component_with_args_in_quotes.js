@@ -2,7 +2,7 @@ class MyComponent extends Component {
   __html__ = `
     <div>
       <br/>
-      <NestedComponent as=c1/>
+      <NestedComponent args="2, 'a'"/>
     </div>
   `
   foo() {}
@@ -16,9 +16,6 @@ class MyComponent extends Component {
 
 MyComponent.prototype.__build = function (m, wrap) {
   m.root = wrap(`<div><br /><NestedComponent></NestedComponent></div>`);
-  let rrr1 = m.box(NestedComponent);
-  m.__lookup([1]).replace(rrr1.root.e);
-  m.dom = {
-    c1: rrr1
-  };
+  m.__lookup([1]).replace(m.box(NestedComponent, 2, 'a').root.e);
+  m.dom = {};
 };
