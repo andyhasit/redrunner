@@ -1,5 +1,5 @@
 class MyComponent extends Component {
-  __html__ = '<div></div>'
+  __html__ = '<div/>'
 }
 
 //----------------------------------------------------
