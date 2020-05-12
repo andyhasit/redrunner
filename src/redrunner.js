@@ -1,9 +1,5 @@
 import {App} from './app'
 import {Component} from './component';
-import {h} from './utils';
+import {h, Wrapper} from './utils';
 
-module.exports = {
-  App: App,
-  Component: Component,
-  h: h
-}
+module.exports = {App, Component, h, Wrapper}

@@ -20,6 +20,10 @@ export class Wrapper {
     this.clear()
     return this._append(item)
   }
+  replace(el) {
+    //console.log(this.e.parentNode)
+    this.e.parentNode.replaceChild(el, this.e)
+  }
   clear() {
     if (this._n) {
       this._n.length = 0
@@ -72,9 +76,9 @@ export class Wrapper {
   }
 
 
-  f(desc, callback) {
+  watch(desc, callback) {
     /*
-     *   Follow a value and do something if it has changed.
+     *   Watch a value and do something if it has changed.
      * 
      *   This method has two forms.
      * 
@@ -84,20 +88,20 @@ export class Wrapper {
      *   The callback parameters are (newVal, oldVal, wrapper) 
      *   E.g.
      *
-     *      h('div').f('clickCount', (n,o,w) => w.text(n))
+     *      h('div').watch('clickCount', (n,o,w) => w.text(n))
      *
      *   If the desc contains ":" (e.g. "text:clickCount") then we assume what is to 
      *   the left of : to be a method of the wrapper to call if the value has changed.
      *   E.g.
      *
-     *       h('div').f('text:clickCount')  // equates to wrapper.text(newValue)
+     *       h('div').watch('text:clickCount')  // equates to wrapper.text(newValue)
      *   
      *   In this form, a callback may be provided to transform the value before it is
      *   used. Its parameters are (newVal, oldVal) 
      *   
      *    E.g.
      *
-     *       h('div').f('text:clickCount', (n,o) => `Click count is ${n}`)
+     *       h('div').watch('text:clickCount', (n,o) => `Click count is ${n}`)
      *   
      */
     let path, func, chunks = desc.split(':')
@@ -195,6 +199,13 @@ export class Wrapper {
 }
 
 
+export function wrap(html) {
+  let throwAway = document.createElement('template')
+  throwAway.innerHTML = html.trim()
+  return new Wrapper(throwAway.content.firstChild)
+}
+
+
 export function getNode(elementOrId) {
   // We're assuming it starts with #
   let el = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)): elementOrId
@@ -271,4 +282,56 @@ export function c(componentClass, obj, label) {
 	let newComponent = new componentClass(obj)
 	newComponent.update()
 	return {c: newComponent, e: undefined, i: undefined, l: label}
+}
+
+
+export function createComponent(componentClass, app, parent, obj, seq) {
+  let component = new componentClass(app, parent, obj, seq)
+  //(app, box, bubble, el, s, seq, watch)
+  //v.init(v.app, v.box.bind(v), v.bubble.bind(v), v.el.bind(v), v, v.seq, v.watch.bind(v))
+  // TODO restore the above
+  // could even create the literal object here..?
+  component._build_(component, wrap)
+  component.init()
+  return component
+}
+
+
+export class ComponentCache {
+  constructor(app, cls, view) {
+    /*
+    An object which caches and returns views of a same type.
+    
+    @app -- an instance of App
+    @cls -- any valid subclass of View
+    @cacheBy -- either:
+        <undefined> in which case the sequence is used as key*
+        A string used to lookup a property on the item. Can be dotted. e.g. 'user.id'
+        A function called with (obj, seq) which must return a key
+    */
+    this.app = app
+    this.view = view
+    this.cls = cls
+    this.cache = {}
+    this.keyFn = (obj, seq) => seq 
+    this._seq = 0
+  }
+  reset() {
+    this._seq = 0
+  }
+  getEl(obj) {
+    /*
+    Gets a view, potentially from cache
+    */
+    let view, key = this.keyFn(obj, this._seq)
+    if (this.cache.hasOwnProperty(key)) {
+      view = this.cache[key]
+    } else {
+      view = createComponent(this.cls, this.app, this.view, obj, this._seq)
+      this.cache[key] = view
+    }
+    view.update(obj)
+    this._seq += 1
+    return view
+  }
 }

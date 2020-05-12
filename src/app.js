@@ -1,5 +1,4 @@
-import {mount} from './utils'
-import {createComponent} from './component'
+import {createComponent, mount} from './utils'
 
 
 export class App {
