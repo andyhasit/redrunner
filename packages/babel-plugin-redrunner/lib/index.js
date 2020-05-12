@@ -33,7 +33,7 @@ A.prototype.build = function () {...}
 */
 
 const babel = require('@babel/core');
-const {buildStatement} = require('./utils');
+const {buildStatements} = require('./utils');
 
 
 /* This is a visitor definition that is used for a path.traverse call
@@ -42,6 +42,7 @@ const {buildStatement} = require('./utils');
 const RemoveClassPropertyVisitor = {
   ClassProperty(path) {
     path.remove()
+    // TODO: make it replace with sanitized string, also check node is __html__?!
   }
 };
 
@@ -51,18 +52,23 @@ module.exports = () => {
     visitor: {
       Class(path, state) {
         if (path.type == 'ClassDeclaration') {
-          let className = path.node.id.name;
+          let collectedData = {
+            className: path.node.id.name
+          }
+
           for (node of path.node.body.body) {
             let propName = node.key.name
             if (propName == '__html__') {
-              // has raw and cooked - what is cooked?
-              let htmlString = node.value.quasis[0].value.raw
+              collectedData.htmlString = node.value.quasis ? node.value.quasis[0].value.raw : node.value.value
+              //console.log(node.value)
               path.traverse(RemoveClassPropertyVisitor)
-              let statement = buildStatement(className, htmlString)
-              // Note that this does its own adjustments with spaces, commas etc...
-              path.insertAfter(babel.template.ast(statement))
             }
           }
+
+          let addedStatements = buildStatements(collectedData)            
+          // Note that this does its own adjustments with spaces, commas etc...
+          addedStatements.forEach(statement => path.insertAfter(babel.template.ast(statement)))
+
         }
       }
     }

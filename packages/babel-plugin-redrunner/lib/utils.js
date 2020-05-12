@@ -10,12 +10,33 @@ const saveAsAttName = 'as'
 const argsAttName = 'args'
 const redrunnerAtts = [saveAsAttName, argsAttName]
 
+/** Generate all the statements
+ */
+function buildStatements(collectedData) {
+  return [
+    theBuildMethod(collectedData.className, collectedData.htmlString),
+    //theBuildMethod(collectedData.className, collectedData.htmlString)
+  ]
+}
+
 /** Generates the statement adding the build method to the class
  */
-function buildStatement(className, htmlString) {
+function theBuildMethod(className, htmlString) {
   let functionBody = generateBuildFunctionBody(htmlString)
   return [`${className}.prototype.__build = function(m, wrap){`, functionBody, '};'].join(EOL)
 }
+
+/** Generates the statement adding the watchers property to the class
+ */
+function theWatchProperty(className, ) {
+  let functionBody = generateBuildFunctionBody(htmlString)
+  return [`${className}.prototype.__watchers = {`, functionBody, '};'].join(EOL)
+}
+
+// function buildPrototypeStatement(className, name, signature, body) {
+//   let functionBody = generateBuildFunctionBody(htmlString)
+//   return [`${className}.prototype.${name} = function(m, wrap){`, functionBody, '};'].join(EOL)
+// }
 
 /** Generates the source code of the build method. See integration tests for example outputs.
  */
@@ -194,7 +215,7 @@ function findNextClosingTag(s, start) {
  * quicker using TDD 
  */
 module.exports = {
-  buildStatement,
+  buildStatements,
   extractAttributeValue,
   extractWholeAttribute,
   cleanHtml,
