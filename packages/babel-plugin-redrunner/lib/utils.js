@@ -28,7 +28,7 @@ function theBuildMethod(className, htmlString) {
 
 /** Generates the statement adding the watchers property to the class
  */
-function theWatchProperty(className, ) {
+function theWatchProperty(className, htmlString) {
   let functionBody = generateBuildFunctionBody(htmlString)
   return [`${className}.prototype.__watchers = {`, functionBody, '};'].join(EOL)
 }
