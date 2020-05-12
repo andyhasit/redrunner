@@ -14,8 +14,8 @@ class MyComponent extends Component {
   foo() {}
 }
 
-MyComponent.prototype.__build = function (m, wrap) {
+MyComponent.prototype._build_ = function (m, wrap) {
   m.root = wrap(`<div><br /><NestedComponent></NestedComponent></div>`);
-  m.__lookup([1]).replace(m.box(NestedComponent).root.e);
+  m._lu_([1]).replace(m.box(NestedComponent).root.e);
   m.dom = {};
 };

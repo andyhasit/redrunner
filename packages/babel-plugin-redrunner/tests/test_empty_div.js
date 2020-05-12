@@ -6,7 +6,7 @@ class MyComponent extends Component {
 
 class MyComponent extends Component {}
 
-MyComponent.prototype.__build = function (m, wrap) {
+MyComponent.prototype._build_ = function (m, wrap) {
   m.root = wrap(`<div></div>`);
   m.dom = {};
 };

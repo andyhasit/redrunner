@@ -18,10 +18,10 @@ class MyComponent extends Component {
   foo() {}
 }
 
-MyComponent.prototype.__build = function (m, wrap) {
+MyComponent.prototype._build_ = function (m, wrap) {
   m.root = wrap(`<div><span>0</span><div><div><button class="button">Click me</button></div></div></div>`);
   m.dom = {
-    count: m.__lookup([0]),
-    btn: m.__lookup([1, 0, 0])
+    count: m._lu_([0]),
+    btn: m._lu_([1, 0, 0])
   };
 };

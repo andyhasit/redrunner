@@ -1,106 +1,10 @@
-/*
-The functions which actually do the work
-*/
-const EOL = require('os').EOL
-const htmlparse = require('node-html-parser')
-const c = console
-
-/* The RedRunner attributes */
-const saveAsAttName = 'as'
-const argsAttName = 'args'
-const redrunnerAtts = [saveAsAttName, argsAttName]
-
-/** Generate all the statements
- */
-function buildStatements(collectedData) {
-  return [
-    theBuildMethod(collectedData.className, collectedData.htmlString),
-    //theBuildMethod(collectedData.className, collectedData.htmlString)
-  ]
-}
-
-/** Generates the statement adding the build method to the class
- */
-function theBuildMethod(className, htmlString) {
-  let functionBody = generateBuildFunctionBody(htmlString)
-  return [`${className}.prototype.__build = function(m, wrap){`, functionBody, '};'].join(EOL)
-}
-
-/** Generates the statement adding the watchers property to the class
- */
-function theWatchProperty(className, htmlString) {
-  let functionBody = generateBuildFunctionBody(htmlString)
-  return [`${className}.prototype.__watchers = {`, functionBody, '};'].join(EOL)
-}
-
-// function buildPrototypeStatement(className, name, signature, body) {
-//   let functionBody = generateBuildFunctionBody(htmlString)
-//   return [`${className}.prototype.${name} = function(m, wrap){`, functionBody, '};'].join(EOL)
-// }
-
-/** Generates the source code of the build method. See integration tests for example outputs.
- */
-function generateBuildFunctionBody(htmlString) {
-  let strippedHtml = htmlString.replace(/\n/g, "")
-    .replace(/[\t ]+\</g, "<")
-    .replace(/\>[\t ]+\</g, "><")
-    .replace(/\>[\t ]+$/g, ">")
-
-  let nestedComponentLines = []
-  let domObjectLines = []
-  let stack = []
-  let randVarCount = 0
-
-  function getRandVarName() {
-    randVarCount ++
-    return 'rrr' + randVarCount
-  }
-
-  function processNode(node, i) {
-    stack.push(i)
-    let saveAs = extractAttributeValue(node.rawAttrs, saveAsAttName)
-    let tagName = node.tagName
-
-    if (tagName && /[A-Z]/.test(tagName[0])) {
-      // We have a nested component
-      let argsStr = extractAttributeValue(node.rawAttrs, argsAttName)
-      let constructorStr = argsStr? `m.box(${tagName}, ${argsStr})` : `m.box(${tagName})`;      
-      if (saveAs) {
-        // We need to name it
-        let randVar = getRandVarName()
-        nestedComponentLines.push(`let ${randVar} = ${constructorStr};`)
-        domObjectLines.push(`${saveAs}: ${randVar},`)
-        nestedComponentLines.push(`m.__lookup([${stack.slice(2)}]).replace(${randVar}.root.e);`)
-      } else {
-        // create class without saving.
-        nestedComponentLines.push(`m.__lookup([${stack.slice(2)}]).replace(${constructorStr}.root.e);`)
-      }
-    } else if (saveAs) {
-      // The last entry's comma gets removed by babel later, so no need to here
-      domObjectLines.push(`${saveAs}: m.__lookup([${stack.slice(2)}]),`) 
-    }
-
-    node.childNodes.forEach(processNode)
-    stack.pop()
-  }
-  let dom = htmlparse.parse(strippedHtml)
-  processNode(dom)
-
-  // Build function body line by line
-  let lines = ['m.root = wrap(`' + cleanHtml(strippedHtml) + '`);']
-
-  nestedComponentLines.forEach(n => lines.push(n))
-  
-  if (domObjectLines.length > 0) {
-    lines.push('m.dom = {')
-    domObjectLines.forEach(n => lines.push(n))
-    lines.push('};')
-  } else {
-    lines.push('m.dom = {};')
-  }
-  
-  return lines.join(EOL)
-}
+const {
+  EOL,
+  htmlparse,
+  saveAsAttName,
+  argsAttName,
+  redrunnerAtts
+} = require('./constants');
 
 
 /** Extracts the args string from rawAttrs e.g. 
@@ -215,10 +119,8 @@ function findNextClosingTag(s, start) {
  * quicker using TDD 
  */
 module.exports = {
-  buildStatements,
   extractAttributeValue,
   extractWholeAttribute,
   cleanHtml,
-  generateBuildFunctionBody,
   findNextClosingTagOrWhiteSpace
 }

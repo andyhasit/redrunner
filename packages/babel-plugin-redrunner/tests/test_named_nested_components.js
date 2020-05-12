@@ -14,10 +14,10 @@ class MyComponent extends Component {
   foo() {}
 }
 
-MyComponent.prototype.__build = function (m, wrap) {
+MyComponent.prototype._build_ = function (m, wrap) {
   m.root = wrap(`<div><br /><NestedComponent></NestedComponent></div>`);
   let rrr1 = m.box(NestedComponent);
-  m.__lookup([1]).replace(rrr1.root.e);
+  m._lu_([1]).replace(rrr1.root.e);
   m.dom = {
     c1: rrr1
   };

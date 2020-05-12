@@ -1,8 +1,7 @@
 /*
 A babel plugin for RedRunner.
 
-Note that this requires "@babel/plugin-syntax-class-properties" to be applied
-first, which simply allows class properties syntax (else code won't parse).
+Note that this requires "@babel/plugin-syntax-class-properties" to be used too.
 
 Do not confuse with "@babel/plugin-proposal-class-properties" which does the 
 actual transformation, which you can apply after this plugin.
@@ -33,18 +32,8 @@ A.prototype.build = function () {...}
 */
 
 const babel = require('@babel/core');
-const {buildStatements} = require('./utils');
-
-
-/* This is a visitor definition that is used for a path.traverse call
- * inside the Class visitor
- */
-const RemoveClassPropertyVisitor = {
-  ClassProperty(path) {
-    path.remove()
-    // TODO: make it replace with sanitized string, also check node is __html__?!
-  }
-};
+const {getNodeHtmlString, removeProperty} = require('./babel-helpers');
+const {generateStatements} = require('./statement-generators');
 
 
 module.exports = () => {
@@ -52,23 +41,34 @@ module.exports = () => {
     visitor: {
       Class(path, state) {
         if (path.type == 'ClassDeclaration') {
-          let collectedData = {
+          let requiresGeneratedStatements = false
+          // Build object containing component data
+          let componentData = {
             className: path.node.id.name
           }
 
+          // Iterate over classe's nodes to find ones we care about
           for (node of path.node.body.body) {
             let propName = node.key.name
             if (propName == '__html__') {
-              collectedData.htmlString = node.value.quasis ? node.value.quasis[0].value.raw : node.value.value
-              //console.log(node.value)
-              path.traverse(RemoveClassPropertyVisitor)
+              requiresGeneratedStatements = true
+              componentData.htmlString = getNodeHtmlString(node)
+              removeProperty(path)
+            } else if (propName == '__watch__') {
+              requiresGeneratedStatements = true
+              // TODO: handle this
+              removeProperty(path)
             }
           }
 
-          let addedStatements = buildStatements(collectedData)            
-          // Note that this does its own adjustments with spaces, commas etc...
-          addedStatements.forEach(statement => path.insertAfter(babel.template.ast(statement)))
+          if (requiresGeneratedStatements) {
+            // Build statements using collected data
+            let generatedStatements = generateStatements(componentData)
 
+            // Add the generated statements 
+            // Note that babel does its own adjustments with spaces, commas etc...
+            generatedStatements.forEach(statement => path.insertAfter(babel.template.ast(statement)))
+          }
         }
       }
     }
