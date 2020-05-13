@@ -2,7 +2,6 @@ import {h, createComponent, getProp, und, wrap, Wrapper} from './utils'
 
 
 export class Component {
-  __html__ = '<div/>'
   constructor(app, parent, obj, seq) {
     let s = this
 
@@ -19,7 +18,15 @@ export class Component {
     s._elements_ = null     // the named wrappers, will be set by _build_
     s._watches_ = s.constructor._watches_
   }
-  init() {} // probably overriden
+
+  /* This field gets transformed by the babel plugin.
+   * Provide a safe default here.
+   */
+  __html__ = '<div/>'
+
+  init() {
+    // Gets called once
+  } 
   update(newObj) {
     /*  
      *   The external call to update the view. 
@@ -118,8 +125,8 @@ export class Component {
   }
 
 
-
-
+  /* Currently unused, but we may use it in future strategy
+   */
   _cloneNode_() {
     let ct = this._ct_
     if (!ct._template_) {

@@ -120,8 +120,8 @@ export class Router extends Component {
  *  /todos/detail?id,date
  * 
  * Args and params may specify a type, in which case they are converted.
- * resolve gets called with (app, routeData, [this router]) and must return a promise, the return
- * value is passed as data to the view.
+ * resolve gets called with (routeData, app, [this router]) and must return a promise, the return
+ * value is passed as data to the view. routeData is {args, params, url}
  */
 export class Route {
   constructor(app, config) {
@@ -142,7 +142,7 @@ export class Route {
   defautCacheBy(data, seq) {
     return 1
   }
-  defautResolve(app, routeData) {
+  defautResolve(routeData) {
     return Promise.resolve(routeData)
   }
   buildChunks(path) {
@@ -164,7 +164,7 @@ export class Route {
     return params
   }
   getComponent(routeData) {
-    return this.resolve(this.app, routeData, this).then(result => {return this._vc.getEl(result)})
+    return this.resolve(routeData, this.app, this).then(result => {return this._vc.getEl(result)})
   }
   match(url) {
     let front, paramStr, definedChunkCount = this.chunks.length, args = {};

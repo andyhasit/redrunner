@@ -1,24 +1,22 @@
-import {createComponent, mount} from './utils'
+import {mount} from './utils'
 
 
+/* The central object which glues together the top level components.
+ */
 export class App {
-  /* The root object which you mount top level components to */
   constructor(props) {
     this._nested_ = []
-    this._paths_ = {}
     Object.assign(this, props)
   }
 
   /* Mounts a top level component and builds it instantly.
    *
-   * @param {class} componentClass - The class of the component.
-   * @param {idEl} id or element to wrap
-   * @param {obj} optional, gets passed to component constructor
+   * @param {elementOrId} The id (e.g. "#main") or a DOM element
+   * @param {cls} The class of the component.
+   * @param {props} Optional, gets passed to component constructor
    */
-  mount(componentClass, idEl, obj) {
-    let component = createComponent(componentClass, this, this, obj, 0)
-    mount(component, idEl)
-    this._nested_.push(component)
+  mount(elementOrId, cls, props) {
+    this._nested_.push(mount(elementOrId, cls, props, this, this, 0))
   }
     
   /*
@@ -26,7 +24,7 @@ export class App {
    */
   update() {
     // requestAnimationFrame(() => {
-    // })
       this._nested_.forEach(v => v.update())
+    // })
   }
 }

@@ -4,8 +4,8 @@ const doc = document;
 export class Wrapper {
   constructor(element, view) {
     this.e = element
-    this._c = undefined
-    this._n = undefined
+    this._c = undefined // The componentCache, if any
+    this._n = undefined //  
     this.view = view
   }
   
@@ -21,7 +21,6 @@ export class Wrapper {
     return this._append(item)
   }
   replace(el) {
-    //console.log(this.e.parentNode)
     this.e.parentNode.replaceChild(el, this.e)
   }
   clear() {
@@ -56,13 +55,14 @@ export class Wrapper {
     for (var i=0, il=items.length; i<il; i++) {
       view = this._c.getEl(items[i])
       this._nest(view)
-      this.e.appendChild(view.root)
+      this.e.appendChild(view.root.e)
     }
     return this._done()
   }
   _nest(view) {
+    //TODO: the idea of this it to keep track of nested components. Check it works...
     if (!this._n) {
-      this._n = this.view._getNest()
+      this._n = this.view._nested_
     }
     this._n.push(view)
   }
@@ -74,8 +74,10 @@ export class Wrapper {
     this.visible(true)
     return this
   }
-
-
+  use(cls) {
+    this._c = new ComponentCache(this.app, cls, this)
+    return this
+  }
   watch(desc, callback) {
     /*
      *   Watch a value and do something if it has changed.
@@ -215,9 +217,11 @@ export function getNode(elementOrId) {
 /*
  * Mounts a view onto an element.
  */
-export function mount(view, elementOrId) {
+export function mount(elementOrId, cls, props, app, parent, seq) {
+  let component = createComponent(cls, app, parent, props, seq)
   let target = getNode(elementOrId)
-  target.parentNode.replaceChild(view.root.e, target)
+  target.parentNode.replaceChild(component.root.e, target)
+  return component
 }
 
 
@@ -293,6 +297,7 @@ export function createComponent(componentClass, app, parent, obj, seq) {
   // could even create the literal object here..?
   component._build_(component, wrap)
   component.init()
+  component.update()
   return component
 }
 
