@@ -1,118 +1,120 @@
-
 const {
   EOL,
+  c,
   htmlparse,
-  saveAsAttName,
-  argsAttName,
   redrunnerAtts
 } = require('./constants');
 
 const {
-  extractAttributeValue,
-  extractWholeAttribute,
-  cleanHtml,
+  addPrototypeFunction,
+  getAttVal,
+  removeRedRunnerCode,
   findNextClosingTagOrWhiteSpace,
-  unquotedAttEnd
+  stripHtml
 } = require('./utils');
 
-/** Generates the statement adding the build method to the class
- */
-function theBuildMethod(className, htmlString) {
-  let functionBody = generateBuildFunctionBody(htmlString)
-  
-}
-
-/** Generates the statement adding the watchers property to the class
- */
-function theWatchProperty(className, htmlString) {
-  let functionBody = generateBuildFunctionBody(htmlString)
-  return [`${className}.prototype._watchers_ = {`, functionBody, '};'].join(EOL)
-}
+const {getNodeSpec} = require('./html-spec');
 
 
-/** Generates the source code of the build method. See integration tests for example outputs.
- */
-function generateBuildFunctionLines(className, htmlString) {
-  let strippedHtml = htmlString.replace(/\n/g, "")
-    .replace(/[\t ]+\</g, "<")
-    .replace(/\>[\t ]+\</g, "><")
-    .replace(/\>[\t ]+$/g, ">")
+class ComponentProcessor {
+  constructor(componentData) {
+    let {className, htmlString} = componentData
+    this.className = className
+    this.strippedHtml = stripHtml(htmlString)
+    this.buildMethodLines = []  // The method lines, as code
+    this.domObjectLines = []    // The lines for this.dom = {}
+    this.watchItems = {}
+    this.randVarCount = 0
 
-  let nestedComponentLines = []
-  let domObjectLines = []
-  let stack = []
-  let randVarCount = 0
-
-  function getRandVarName() {
-    randVarCount ++
-    return 'rrr' + randVarCount
+    // The final statements, as strings:
+    this.buildStatement = undefined
+    this.watchStatement = undefined
   }
+  processComponent() {
+    this.parseHtmlProperty()
+    //this.parseWatchProperty() ...?
 
-  function processNode(node, i) {
-    stack.push(i)
-    let saveAs = extractAttributeValue(node.rawAttrs, saveAsAttName)
-    let tagName = node.tagName
-
-    if (tagName && /[A-Z]/.test(tagName[0])) {
-      // We have a nested component
-      let argsStr = extractAttributeValue(node.rawAttrs, argsAttName)
-      let constructorStr = argsStr? `m.box(${tagName}, ${argsStr})` : `m.box(${tagName})`;      
-      if (saveAs) {
-        // We need to name itbuildStatements
-        let randVar = getRandVarName()
-        nestedComponentLines.push(`let ${randVar} = ${constructorStr};`)
-        domObjectLines.push(`${saveAs}: ${randVar},`)
-        nestedComponentLines.push(`m._lu_([${stack.slice(2)}]).replace(${randVar}.root.e);`)
-      } else {
-        // create class without saving.
-        nestedComponentLines.push(`m._lu_([${stack.slice(2)}]).replace(${constructorStr}.root.e);`)
+    this.createBuildStatement() 
+    this.createWatchStatement()  
+  }
+  parseHtmlProperty() {
+    const self = this
+    // Recursively processes each node in the DOM
+    function processNode(node, i) {
+      nodePath.push(i)
+      const tagName = node.tagName
+      if (tagName) {
+        const isCapitalized = /[A-Z]/.test(tagName[0])
+        const processFunction = isCapitalized ? self.processComponentNode : self.processNormalNode
+        processFunction.apply(self, [nodePath, node, tagName])
       }
-    } else if (saveAs) {
-      // The last entry's comma gets removed by babel later, so no need to here
-      domObjectLines.push(`${saveAs}: m._lu_([${stack.slice(2)}]),`) 
+      node.childNodes.forEach(processNode)
+      nodePath.pop()
+    }
+    
+    const nodePath = []    // The path of current node recursion
+    const dom = htmlparse.parse(this.strippedHtml)
+    processNode(dom)
+  }
+  createBuildStatement() {
+    const name = '_build_'
+    const args = 'm, wrap'
+    const lines = ['m.root = wrap(`' + removeRedRunnerCode(this.strippedHtml) + '`);']
+    this.buildMethodLines.forEach(n => lines.push(n))
+
+    // Add this.dom definition
+    if (this.domObjectLines.length > 0) {
+      lines.push('m.dom = {')
+      this.domObjectLines.forEach(n => lines.push(n))
+      lines.push('};')
+    } else {
+      lines.push('m.dom = {};')
     }
 
-    node.childNodes.forEach(processNode)
-    stack.pop()
+    const body = lines.join(EOL)
+    this.buildStatement = addPrototypeFunction(this.className, name, args, body)
   }
-  let dom = htmlparse.parse(strippedHtml)
-  processNode(dom)
+  createWatchStatement() {
 
-  // Build function body line by line
-  let lines = ['m.root = wrap(`' + cleanHtml(strippedHtml) + '`);']
-
-  nestedComponentLines.forEach(n => lines.push(n))
-  
-  if (domObjectLines.length > 0) {
-    lines.push('m.dom = {')
-    domObjectLines.forEach(n => lines.push(n))
-    lines.push('};')
-  } else {
-    lines.push('m.dom = {};')
   }
-  
-  return lines
+  processComponentNode(nodePath, node, tagName) {
+    const {args, saveAs} = getNodeSpec(node)
+    const constructorStr = args? `m.box(${tagName}, ${args})` : `m.box(${tagName})`; 
+    if (saveAs) {
+      const randVar = this.getRandVarName()
+      this.buildMethodLines.push(`let ${randVar} = ${constructorStr};`)
+      this.domObjectLines.push(`${saveAs}: ${randVar},`)
+      this.buildMethodLines.push(`m._lu_([${nodePath.slice(2)}]).replace(${randVar}.root.e);`)
+    } else {
+      this.buildMethodLines.push(`m._lu_([${nodePath.slice(2)}]).replace(${constructorStr}.root.e);`)
+    }
+  }
+  processNormalNode(nodePath, node, tagName) {
+    const {saveAs, watch} = getNodeSpec(node)
+    if (watch) {
+      c.log(watch)
+    }
+    if (saveAs) {
+      this.domObjectLines.push(`${saveAs}: m._lu_([${nodePath.slice(2)}]),`)
+    }
+  }
+  getRandVarName() {
+    this.randVarCount ++
+    return 'rrr' + this.randVarCount
+  }
 }
 
 
-function generateBuildFunction(className, htmlString) {
-  let lines = generateBuildFunctionLines(className, htmlString)
-  return [`${className}.prototype._build_ = function(m, wrap){`, lines.join(EOL), '};'].join(EOL)
-}
-
-// Maybe use this?
-// function buildPrototypeStatement(className, name, signature, body) {
-//   let functionBody = generateBuildFunctionBody(htmlString)
-//   return [`${className}.prototype.${name} = function(m, wrap){`, functionBody, '};'].join(EOL)
-// }
-
-
-/** Generate all the additional statements for the component.
+/** Returns the statements as a list of strings.
  */
 function generateStatements(componentData) {
-  return [
-    generateBuildFunction(componentData.className, componentData.htmlString)
-  ]
+  const componentProcessor = new ComponentProcessor(componentData)
+  componentProcessor.processComponent()
+  statements = [componentProcessor.buildStatement]
+  if (componentProcessor.watchStatement) {
+    statements.push(componentProcessor.watchStatement)
+  }
+  return statements
 }
 
 module.exports = {generateStatements}

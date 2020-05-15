@@ -1,8 +1,6 @@
 const {
   EOL,
   htmlparse,
-  saveAsAttName,
-  argsAttName,
   redrunnerAtts
 } = require('./constants');
 
@@ -14,7 +12,7 @@ const {
  *
  *  Note that it does not allow spaces around the = sign!
  */
-function extractAttributeValue(attStr, attName) {
+function getAttVal(attStr, attName) {
   if (attStr) {
     let withEqualSign = attName + '='
     let start = attStr.search(withEqualSign)
@@ -35,7 +33,7 @@ function extractAttributeValue(attStr, attName) {
 /** Extracts the whole attribute (e.g. "as=me" from rawAttrs
  *  Note that it does not allow spaces around the = sign!
  */
-function extractWholeAttribute(attStr, attName) {
+function getAttDefinition(attStr, attName) {
   if (attStr) {
     let withEqualSign = attName + '='
     let valueStartIndex = withEqualSign.length + 1
@@ -56,12 +54,12 @@ function extractWholeAttribute(attStr, attName) {
 
 /** Strips redrunner tags from html
  */
-function cleanHtml(html) {
+function removeRedRunnerCode(html) {
   // Function called recursively on nodes.
   function processNode(node, i) {
     let attStr = node.rawAttrs
     if (attStr) {
-      node.rawAttrs = removeRedRunnerAttributes(attStr)
+      node.rawAttrs = stripRedRunnerAtts(attStr)
     }
     node.childNodes.forEach(processNode)
   }
@@ -72,9 +70,9 @@ function cleanHtml(html) {
 
 /** Find locations of text in string
  */
-function removeRedRunnerAttributes(attStr) {
-  redrunnerAtts.forEach(att => {
-    let wholeAtt = extractWholeAttribute(attStr, att)
+function stripRedRunnerAtts(attStr) {
+  Object.values(redrunnerAtts).forEach(att => {
+    let wholeAtt = getAttDefinition(attStr, att)
     attStr = attStr.replace(wholeAtt, '')
   })
   // Just trimming extraneous whitespace
@@ -114,13 +112,26 @@ function findNextClosingTag(s, start) {
   }
 }
 
+function stripHtml(htmlString) {
+  return htmlString.replace(/\n/g, "")
+    .replace(/[\t ]+\</g, "<")
+    .replace(/\>[\t ]+\</g, "><")
+    .replace(/\>[\t ]+$/g, ">")
+}
+
+function addPrototypeFunction(className, name, signature, body) {
+  return [`${className}.prototype.${name} = function(${signature}){`, body, '};'].join(EOL)
+}
+
 
 /* Exporting everything we want to test too because changing the above is
  * quicker using TDD 
  */
 module.exports = {
-  extractAttributeValue,
-  extractWholeAttribute,
-  cleanHtml,
-  findNextClosingTagOrWhiteSpace
+  addPrototypeFunction,
+  getAttVal,
+  getAttDefinition,
+  removeRedRunnerCode,
+  findNextClosingTagOrWhiteSpace,
+  stripHtml
 }
