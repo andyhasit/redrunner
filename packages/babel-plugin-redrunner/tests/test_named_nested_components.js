@@ -14,11 +14,11 @@ class MyComponent extends Component {
   foo() {}
 }
 
-MyComponent.prototype._build_ = function (m, wrap) {
-  m.root = wrap(`<div><br /><NestedComponent></NestedComponent></div>`);
-  let c1 = m.box(NestedComponent);
-  m._rn_([1], c1);
-  m.dom = {
+MyComponent.prototype.__bv = function (view, wrap) {
+  view.root = wrap(`<div><br /><NestedComponent></NestedComponent></div>`);
+  let c1 = view.nest(NestedComponent);
+  view.__rn([1], c1);
+  view.dom = {
     c1: c1
   };
 };

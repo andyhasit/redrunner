@@ -9,7 +9,7 @@ class MyComponent extends Component {
       <span watch="countChanged?: :enabled"/>
     </div>
   `
-  __watch__ = {
+  ___wc_ = {
     count: function(n, o) {
       alert('hi')
     }
@@ -20,7 +20,7 @@ class MyComponent extends Component {
 
 class MyComponent extends Component {}
 
-MyComponent.prototype._watch_ = {
+MyComponent.prototype.__wc = {
   'count': [function (n, o) {
     this.dom.__1.text(n);
   }, function (n, o) {
@@ -37,14 +37,14 @@ MyComponent.prototype._watch_ = {
   }]
 };
 
-MyComponent.prototype._build_ = function (m, wrap) {
-  m.root = wrap(`<div><span></span><span></span><span></span><span></span><span></span><span></span></div>`);
-  m.dom = {
-    __1: m._lu_([0]),
-    __2: m._lu_([1]),
-    __3: m._lu_([2]),
-    __4: m._lu_([3]),
-    __5: m._lu_([4]),
-    __6: m._lu_([5])
+MyComponent.prototype.__bv = function (view, wrap) {
+  view.root = wrap(`<div><span></span><span></span><span></span><span></span><span></span><span></span></div>`);
+  view.dom = {
+    __1: view.__gw([0]),
+    __2: view.__gw([1]),
+    __3: view.__gw([2]),
+    __4: view.__gw([3]),
+    __5: view.__gw([4]),
+    __6: view.__gw([5])
   };
 };

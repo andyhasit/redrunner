@@ -14,8 +14,8 @@ class MyComponent extends Component {
   foo() {}
 }
 
-MyComponent.prototype._build_ = function (m, wrap) {
-  m.root = wrap(`<div><br /><NestedComponent></NestedComponent></div>`);
-  m._rn_([1], m.box(NestedComponent, 2, 'a'));
-  m.dom = {};
+MyComponent.prototype.__bv = function (view, wrap) {
+  view.root = wrap(`<div><br /><NestedComponent></NestedComponent></div>`);
+  view.__rn([1], view.nest(NestedComponent, 2, 'a'));
+  view.dom = {};
 };

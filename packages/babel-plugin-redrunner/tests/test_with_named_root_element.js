@@ -12,9 +12,9 @@ class MyComponent extends Component {
   foo() {}
 }
 
-MyComponent.prototype._build_ = function (m, wrap) {
-  m.root = wrap(`<div></div>`);
-  m.dom = {
-    main: m._lu_([])
+MyComponent.prototype.__bv = function (view, wrap) {
+  view.root = wrap(`<div></div>`);
+  view.dom = {
+    main: view.__gw([])
   };
 };

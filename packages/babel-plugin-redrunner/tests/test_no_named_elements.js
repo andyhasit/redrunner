@@ -14,7 +14,7 @@ class MyComponent extends Component {
   foo() {}
 }
 
-MyComponent.prototype._build_ = function (m, wrap) {
-  m.root = wrap(`<div><span>0</span><button class="button">Click me</button></div>`);
-  m.dom = {};
+MyComponent.prototype.__bv = function (view, wrap) {
+  view.root = wrap(`<div><span>0</span><button class="button">Click me</button></div>`);
+  view.dom = {};
 };

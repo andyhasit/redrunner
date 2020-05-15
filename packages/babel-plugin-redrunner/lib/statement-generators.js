@@ -58,23 +58,21 @@ class ComponentProcessor {
     processNode(dom)
   }
   createBuildStatement() {
-    const name = '_build_'
-    const args = 'm, wrap'
-    const lines = ['m.root = wrap(`' + removeRedRunnerCode(this.strippedHtml) + '`);']
+    const lines = ['view.root = wrap(`' + removeRedRunnerCode(this.strippedHtml) + '`);']
 
     // Add remaining lines (must come before dom!)
     this.buildMethodLines.forEach(n => lines.push(n))
 
     // Add this.dom definition
     if (this.domObjectLines.length > 0) {
-      lines.push('m.dom = {')
+      lines.push('view.dom = {')
       this.domObjectLines.forEach(n => lines.push(n))
       lines.push('};')
     } else {
-      lines.push('m.dom = {};')
+      lines.push('view.dom = {};')
     }
     const body = lines.join(EOL)
-    this.buildStatement = addPrototypeFunction(this.className, name, args, body)
+    this.buildStatement = addPrototypeFunction(this.className, '__bv', 'view, wrap', body)
   }
   createWatchStatement() {
     const lines = []
@@ -85,30 +83,20 @@ class ComponentProcessor {
     }
     if (lines.length) {
       const body = lines.join(EOL)
-      this.watchStatement = addPrototypeObject(this.className, '_watch_', body)
+      this.watchStatement = addPrototypeObject(this.className, '__wc', body)
     }
   }
   processComponentNode(nodePath, node, tagName) {
-    // let {args, saveAs} = getNodeSpec(node)
-    // const constructorStr = args? `m.box(${tagName}, ${args})` : `m.box(${tagName})`; 
-    // if (saveAs) {
-    //   const randVar = this.getRandVarName()
-    //   this.buildMethodLines.push(`let ${randVar} = ${constructorStr};`)
-    //   this.domObjectLines.push(`${saveAs}: ${randVar},`)
-    //   this.buildMethodLines.push(`m.${this.lookupCall(nodePath)}.replace(${randVar}.root.e);`)
-    // } else {
-    //   this.buildMethodLines.push(`m.${this.lookupCall(nodePath)}.replace(${constructorStr}.root.e);`)
-    // }
     let {args, saveAs} = getNodeSpec(node)
     const lines = this.buildMethodLines
-    const constructorStr = args? `m.box(${tagName}, ${args})` : `m.box(${tagName})`;
+    const constructorStr = args? `view.nest(${tagName}, ${args})` : `view.nest(${tagName})`;
     
     if (saveAs) {
       lines.push(`let ${saveAs} = ${constructorStr};`)
-      lines.push(`m._rn_(${this.lookupArgs(nodePath)}, ${saveAs});`)
+      lines.push(`view.__rn(${this.lookupArgs(nodePath)}, ${saveAs});`)
       this.domObjectLines.push(`${saveAs}: ${saveAs},`)
     } else {
-      lines.push(`m._rn_(${this.lookupArgs(nodePath)}, ${constructorStr});`)
+      lines.push(`view.__rn(${this.lookupArgs(nodePath)}, ${constructorStr});`)
     }
   }
   processNormalNode(nodePath, node, tagName) {
@@ -118,12 +106,12 @@ class ComponentProcessor {
       this.addNodeWatch(watch, saveAs)
     }
     if (saveAs) {
-      this.domObjectLines.push(`${saveAs}: m.${this.lookupCall(nodePath)},`)
+      this.domObjectLines.push(`${saveAs}: view.${this.lookupCall(nodePath)},`)
     }
   }
-  /* Returns a call to _lu_, which finds the node references by its tree index (e.g. [1, 0]) */
+  /* Returns a call to __gw, which finds the node references by its tree index (e.g. [1, 0]) */
   lookupCall(nodePath) {
-    return `_lu_(${this.lookupArgs(nodePath)})`
+    return `__gw(${this.lookupArgs(nodePath)})`
   }
   lookupArgs(nodePath) {
     return `[${nodePath.slice(2)}]`
@@ -132,13 +120,13 @@ class ComponentProcessor {
     /*
     'count': [
       function(n, o) {
-        this._lu_([0]).text(n)
+        this.__gw([0]).text(n)
       },
       
       with target but no convert:
-        this._lu_([0]).text(n)
+        this.__gw([0]).text(n)
       with target and convert:
-        this._lu_([0]).text(convert(n, o))
+        this.__gw([0]).text(convert(n, o))
       no target (implies convert):
         convert(n, o, w)
       }
@@ -152,7 +140,7 @@ class ComponentProcessor {
         callbackBody = `${wrapper}.${watch.target}(n)`
       }
     } else {
-      // assume convert
+      // assume convert is provided
       callbackBody = `${watch.convert}(n, o, ${wrapper})`
     }
     callbackStatement = ['function(n, o) {', callbackBody, '},'].join(EOL)
