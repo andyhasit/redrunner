@@ -10,15 +10,15 @@ class MyComponent extends Component {
 
 class MyComponent extends Component {}
 
-MyComponent.prototype._build_ = function (m, wrap) {
-  m.root = wrap(`<div><span></span></div>`);
-  m.dom = {};
+MyComponent.prototype._watch_ = {
+  'count': [function (n, o) {
+    this.dom.__1.text(n);
+  }]
 };
 
-MyComponent.prototype._watch_ = {
-  'count': [
-    function(n, o) {
-      this._lu_([0]).text(n)
-    }
-  ]
+MyComponent.prototype._build_ = function (m, wrap) {
+  m.root = wrap(`<div><span></span></div>`);
+  m.dom = {
+    __1: m._lu_([0])
+  };
 };

@@ -16,9 +16,9 @@ class MyComponent extends Component {
 
 MyComponent.prototype._build_ = function (m, wrap) {
   m.root = wrap(`<div><br /><NestedComponent></NestedComponent></div>`);
-  let rrr1 = m.box(NestedComponent);
-  m._lu_([1]).replace(rrr1.root.e);
+  let c1 = m.box(NestedComponent);
+  m._rn_([1], c1);
   m.dom = {
-    c1: rrr1
+    c1: c1
   };
 };

@@ -123,12 +123,17 @@ function addPrototypeFunction(className, name, signature, body) {
   return [`${className}.prototype.${name} = function(${signature}){`, body, '};'].join(EOL)
 }
 
+function addPrototypeObject(className, name, body) {
+  return [`${className}.prototype.${name} = {`, body, '};'].join(EOL)
+}
+
 
 /* Exporting everything we want to test too because changing the above is
  * quicker using TDD 
  */
 module.exports = {
   addPrototypeFunction,
+  addPrototypeObject,
   getAttVal,
   getAttDefinition,
   removeRedRunnerCode,
