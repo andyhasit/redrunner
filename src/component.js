@@ -1,13 +1,17 @@
-import {h, createComponent, getProp, und, wrap, Wrapper} from './utils'
+import {
+  createComponent, 
+  getProp, 
+  und, 
+  wrap, // Keep this, its used by babel
+  Wrapper
+} from './utils'
 
 
 export class Component {
-  constructor(app, parent, obj, seq) {
+  constructor(parent, props, seq) {
     let s = this
-
-    s.app = app             // Reference to the containing app. This is static
     s.parent = parent       // The parent view
-    s.o = obj               // The object passed to the view. May be changed
+    s.props = props         // The props passed to the view. May be changed
     s.seq = seq             // The sequence - only for nested views
     // Internal state objects
     s._nested_ = []         // Array of arrays of nested views
@@ -15,31 +19,40 @@ export class Component {
 
     // These will be set by _build_()
     s.root = null           // the root wrapper, will be set by _build_
-    s._elements_ = null     // the named wrappers, will be set by _build_
-    s._watches_ = s.constructor._watches_
+    s.dom = null            // the named wrappers, will be set by _build_
+    s._watch_ = s.constructor._watch_
   }
 
   /* This field gets transformed by the babel plugin.
-   * Provide a safe default here.
+   * Providing a default here so that child classes get processed.
    */
   __html__ = '<div/>'
 
   init() {
     // Gets called once
-  } 
-  update(newObj) {
+  }
+  update(props) {
     /*  
      *   The external call to update the view. 
-     *   @newObj -- new object, else it keeps its old (which is fine)
+     *   @props -- new props, else it keeps its old (which is fine)
      */
-    if (newObj) {
-      this.o = newObj
+    if (!und(props)) {
+      this.props = props
     }
     this._updateWatches_()
     this._updateNested_()
   }
   debug() {
     console.log(this._build_.toString())
+  }
+  box(cls, props) {
+    /*
+     * Builds a nested view of the specified class. Its up to you how you attach it.
+     * No caching is used. Use a cache object returned by this.cache() if you need caching.
+     */
+    let child = createComponent(cls, this, props, 0)
+    this._nested_.push(child)
+    return child
   }
   emit(name, args) {
     let target = this
@@ -64,10 +77,10 @@ export class Component {
       e.g. (n,o) => alert(`Value changed from ${o} to ${n}`)
 
     */
-    if (!this._watches_.hasOwnProperty(path)) {
-      this._watches_[path] = []
+    if (!this._watch_.hasOwnProperty(path)) {
+      this._watch_[path] = []
     }
-    this._watches_[path].push(callback)
+    this._watch_[path].push(callback)
     return this // Keep this because people may use it like on the wrapper.
   }
   _lu_(path) {
@@ -90,8 +103,8 @@ export class Component {
      * Iterates through watches. If the value has changed, call callback.
      */
     let path, newValue, previousValue, callbacks
-    for (path in this._watches_) {
-      callbacks = this._watches_[path]
+    for (path in this._watch_) {
+      callbacks = this._watch_[path]
       c.log(callbacks)
       newValue = getProp(this, path)
       previousValue = this._previous_[path]
@@ -104,9 +117,12 @@ export class Component {
       this._previous_[path] = newValue
     }
   }
+  _rn_(path, view) {
+    this._lu_(path).replace(view.root.e)
+  }
   _attached_() {
     let el = this
-    // TODO: loop until parent or app
+    // TODO: loop until parent
     // let element = 
     // while (element != document && element.parentNode) {
     //   /* jump to the parent element */
@@ -114,16 +130,6 @@ export class Component {
     // }
     return el.root.e.parentNode
   }
-  box(componentClass, obj) {
-    /*
-     * Builds a nested view of the specified class. Its up to you how you attach it.
-     * No caching is used. Use a cache object returned by this.cache() if you need caching.
-     */
-    let child = createComponent(componentClass, this.app, this, obj, 0)
-    this._nested_.push(child)
-    return child
-  }
-
 
   /* Currently unused, but we may use it in future strategy
    */

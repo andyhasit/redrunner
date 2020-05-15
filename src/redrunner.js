@@ -1,5 +1,4 @@
-import {App} from './app'
-import {Component} from './component';
-import {h, Wrapper} from './utils';
+import {Component} from './component'
+import {mount} from './utils'
 
-module.exports = {App, Component, h, Wrapper}
+module.exports = {Component, mount}

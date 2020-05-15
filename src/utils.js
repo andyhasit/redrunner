@@ -75,7 +75,7 @@ export class Wrapper {
     return this
   }
   use(cls) {
-    this._c = new ComponentCache(this.app, cls, this)
+    this._c = new ComponentCache(cls, this)
     return this
   }
   watch(desc, callback) {
@@ -200,14 +200,6 @@ export class Wrapper {
   }
 }
 
-
-export function wrap(html) {
-  let throwAway = document.createElement('template')
-  throwAway.innerHTML = html.trim()
-  return new Wrapper(throwAway.content.firstChild)
-}
-
-
 export function getNode(elementOrId) {
   // We're assuming it starts with #
   let el = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)): elementOrId
@@ -217,8 +209,8 @@ export function getNode(elementOrId) {
 /*
  * Mounts a view onto an element.
  */
-export function mount(elementOrId, cls, props, app, parent, seq) {
-  let component = createComponent(cls, app, parent, props, seq)
+export function mount(elementOrId, cls, props, parent, seq) {
+  let component = createComponent(cls, parent, props, seq)
   let target = getNode(elementOrId)
   target.parentNode.replaceChild(component.root.e, target)
   return component
@@ -277,22 +269,28 @@ export function isStr(x) {
 //   return {c: undefined, e: el, i: inner, l: label} // This is a nodeDef
 // }
 
-// TODO this is wrong
-export function h(desc, inner) {
-  return new Wrapper(document.createElement(desc))
+// TODO this is wrong-- is it?
+// export function h(desc, inner) {
+//   return new Wrapper(document.createElement(desc))
+// }
+
+// //TODO: do we need this?!
+// export function c(cls, obj, label) {
+// 	let newComponent = new cls(obj)
+// 	newComponent.update()
+// 	return {c: newComponent, e: undefined, i: undefined, l: label}
+// }
+
+export function wrap(html) {
+  let throwAway = document.createElement('template')
+  throwAway.innerHTML = html.trim()
+  return new Wrapper(throwAway.content.firstChild)
 }
 
-export function c(componentClass, obj, label) {
-	let newComponent = new componentClass(obj)
-	newComponent.update()
-	return {c: newComponent, e: undefined, i: undefined, l: label}
-}
-
-
-export function createComponent(componentClass, app, parent, obj, seq) {
-  let component = new componentClass(app, parent, obj, seq)
-  //(app, box, bubble, el, s, seq, watch)
-  //v.init(v.app, v.box.bind(v), v.bubble.bind(v), v.el.bind(v), v, v.seq, v.watch.bind(v))
+export function createComponent(cls, parent, props, seq) {
+  let component = new cls(parent, props, seq)
+  //(box, bubble, el, s, seq, watch)
+  //v.init(v.box.bind(v), v.bubble.bind(v), v.el.bind(v), v, v.seq, v.watch.bind(v))
   // TODO restore the above
   // could even create the literal object here..?
   component._build_(component, wrap)
@@ -303,39 +301,37 @@ export function createComponent(componentClass, app, parent, obj, seq) {
 
 
 export class ComponentCache {
-  constructor(app, cls, view) {
+  constructor(cls, view) {
     /*
     An object which caches and returns views of a same type.
     
-    @app -- an instance of App
     @cls -- any valid subclass of View
     @cacheBy -- either:
         <undefined> in which case the sequence is used as key*
         A string used to lookup a property on the item. Can be dotted. e.g. 'user.id'
-        A function called with (obj, seq) which must return a key
+        A function called with (props, seq) which must return a key
     */
-    this.app = app
     this.view = view
     this.cls = cls
     this.cache = {}
-    this.keyFn = (obj, seq) => seq 
+    this.keyFn = (props, seq) => seq 
     this._seq = 0
   }
   reset() {
     this._seq = 0
   }
-  getEl(obj) {
+  getEl(props) {
     /*
     Gets a view, potentially from cache
     */
-    let view, key = this.keyFn(obj, this._seq)
+    let view, key = this.keyFn(props, this._seq)
     if (this.cache.hasOwnProperty(key)) {
       view = this.cache[key]
     } else {
-      view = createComponent(this.cls, this.app, this.view, obj, this._seq)
+      view = createComponent(this.cls, this.view, props, this._seq)
       this.cache[key] = view
     }
-    view.update(obj)
+    view.update(props)
     this._seq += 1
     return view
   }

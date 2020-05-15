@@ -31,16 +31,17 @@ params vs vars
  * 
  * @data.routes: an array of objects which will get passed as arg 'config' to new Route()
  * @data.resources: an object representing load-once resources as name:function
- *   the function will be called with (app, this) and must return a promise.
+ *   the function will be called with (this) and must return a promise.
  */
 
 
 export class Router extends Component {
   init() {
-    this._routes = this.o.routes.map(config => new Route(this.app, config))
+    let {routes, resources} = this.props
+    this._routes = routes.map(config => new Route(config))
     this._resources = {}
-    if (this.o.resources) {
-      for (let [name, func] of Object.entries(this.o.resources)) {
+    if (resources) {
+      for (let [name, func] of Object.entries(resources)) {
         this._resources[name] = {
           loaded: false,
           func: func
@@ -58,7 +59,7 @@ export class Router extends Component {
       resources.forEach(name => {
         let resource = this._resources[name]
         if (!resource.loaded) {
-          promises.push(resource.func(this.app, this))
+          promises.push(resource.func(this))
         }
       })
     }
@@ -82,6 +83,7 @@ export class Router extends Component {
           route.getComponent(routeData).then(view => {
             this.root.child(view.root)
             // Use this? bubble?
+            // call back?
             //this.app.emit('route_changed', {routeData, url, view})
           })
         })
@@ -120,16 +122,15 @@ export class Router extends Component {
  *  /todos/detail?id,date
  * 
  * Args and params may specify a type, in which case they are converted.
- * resolve gets called with (routeData, app, [this router]) and must return a promise, the return
+ * resolve gets called with (routeData, [this router]) and must return a promise, the return
  * value is passed as data to the view. routeData is {args, params, url}
  */
 export class Route {
-  constructor(app, config) {
-    this.app = app
+  constructor(config) {
     this.resources = config.resources
     let paramStr, path = config.path;
     // if no cacheBy, create one which returns 1 - 
-    this._vc = new ComponentCache(app, config.cls, config.cacheBy || this.defautKeyFn);
+    this._vc = new ComponentCache(config.cls, config.cacheBy || this.defautKeyFn);
     [path, paramStr] = path.split('?')
     this.chunks = this.buildChunks(path) // An array of string or RouteArg
     this.params = this.buildParams(paramStr)
@@ -164,7 +165,7 @@ export class Route {
     return params
   }
   getComponent(routeData) {
-    return this.resolve(routeData, this.app, this).then(result => {return this._vc.getEl(result)})
+    return this.resolve(routeData, this).then(result => {return this._vc.getEl(result)})
   }
   match(url) {
     let front, paramStr, definedChunkCount = this.chunks.length, args = {};
