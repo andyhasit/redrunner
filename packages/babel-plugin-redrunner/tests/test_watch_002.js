@@ -1,4 +1,4 @@
-class MyComponent extends Component {
+class MyView extends View {
   __html__ = `
     <div>
       <span watch="count::"/>
@@ -18,9 +18,9 @@ class MyComponent extends Component {
 
 //----------------------------------------------------
 
-class MyComponent extends Component {}
+class MyView extends View {}
 
-MyComponent.prototype.__wc = {
+MyView.prototype.__wc = {
   'count': [function (n, o) {
     this.dom.__1.text(n);
   }, function (n, o) {
@@ -37,7 +37,7 @@ MyComponent.prototype.__wc = {
   }]
 };
 
-MyComponent.prototype.__bv = function (view, wrap) {
+MyView.prototype.__bv = function (view, wrap) {
   view.root = wrap(`<div><span></span><span></span><span></span><span></span><span></span><span></span></div>`);
   view.dom = {
     __1: view.__gw([0]),

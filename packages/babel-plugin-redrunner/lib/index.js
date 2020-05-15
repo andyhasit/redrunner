@@ -42,8 +42,8 @@ module.exports = () => {
       Class(path, state) {
         if (path.type == 'ClassDeclaration') {
           let requiresGeneratedStatements = false
-          // Build object containing component data
-          let componentData = {
+          // Build object containing view data
+          let viewData = {
             className: path.node.id.name
           }
 
@@ -52,7 +52,7 @@ module.exports = () => {
             let propName = node.key.name
             if (propName == '__html__') {
               requiresGeneratedStatements = true
-              componentData.htmlString = getNodeHtmlString(node)
+              viewData.htmlString = getNodeHtmlString(node)
               removeProperty(path)
             } else if (propName == '__watch__') {
               requiresGeneratedStatements = true
@@ -63,7 +63,7 @@ module.exports = () => {
 
           if (requiresGeneratedStatements) {
             // Build statements using collected data
-            let generatedStatements = generateStatements(componentData)
+            let generatedStatements = generateStatements(viewData)
 
             // Add the generated statements 
             // Note that babel does its own adjustments with spaces, commas etc...

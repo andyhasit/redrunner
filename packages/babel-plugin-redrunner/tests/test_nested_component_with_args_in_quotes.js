@@ -1,8 +1,8 @@
-class MyComponent extends Component {
+class MyView extends View {
   __html__ = `
     <div>
       <br/>
-      <NestedComponent args="2, 'a'"/>
+      <NestedView args="2, 'a'"/>
     </div>
   `
   foo() {}
@@ -10,12 +10,12 @@ class MyComponent extends Component {
 
 //----------------------------------------------------
 
-class MyComponent extends Component {
+class MyView extends View {
   foo() {}
 }
 
-MyComponent.prototype.__bv = function (view, wrap) {
-  view.root = wrap(`<div><br /><NestedComponent></NestedComponent></div>`);
-  view.__rn([1], view.nest(NestedComponent, 2, 'a'));
+MyView.prototype.__bv = function (view, wrap) {
+  view.root = wrap(`<div><br /><NestedView></NestedView></div>`);
+  view.__rn([1], view.nest(NestedView, 2, 'a'));
   view.dom = {};
 };

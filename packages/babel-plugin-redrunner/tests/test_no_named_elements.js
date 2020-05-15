@@ -1,4 +1,4 @@
-class MyComponent extends Component {
+class MyView extends View {
   __html__ = `
     <div>
       <span>0</span>
@@ -10,11 +10,11 @@ class MyComponent extends Component {
 
 //----------------------------------------------------
 
-class MyComponent extends Component {
+class MyView extends View {
   foo() {}
 }
 
-MyComponent.prototype.__bv = function (view, wrap) {
+MyView.prototype.__bv = function (view, wrap) {
   view.root = wrap(`<div><span>0</span><button class="button">Click me</button></div>`);
   view.dom = {};
 };

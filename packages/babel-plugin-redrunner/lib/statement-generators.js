@@ -17,9 +17,9 @@ const {
 const {getNodeSpec} = require('./html-spec');
 
 
-class ComponentProcessor {
-  constructor(componentData) {
-    let {className, htmlString} = componentData
+class ViewProcessor {
+  constructor(viewData) {
+    let {className, htmlString} = viewData
     this.className = className
     this.strippedHtml = stripHtml(htmlString)
     this.buildMethodLines = []  // The method lines, as code
@@ -31,7 +31,7 @@ class ComponentProcessor {
     this.buildStatement = undefined
     this.watchStatement = undefined
   }
-  processComponent() {
+  processView() {
     this.parseHtmlProperty()
     //this.parseWatchProperty() ...?
 
@@ -46,7 +46,7 @@ class ComponentProcessor {
       const tagName = node.tagName
       if (tagName) {
         const isCapitalized = /[A-Z]/.test(tagName[0])
-        const processFunction = isCapitalized ? self.processComponentNode : self.processNormalNode
+        const processFunction = isCapitalized ? self.processViewNode : self.processNormalNode
         processFunction.apply(self, [nodePath, node, tagName])
       }
       node.childNodes.forEach(processNode)
@@ -86,7 +86,7 @@ class ComponentProcessor {
       this.watchStatement = addPrototypeObject(this.className, '__wc', body)
     }
   }
-  processComponentNode(nodePath, node, tagName) {
+  processViewNode(nodePath, node, tagName) {
     let {args, saveAs} = getNodeSpec(node)
     const lines = this.buildMethodLines
     const constructorStr = args? `view.nest(${tagName}, ${args})` : `view.nest(${tagName})`;
@@ -162,12 +162,12 @@ class ComponentProcessor {
 
 /** Returns the statements as a list of strings.
  */
-function generateStatements(componentData) {
-  const componentProcessor = new ComponentProcessor(componentData)
-  componentProcessor.processComponent()
-  statements = [componentProcessor.buildStatement]
-  if (componentProcessor.watchStatement) {
-    statements.push(componentProcessor.watchStatement)
+function generateStatements(viewData) {
+  const viewProcessor = new ViewProcessor(viewData)
+  viewProcessor.processView()
+  statements = [viewProcessor.buildStatement]
+  if (viewProcessor.watchStatement) {
+    statements.push(viewProcessor.watchStatement)
   }
   return statements
 }
