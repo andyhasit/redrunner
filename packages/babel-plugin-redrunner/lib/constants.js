@@ -2,6 +2,9 @@
 const EOL = require('os').EOL
 const htmlparse = require('node-html-parser')
 
+/* This helps */
+const c = console
+
 /* The RedRunner attributes */
 const redrunnerAtts = {
 	ARGS: 'args',
@@ -9,8 +12,5 @@ const redrunnerAtts = {
 	ON: 'on',
 	WATCH: 'watch'
 }
-
-
-const c = console
 
 module.exports = {EOL, c, htmlparse, redrunnerAtts}

@@ -14,7 +14,7 @@ const {
   stripHtml
 } = require('./utils');
 
-const {getNodeSpec} = require('./html-spec');
+const {expandField, getNodeSpec, lookupArgs, getWrapperCall} = require('./html-spec');
 
 
 class ViewProcessor {
@@ -93,28 +93,27 @@ class ViewProcessor {
     
     if (saveAs) {
       lines.push(`let ${saveAs} = ${constructorStr};`)
-      lines.push(`view.__rn(${this.lookupArgs(nodePath)}, ${saveAs});`)
+      lines.push(`view.__rn(${lookupArgs(nodePath)}, ${saveAs});`)
       this.domObjectLines.push(`${saveAs}: ${saveAs},`)
     } else {
-      lines.push(`view.__rn(${this.lookupArgs(nodePath)}, ${constructorStr});`)
+      lines.push(`view.__rn(${lookupArgs(nodePath)}, ${constructorStr});`)
     }
   }
   processNormalNode(nodePath, node, tagName) {
-    let {saveAs, watch} = getNodeSpec(node)
+    let {saveAs, on, watch} = getNodeSpec(node)
+    let chainedCalls = ''
     if (watch) {
       saveAs = saveAs ?  saveAs : this.getRandVarName()
       this.addNodeWatch(watch, saveAs)
     }
-    if (saveAs) {
-      this.domObjectLines.push(`${saveAs}: view.${this.lookupCall(nodePath)},`)
+    // We can use a chained call on the wrapper because it returns this
+    if (on) {
+      saveAs = saveAs ?  saveAs : this.getRandVarName()
+      chainedCalls = `.on('${on.event}', ${on.callback})`
     }
-  }
-  /* Returns a call to __gw, which finds the node references by its tree index (e.g. [1, 0]) */
-  lookupCall(nodePath) {
-    return `__gw(${this.lookupArgs(nodePath)})`
-  }
-  lookupArgs(nodePath) {
-    return `[${nodePath.slice(2)}]`
+    if (saveAs) {
+      this.domObjectLines.push(`${saveAs}: view.${getWrapperCall(nodePath)}${chainedCalls},`)
+    }
   }
   addNodeWatch(watch, name) {
     /*
