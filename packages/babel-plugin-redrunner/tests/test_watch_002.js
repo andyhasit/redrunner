@@ -6,7 +6,7 @@ class MyView extends View {
       <span watch="count:foo:"/>
       <span watch="count:foo:css"/>
       <span watch="count:foo"/>
-      <span watch="countChanged?: :enabled"/>
+      <span watch="countChanged(): :enabled"/>
     </div>
   `
   ___wc_ = {
@@ -20,6 +20,15 @@ class MyView extends View {
 
 class MyView extends View {}
 
+MyView.prototype.__wq = {
+  'count': function () {
+    return count;
+  },
+  'countChanged()': function () {
+    return countChanged();
+  }
+};
+
 MyView.prototype.__wc = {
   'count': [function (n, o) {
     this.dom.__1.text(n);
@@ -32,7 +41,7 @@ MyView.prototype.__wc = {
   }, function (n, o) {
     foo(n, o, this.dom.__5);
   }],
-  'countChanged?': [function (n, o) {
+  'countChanged()': [function (n, o) {
     this.dom.__6.enabled(n);
   }]
 };

@@ -38,7 +38,8 @@ class ViewProcessor {
     //this.parseWatchProperty() ...?
 
     this.createStatementFor__bv() 
-    this.createStatementFor__wc()  
+    this.createStatementFor__wc() 
+    this.createStatementFor__wq() 
   }
   parseHtmlProperty() {
     const self = this
@@ -91,9 +92,7 @@ class ViewProcessor {
   createStatementFor__wq() {
     const lines = []
     for (let [key, value] of Object.entries(this.watchQueryItems)) {
-      lines.push(`'${key}': [`)
-      value.forEach(e => lines.push(e))
-      lines.push(`],`)
+      lines.push(`'${key}': ${value},`)
     }
     if (lines.length) {
       const body = lines.join(EOL)
@@ -157,11 +156,11 @@ class ViewProcessor {
       callbackBody = `${watch.convert}(n, o, ${wrapper})`
     }
     callbackStatement = ['function(n, o) {', callbackBody, '},'].join(EOL)
-    this.getWatchItems(watch.name).push(callbackStatement)
-    this.watchQueryItems[watch.name] = 'function() {return', watch.name, '},'
+    this.getWatchCallbackItems(watch.name).push(callbackStatement)
+    this.watchQueryItems[watch.name] = `function() {return ${watch.name}}`
   }
   // Return array
-  getWatchItems(name) {
+  getWatchCallbackItems(name) {
     if (!this.watchCallbackItems.hasOwnProperty(name)) {
       this.watchCallbackItems[name] = []
     }
@@ -178,11 +177,14 @@ class ViewProcessor {
  */
 function generateStatements(viewData) {
   const viewProcessor = new ViewProcessor(viewData)
+  const names = ['statementFor__bv', 'statementFor__wc', 'statementFor__wq']
   viewProcessor.processView()
-  statements = [viewProcessor.statementFor__bv]
-  if (viewProcessor.statementFor__wc) {
-    statements.push(viewProcessor.statementFor__wc)
-  }
+  statements = []
+  names.forEach(s => {
+    if (viewProcessor[s]) {
+      statements.push(viewProcessor[s])
+    }
+  })
   return statements
 }
 

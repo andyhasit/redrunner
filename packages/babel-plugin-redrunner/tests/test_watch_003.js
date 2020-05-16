@@ -11,6 +11,12 @@ class MyView extends View {
 
 class MyView extends View {}
 
+MyView.prototype.__wq = {
+  'count': function () {
+    return count;
+  }
+};
+
 MyView.prototype.__wc = {
   'count': [function (n, o) {
     this.dom.__1.text(this.foo(n, o));
