@@ -22,21 +22,23 @@ class ViewProcessor {
     let {className, htmlString} = viewData
     this.className = className
     this.strippedHtml = stripHtml(htmlString)
-    this.buildMethodLines = []  // The method lines, as code
-    this.domObjectLines = []    // The lines for this.dom = {}
-    this.watchItems = {}
+    this.buildMethodLines = []    // The method lines, as code
+    this.domObjectLines = []      // The lines for this.dom = {}
+    this.watchCallbackItems = {}  // Entries for the __wc object
+    this.watchQueryItems = {}     // Entries for the __wq object
     this.randVarCount = 0
 
     // The final statements, as strings:
-    this.buildStatement = undefined
-    this.watchStatement = undefined
+    this.statementFor__bv = undefined
+    this.statementFor__wc = undefined
+    this.statementFor__wq = undefined
   }
   processView() {
     this.parseHtmlProperty()
     //this.parseWatchProperty() ...?
 
-    this.createBuildStatement() 
-    this.createWatchStatement()  
+    this.createStatementFor__bv() 
+    this.createStatementFor__wc()  
   }
   parseHtmlProperty() {
     const self = this
@@ -57,7 +59,7 @@ class ViewProcessor {
     const dom = htmlparse.parse(this.strippedHtml)
     processNode(dom)
   }
-  createBuildStatement() {
+  createStatementFor__bv() {
     const lines = ['view.root = wrap(`' + removeRedRunnerCode(this.strippedHtml) + '`);']
 
     // Add remaining lines (must come before dom!)
@@ -72,18 +74,30 @@ class ViewProcessor {
       lines.push('view.dom = {};')
     }
     const body = lines.join(EOL)
-    this.buildStatement = addPrototypeFunction(this.className, '__bv', 'view, wrap', body)
+    this.statementFor__bv = addPrototypeFunction(this.className, '__bv', 'view, wrap', body)
   }
-  createWatchStatement() {
+  createStatementFor__wc() {
     const lines = []
-    for (let [key, value] of Object.entries(this.watchItems)) {
+    for (let [key, value] of Object.entries(this.watchCallbackItems)) {
       lines.push(`'${key}': [`)
       value.forEach(e => lines.push(e))
       lines.push(`],`)
     }
     if (lines.length) {
       const body = lines.join(EOL)
-      this.watchStatement = addPrototypeObject(this.className, '__wc', body)
+      this.statementFor__wc = addPrototypeObject(this.className, '__wc', body)
+    }
+  }
+  createStatementFor__wq() {
+    const lines = []
+    for (let [key, value] of Object.entries(this.watchQueryItems)) {
+      lines.push(`'${key}': [`)
+      value.forEach(e => lines.push(e))
+      lines.push(`],`)
+    }
+    if (lines.length) {
+      const body = lines.join(EOL)
+      this.statementFor__wq = addPrototypeObject(this.className, '__wq', body)
     }
   }
   processViewNode(nodePath, node, tagName) {
@@ -144,13 +158,14 @@ class ViewProcessor {
     }
     callbackStatement = ['function(n, o) {', callbackBody, '},'].join(EOL)
     this.getWatchItems(watch.name).push(callbackStatement)
+    this.watchQueryItems[watch.name] = 'function() {return', watch.name, '},'
   }
   // Return array
   getWatchItems(name) {
-    if (!this.watchItems.hasOwnProperty(name)) {
-      this.watchItems[name] = []
+    if (!this.watchCallbackItems.hasOwnProperty(name)) {
+      this.watchCallbackItems[name] = []
     }
-    return this.watchItems[name]
+    return this.watchCallbackItems[name]
   }
   getRandVarName() {
     this.randVarCount ++
@@ -164,9 +179,9 @@ class ViewProcessor {
 function generateStatements(viewData) {
   const viewProcessor = new ViewProcessor(viewData)
   viewProcessor.processView()
-  statements = [viewProcessor.buildStatement]
-  if (viewProcessor.watchStatement) {
-    statements.push(viewProcessor.watchStatement)
+  statements = [viewProcessor.statementFor__bv]
+  if (viewProcessor.statementFor__wc) {
+    statements.push(viewProcessor.statementFor__wc)
   }
   return statements
 }
