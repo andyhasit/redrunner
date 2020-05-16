@@ -25,7 +25,7 @@ function parseWATCH(attString) {
 	if (attString) {
 		const chunks = attString.split(':')
 		const values = {
-			'name': chunks[0].trim(),
+			'name': expandField(chunks[0].trim()),
 			'convert': undefined,
 			'target': undefined,
 		}
