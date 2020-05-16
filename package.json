@@ -22,10 +22,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
-    "babel-plugin-redrunner": "0.0.9",
-    "microbundle": "^0.11.0"
+    "microbundle": "^0.12.0"
   },
   "dependencies": {
-    "components": "^0.1.0"
+    "babel-plugin-redrunner": "0.0.11"
   }
 }

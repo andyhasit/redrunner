@@ -4,12 +4,12 @@ const doc = document;
 export class Wrapper {
   constructor(element, view) {
     this.e = element
-    this._c = undefined // The componentCache, if any
+    this._c = undefined // The viewCache, if any
     this._n = undefined //  
     this.view = view
   }
   
-  // Methods which potentially change the containing component's nested components 
+  // Methods which potentially change the containing view's nested views 
   append(item) {
     return this._append(item)
   }
@@ -60,9 +60,9 @@ export class Wrapper {
     return this._done()
   }
   _nest(view) {
-    //TODO: the idea of this it to keep track of nested components. Check it works...
+    //TODO: the idea of this it to keep track of nested views. Check it works...
     if (!this._n) {
-      this._n = this.view._nested_
+      this._n = this.view.__nv
     }
     this._n.push(view)
   }
@@ -75,7 +75,7 @@ export class Wrapper {
     return this
   }
   use(cls) {
-    this._c = new ComponentCache(cls, this)
+    this._c = new ViewCache(cls, this)
     return this
   }
   watch(desc, callback) {
@@ -85,7 +85,7 @@ export class Wrapper {
      *   This method has two forms.
      * 
      *   If desc does not contain ":" then the callback is simply called if the value 
-     *   changes (during the component's update() call)
+     *   changes (during the view's update() call)
      *
      *   The callback parameters are (newVal, oldVal, wrapper) 
      *   E.g.
@@ -210,10 +210,10 @@ export function getNode(elementOrId) {
  * Mounts a view onto an element.
  */
 export function mount(elementOrId, cls, props, parent, seq) {
-  let component = createComponent(cls, parent, props, seq)
+  let view = createView(cls, parent, props, seq)
   let target = getNode(elementOrId)
-  target.parentNode.replaceChild(component.root.e, target)
-  return component
+  target.parentNode.replaceChild(view.root.e, target)
+  return view
 }
 
 
@@ -276,31 +276,34 @@ export function isStr(x) {
 
 // //TODO: do we need this?!
 // export function c(cls, obj, label) {
-// 	let newComponent = new cls(obj)
-// 	newComponent.update()
-// 	return {c: newComponent, e: undefined, i: undefined, l: label}
+// 	let newView = new cls(obj)
+// 	newView.update()
+// 	return {c: newView, e: undefined, i: undefined, l: label}
 // }
 
+/* Creates a wrapper from an HTML string. Does not mount it
+ * Feels inefficent creating a throw away element 
+ */
 export function wrap(html) {
   let throwAway = document.createElement('template')
-  throwAway.innerHTML = html.trim()
+  throwAway.innerHTML = html
   return new Wrapper(throwAway.content.firstChild)
 }
 
-export function createComponent(cls, parent, props, seq) {
-  let component = new cls(parent, props, seq)
-  //(box, bubble, el, s, seq, watch)
-  //v.init(v.box.bind(v), v.bubble.bind(v), v.el.bind(v), v, v.seq, v.watch.bind(v))
+export function createView(cls, parent, props, seq) {
+  let view = new cls(parent, props, seq)
+  //(nest, bubble, el, s, seq, watch)
+  //v.init(v.nest.bind(v), v.bubble.bind(v), v.el.bind(v), v, v.seq, v.watch.bind(v))
   // TODO restore the above
   // could even create the literal object here..?
-  component._build_(component, wrap)
-  component.init()
-  component.update()
-  return component
+  view.__bv(view, wrap)
+  view.init()
+  view.update()
+  return view
 }
 
 
-export class ComponentCache {
+export class ViewCache {
   constructor(cls, view) {
     /*
     An object which caches and returns views of a same type.
@@ -328,7 +331,7 @@ export class ComponentCache {
     if (this.cache.hasOwnProperty(key)) {
       view = this.cache[key]
     } else {
-      view = createComponent(this.cls, this.view, props, this._seq)
+      view = createView(this.cls, this.view, props, this._seq)
       this.cache[key] = view
     }
     view.update(props)

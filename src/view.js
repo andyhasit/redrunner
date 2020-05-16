@@ -1,26 +1,54 @@
 import {
-  createComponent, 
+  createView, 
   getProp, 
   und, 
   wrap, // Keep this, its used by babel
   Wrapper
 } from './utils'
 
-
-export class Component {
+/*
+ * Public members:
+ *
+ *  nest    -- create a nested view
+ *  debug   -- prints out debug info
+ *  dom     -- an object containing all the saved wrappers
+ *  emit    -- emit an event to be handled by a parent views
+ *  handle  -- register a function to handle an event emitted by a nested view
+ *  init    -- override to set initial state 
+ *  parent  -- the parent view
+ *  props   -- the props passed to the view
+ *  root    -- the root wrapper (should root even be a wrapper?)
+ *  seq     -- the sequence
+ *  update  -- method which gets called when a view is updated
+ *  
+ * Private members (for internal use) start with __ and are listed here:
+ *
+ *  __bv (BuildView)  -- is built by babel
+ *  __ia (IsAttached)
+ *  __gw (GetWrapper) -- returns a wrapper at a specific path
+ *  __nv (NestedViews)
+ *  __pv (PreviousValues)
+ *  __rn (ReplaceNode)
+ *  __un (Update Nested Views)
+ *  __uw (Update Watches)
+ *  __wc (Watcher Callbacks)
+ *
+ */
+export class View {
   constructor(parent, props, seq) {
     let s = this
     s.parent = parent       // The parent view
     s.props = props         // The props passed to the view. May be changed
     s.seq = seq             // The sequence - only for nested views
     // Internal state objects
-    s._nested_ = []         // Array of arrays of nested views
+    s.__nv = []         // Array of arrays of nested views
+
+    // These relate to watchers
     s._previous_ = {}       // The previous values for watches to compare against  
 
-    // These will be set by _build_()
-    s.root = null           // the root wrapper, will be set by _build_
-    s.dom = null            // the named wrappers, will be set by _build_
-    s._watch_ = s.constructor._watch_
+    // These will be set by __bv()
+    s.root = null           // the root wrapper, will be set by __bv
+    s.dom = null            // the named wrappers, will be set by __bv
   }
 
   /* This field gets transformed by the babel plugin.
@@ -39,19 +67,28 @@ export class Component {
     if (!und(props)) {
       this.props = props
     }
-    this._updateWatches_()
-    this._updateNested_()
+    this.__uw()
+    this.__un()
   }
   debug() {
-    console.log(this._build_.toString())
+    c.log(this.__bv.toString())
+    let lines = []
+    lines.push('__wc: {')
+    for (let [name, callbacks] of Object.entries(this.__wc)) {
+      lines.push(`  "${name}": [`)
+      callbacks.forEach(e => lines.push('  ' + e.toString()))
+      lines.push('  ]')
+    }
+    lines.push('}')
+    c.log(lines.join('\n'))
   }
-  box(cls, props) {
+  nest(cls, props) {
     /*
      * Builds a nested view of the specified class. Its up to you how you attach it.
      * No caching is used. Use a cache object returned by this.cache() if you need caching.
      */
-    let child = createComponent(cls, this, props, 0)
-    this._nested_.push(child)
+    let child = createView(cls, this, props, 0)
+    this.__nv.push(child)
     return child
   }
   emit(name, args) {
@@ -83,7 +120,7 @@ export class Component {
     this._watch_[path].push(callback)
     return this // Keep this because people may use it like on the wrapper.
   }
-  _lu_(path) {
+  __gw(path) {
     /*
     Returns a wrapper around element at path, where path is an array of indices.
     This is used by the babel plugin.
@@ -91,14 +128,14 @@ export class Component {
     let el = path.reduce((accumulator, index) => accumulator.childNodes[index], this.root.e)
     return new Wrapper(el, this)
   }
-  _updateNested_() {
-    this._nested_.forEach(child => {
-      if (child._attached_()) {
+  __un() {
+    this.__nv.forEach(child => {
+      if (child.__ia()) {
          child.update()
       }
     })
   }
-  _updateWatches_() {
+  __uw() {
     /*
      * Iterates through watches. If the value has changed, call callback.
      */
@@ -117,10 +154,10 @@ export class Component {
       this._previous_[path] = newValue
     }
   }
-  _rn_(path, view) {
-    this._lu_(path).replace(view.root.e)
+  __rn(path, view) {
+    this.__gw(path).replace(view.root.e)
   }
-  _attached_() {
+  __ia() {
     let el = this
     // TODO: loop until parent
     // let element = 
@@ -133,17 +170,17 @@ export class Component {
 
   /* Currently unused, but we may use it in future strategy
    */
-  _cloneNode_() {
-    let ct = this._ct_
-    if (!ct._template_) {
-      let throwAway = document.createElement('template')
-      // let tidy = raw.replace(/\n/g, "")
-      //   .replace(/[\t ]+\</g, "<")
-      //   .replace(/\>[\t ]+\</g, "><")
-      //   .replace(/\>[\t ]+$/g, ">")
-      throwAway.innerHTML = ct.html.trim()
-      ct._template_ = throwAway.content.firstChild
-    }
-    return ct._template_.cloneNode(true)
-  }
+  // _cloneNode_() {
+  //   let ct = this._ct_
+  //   if (!ct._template_) {
+  //     let throwAway = document.createElement('template')
+  //     // let tidy = raw.replace(/\n/g, "")
+  //     //   .replace(/[\t ]+\</g, "<")
+  //     //   .replace(/\>[\t ]+\</g, "><")
+  //     //   .replace(/\>[\t ]+$/g, ">")
+  //     throwAway.innerHTML = ct.html.trim()
+  //     ct._template_ = throwAway.content.firstChild
+  //   }
+  //   return ct._template_.cloneNode(true)
+  // }
 }

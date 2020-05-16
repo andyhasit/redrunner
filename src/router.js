@@ -1,5 +1,5 @@
-import {Component} from './component'
-import {ComponentCache, isStr} from './utils'
+import {View} from './view'
+import {ViewCache, isStr} from './utils'
 
 
 /*
@@ -35,7 +35,7 @@ params vs vars
  */
 
 
-export class Router extends Component {
+export class Router extends View {
   init() {
     let {routes, resources} = this.props
     this._routes = routes.map(config => new Route(config))
@@ -80,7 +80,7 @@ export class Router extends Component {
       if (routeData) {
         matched = true
         this._resolveResources(route.resources).then(_ => {
-          route.getComponent(routeData).then(view => {
+          route.getView(routeData).then(view => {
             this.root.child(view.root)
             // Use this? bubble?
             // call back?
@@ -130,7 +130,7 @@ export class Route {
     this.resources = config.resources
     let paramStr, path = config.path;
     // if no cacheBy, create one which returns 1 - 
-    this._vc = new ComponentCache(config.cls, config.cacheBy || this.defautKeyFn);
+    this._vc = new ViewCache(config.cls, config.cacheBy || this.defautKeyFn);
     [path, paramStr] = path.split('?')
     this.chunks = this.buildChunks(path) // An array of string or RouteArg
     this.params = this.buildParams(paramStr)
@@ -164,7 +164,7 @@ export class Route {
     }
     return params
   }
-  getComponent(routeData) {
+  getView(routeData) {
     return this.resolve(routeData, this).then(result => {return this._vc.getEl(result)})
   }
   match(url) {

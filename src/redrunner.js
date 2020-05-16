@@ -1,4 +1,4 @@
-import {Component} from './component'
+import {View} from './view'
 import {mount} from './utils'
 
-module.exports = {Component, mount}
+module.exports = {View, mount}
