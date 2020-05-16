@@ -1,6 +1,12 @@
 import {View} from './view'
 import {ViewCache, isStr} from './utils'
 
+/*
+ * The defaultKeyFn for a route's ViewCache.
+ * It returns 1, which causes the same view to be reused each time, which is most likely 
+ * what we want, but means the view should must be stateless.
+ */
+const defaultKeyFn = _ => 1
 
 /*
  * Router - an object responsible for managing routes
@@ -114,7 +120,7 @@ export class Router extends View {
  *   path: '/todos',
  *   resources: ['todos', 'settings'],
  *   cls: TodoView,
- *   cacheBy: foo,            # optional used as cache arg for view
+ *   keyFn: foo,            # optional used as cache arg for view
  *   resolve: foo,          # optional used to create data for view
  * }
  * 
@@ -129,19 +135,11 @@ export class Route {
   constructor(config) {
     this.resources = config.resources
     let paramStr, path = config.path;
-    // if no cacheBy, create one which returns 1 - 
-    this._vc = new ViewCache(config.cls, config.cacheBy || this.defautKeyFn);
+    this._vc = new ViewCache(config.cls, this, config.keyFn || defaultKeyFn);
     [path, paramStr] = path.split('?')
     this.chunks = this.buildChunks(path) // An array of string or RouteArg
     this.params = this.buildParams(paramStr)
     this.resolve = config.resolve || this.defautResolve
-  }
-  /*
-   * Returning 1 causes the same view to be reused each time, which is most likely 
-   * what we want, but means the view should rely on update()
-   */
-  defautCacheBy(data, seq) {
-    return 1
   }
   defautResolve(routeData) {
     return Promise.resolve(routeData)

@@ -44,7 +44,7 @@ export class View {
     s.__nv = []         // Array of arrays of nested views
 
     // These relate to watchers
-    s._previous_ = {}       // The previous values for watches to compare against  
+    s.__pv = {}       // The previous values for watches to compare against  
 
     // These will be set by __bv()
     s.root = null           // the root wrapper, will be set by __bv
@@ -114,10 +114,10 @@ export class View {
       e.g. (n,o) => alert(`Value changed from ${o} to ${n}`)
 
     */
-    if (!this._watch_.hasOwnProperty(path)) {
-      this._watch_[path] = []
+    if (!this.__wc.hasOwnProperty(path)) {
+      this.__wc[path] = []
     }
-    this._watch_[path].push(callback)
+    this.__wc[path].push(callback)
     return this // Keep this because people may use it like on the wrapper.
   }
   __gw(path) {
@@ -140,18 +140,16 @@ export class View {
      * Iterates through watches. If the value has changed, call callback.
      */
     let path, newValue, previousValue, callbacks
-    for (path in this._watch_) {
-      callbacks = this._watch_[path]
-      c.log(callbacks)
-      newValue = getProp(this, path)
-      previousValue = this._previous_[path]
+    for (path in this.__wc) {
+      newValue = this.__wq[path].apply(this)
+      previousValue = this.__pv[path]
       if (path === '' || previousValue !== newValue) {
+        callbacks = this.__wc[path]
         for (var i=0, il=callbacks.length; i<il; i++) {
-          c.log(callbacks[i])
           callbacks[i].apply(this, [newValue, previousValue])
         }
       }
-      this._previous_[path] = newValue
+      this.__pv[path] = newValue
     }
   }
   __rn(path, view) {

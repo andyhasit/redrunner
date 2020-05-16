@@ -304,7 +304,7 @@ export function createView(cls, parent, props, seq) {
 
 
 export class ViewCache {
-  constructor(cls, view) {
+  constructor(cls, view, keyFn) {
     /*
     An object which caches and returns views of a same type.
     
@@ -314,10 +314,11 @@ export class ViewCache {
         A string used to lookup a property on the item. Can be dotted. e.g. 'user.id'
         A function called with (props, seq) which must return a key
     */
+    let defaultKeyFn = (props, seq) => seq
     this.view = view
     this.cls = cls
     this.cache = {}
-    this.keyFn = (props, seq) => seq 
+    this.keyFn = keyFn || defaultKeyFn
     this._seq = 0
   }
   reset() {
