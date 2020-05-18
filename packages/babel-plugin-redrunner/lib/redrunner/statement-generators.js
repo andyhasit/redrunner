@@ -4,7 +4,7 @@ const {stripHtml} = require('../utils/dom')
 const {addPrototypeFunction, addPrototypeObject} = require('../utils/javascript')
 const {findRedRunnerAtts, removeRedRunnerCode} = require('./special-atts')
 const {lookupArgs, getWrapperCall} = require('./views')
-const {findInlineCalls} = require('./inline')
+const {extractInlineCalls} = require('./inline')
 
 /**
  * A class for generating all the statements to be added to a RedRunner view.
@@ -108,8 +108,16 @@ class ViewProcessor {
   processNormalNode(nodePath, node, tagName) {
     let {saveAs, on, watch} = findRedRunnerAtts(node)
     let chainedCalls = ''
-    const implicitSave = _ => saveAs = saveAs ?  saveAs : this.getRandVarName()
-    const inlineCalls = findInlineCalls(node)
+
+    /* Generates a unique variable name if saveAs has not been defined */
+    const implicitSave = _ => saveAs = saveAs ?  saveAs : this.getUniqueVarName()
+
+    const inlineCallsWatches = extractInlineCalls(node)
+    
+    if (inlineCallsWatches.length > 0) {
+      implicitSave()
+      inlineCallsWatches.forEach(w => this.addNodeWatch(w, saveAs))
+    }
     if (watch) {
       implicitSave()
       this.addNodeWatch(watch, saveAs)
@@ -123,23 +131,16 @@ class ViewProcessor {
       this.domObjectLines.push(`${saveAs}: view.${getWrapperCall(nodePath)}${chainedCalls},`)
     }
   }
-  addNodeWatch(watch, name) {
-    /*
-    'count': [
-      function(n, o) {
-        this.__gw([0]).text(n)
-      },
-      
-      with target but no convert:
-        this.__gw([0]).text(n)
-      with target and convert:
-        this.__gw([0]).text(convert(n, o))
-      no target (implies convert):
-        convert(n, o, w)
-      }
-    ]
-    */
-    let  callbackStatement, callbackBody, wrapper = `this.dom.${name}`
+
+  /**
+   * Adds a watch, creating both the callback and the query functions.
+   *
+   * @param {object} watch An object of shape {name, convert, target}
+   * @param {string} saveAs The name to which the wrapper is to be saved. 
+   *
+   */
+  addNodeWatch(watch, saveAs) {
+    let  callbackStatement, callbackBody, wrapper = `this.dom.${saveAs}`
     if (watch.target) {
       if (watch.convert) {
         callbackBody = `${wrapper}.${watch.target}(${watch.convert}(n, o))`
@@ -161,7 +162,7 @@ class ViewProcessor {
     }
     return this.watchCallbackItems[name]
   }
-  getRandVarName() {
+  getUniqueVarName() {
     this.randVarCount ++
     return '__' + this.randVarCount
   }

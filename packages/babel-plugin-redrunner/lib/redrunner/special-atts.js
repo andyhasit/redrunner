@@ -6,7 +6,7 @@
  *
  */
 
-const {specialAttributes} = require('./constants')
+const {specialAttributes, splitter} = require('./constants')
 const {expandField} = require('./views')
 const {getAttVal, getAttDefinition} = require('../utils/dom')
 
@@ -15,7 +15,7 @@ const {getAttVal, getAttDefinition} = require('../utils/dom')
  */
 function parseWATCH(attString) {
   if (attString) {
-    const chunks = attString.split(':')
+    const chunks = attString.split(splitter)
     const values = {
       name: expandField(chunks[0].trim()),
       convert: undefined,
@@ -36,7 +36,8 @@ function parseWATCH(attString) {
  */
 function parseON(attString) {
   if (attString) {
-    const chunks = attString.split(':')
+    const chunks = attString.split(splitter)
+    //TODO warn if no second chunk.
     const values = {
       event: chunks[0].trim(),
       callback: `(e, w) => ${expandField(chunks[1].trim())}(e, w)`
@@ -62,8 +63,7 @@ function findRedRunnerAtts(node) {
  * Returns a node as string with the RedRunner code removed.
  */
 function removeRedRunnerCode(dom) {
-
-  /** 
+  /**
    * Returns the rawAttString with the special attributes removed.
    */
   function stripSpecialAtts(rawAttString) {
@@ -74,8 +74,9 @@ function removeRedRunnerCode(dom) {
     // Just trimming extraneous whitespace
     return rawAttString.split(' ').filter(s => s.length).join(' ')
   }
-
-  // Function called recursively on nodes.
+  /* 
+   * Function called recursively on nodes. 
+   */
   function processNode(node, i) {
     let attStr = node.rawAttrs
     if (attStr) {

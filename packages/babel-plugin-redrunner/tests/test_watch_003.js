@@ -1,8 +1,8 @@
 class MyView extends View {
   __html__ = `
     <div>
-      <span watch="count: .foo :"/>
-      <span watch="count: ..foo :"/>
+      <span watch="count | .foo |"/>
+      <span watch="count | ..foo |"/>
     </div>
   `
 }

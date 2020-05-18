@@ -1,12 +1,12 @@
 class MyView extends View {
   __html__ = `
     <div>
-      <span watch="count::"/>
-      <span watch="count::css"/>
-      <span watch="count:foo:"/>
-      <span watch="count:.foo:css"/>
-      <span watch="count:..foo"/>
-      <span watch="countChanged(): :enabled"/>
+      <span watch="count||"/>
+      <span watch="count||css"/>
+      <span watch="count|foo|"/>
+      <span watch="count|.foo|css"/>
+      <span watch="count|..foo"/>
+      <span watch="countChanged()||enabled"/>
     </div>
   `
 }

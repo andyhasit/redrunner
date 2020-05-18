@@ -8,4 +8,9 @@ const specialAttributes = {
   WATCH: 'watch'
 }
 
-module.exports = {specialAttributes}
+/** 
+ * The character on which to split attributes and inlines
+ */
+const splitter = '|'
+
+module.exports = {specialAttributes, splitter}

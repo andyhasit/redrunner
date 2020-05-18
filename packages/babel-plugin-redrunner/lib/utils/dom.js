@@ -1,14 +1,15 @@
-/*
-Utility functions for working with DOM and HTML
-*/
+/**
+ * Utility functions for working with DOM and HTML.
+ */
+
 const {c, EOL} = require('./constants');
 
 /** Extracts the args string from rawAttrs e.g. 
  *
- *   as=m > "m"
- *   args="a, 'b'" > "a, 'b'"
+ *   as=m            >   "m"
+ *   args="a, 'b'"   >   "a, 'b'"
  *
- *  Note that it does not allow spaces around the = sign!
+ * Note that it does not allow spaces around the = sign!
  */
 function getAttVal(attStr, attName) {
   if (attStr) {
@@ -28,8 +29,9 @@ function getAttVal(attStr, attName) {
   }
 }
 
-/** Extracts the whole attribute (e.g. "as=me" from rawAttrs
- *  Note that it does not allow spaces around the = sign!
+/** 
+ * Extracts the whole attribute (e.g. "as=me" from rawAttrs
+ * Note that it does not allow spaces around the = sign!
  */
 function getAttDefinition(attStr, attName) {
   if (attStr) {
@@ -51,8 +53,11 @@ function getAttDefinition(attStr, attName) {
 }
 
 
-/** Find where to cut, i.e. position of next '>' or ' ' whichever comes first.
- * str at posttion start must not start with whitespace.
+/** 
+ * Returns the position of the next closing tag, or whitespace, whichever comes 
+ *    first.
+ *
+ * Note: the character at position "start" must not be a with whitespace.
  */
 function findNextClosingTagOrWhiteSpace(s, start) {
   if (start == undefined) {
@@ -65,10 +70,9 @@ function findNextClosingTagOrWhiteSpace(s, start) {
   } else if (nextClosingTag == undefined) {
     return nextWhiteSpace
   } else {
-    return (nextWhiteSpace > nextClosingTag)? nextClosingTag : nextWhiteSpace
+    return (nextWhiteSpace > nextClosingTag) ? nextClosingTag : nextWhiteSpace
   }
 }
-
 
 function findNextWhiteSpace(s, start) {
   let index = s.substr(start).search(/\s+/)
@@ -84,6 +88,9 @@ function findNextClosingTag(s, start) {
   }
 }
 
+/**
+ * Strips extraneous whitespace from HTML
+ */
 function stripHtml(htmlString) {
   return htmlString.replace(/\n/g, "")
     .replace(/[\t ]+\</g, "<")
@@ -91,10 +98,6 @@ function stripHtml(htmlString) {
     .replace(/\>[\t ]+$/g, ">")
 }
 
-
-/* Exporting everything we want to test too because changing the above is
- * quicker using TDD 
- */
 module.exports = {
   findNextClosingTagOrWhiteSpace,
   getAttVal,

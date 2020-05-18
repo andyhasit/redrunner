@@ -9,11 +9,24 @@
 const {c} = require('../utils/constants')
 const {getAttVal} = require('../utils/dom')
 
-
-function findInlineCalls(node) {
+/**
+ * Finds the inline calls and returns an array of watches.
+ *
+ * @param {node} node A node from babel.
+ * @return {number} An array of watch objects as [{name, convert, target}...]
+ */
+function extractInlineCalls(node) {
+	const watches = []
   const nodeAtts = node.rawAttrs
-  //c.log(node.rawText)
+
+  
+  function extractInlines(rawStr, ) {
+
+  }
+
+  extractInlines(node.rawText, 'text')
+  return watches
 }
 
 
-module.exports = {findInlineCalls}
+module.exports = {extractInlineCalls}

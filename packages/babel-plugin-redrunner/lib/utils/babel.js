@@ -1,5 +1,6 @@
 
-/* A visitor used for removing a property, because that's how you do it.
+/**
+ * A visitor which removes a property, because that's Babel wants you to do it.
  */
 const RemoveClassPropertyVisitor = {
   ClassProperty(path) {
@@ -7,13 +8,16 @@ const RemoveClassPropertyVisitor = {
   }
 }
 
-/* Convenience function for removing a property from the visited class.
+/** 
+ * Convenience function for removing a property from the visited class.
  */
 function removeProperty(path){
   path.traverse(RemoveClassPropertyVisitor)
 }
 
-/* Returns the node's HTML as a string.
+/**
+ * Returns the node's HTML as a string (as it is stored differently if the 
+ *    string uses quasi quotes instead of normal quotes)
  */
 function getNodeHtmlString(node) {
   let rawText = node.value.quasis ? node.value.quasis[0].value.raw : node.value.value

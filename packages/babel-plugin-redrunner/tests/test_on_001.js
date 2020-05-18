@@ -1,9 +1,9 @@
 class MyView extends View {
   __html__ = `
     <div>
-      <span on="click: foo"/>
-      <span on="click: .foo :"/>
-      <span on="click: ..foo :"/>
+      <span on="click| foo"/>
+      <span on="click| .foo"/>
+      <span on="click| ..foo"/>
     </div>
   `
 }

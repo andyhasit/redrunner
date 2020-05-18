@@ -20,11 +20,11 @@ function lookupArgs(nodePath) {
 }
 
 /**
- * Adjusts the field for shorthand notation as so:
+ * Adjusts the field for shorthand notation as follows:
  *
- *   field    >   this.props.field
- *   .field   >   this.field
- *   ..field  >   field
+ *   field    >  this.props.field
+ *   .field   >  this.field
+ *   ..field  >  field
  *
  */
 function expandField(field) {
