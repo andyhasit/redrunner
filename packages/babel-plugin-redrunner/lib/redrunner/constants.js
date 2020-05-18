@@ -1,7 +1,6 @@
-/* 
-
-*/
-
+/** 
+ * Special attributes that can be used in the __html__ fields.
+ */
 const specialAttributes = {
   ARGS: 'args',
   AS: 'as',

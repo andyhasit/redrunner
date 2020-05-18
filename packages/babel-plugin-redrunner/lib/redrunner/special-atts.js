@@ -1,16 +1,18 @@
-/*
-Relates to finding inline calls, e.g.
-
-    <span watch="..name::"></span>
-    <button on="click:.clicked"></button>
-
-*/
+/**
+ * This modules relates to special attributes in __html__ e.g.
+ *
+ *  <span watch="..name::"></span>
+ *  <button on="click:.clicked"></button>
+ *
+ */
 
 const {specialAttributes} = require('./constants')
 const {expandField} = require('./views')
-const {getAttVal} = require('../utils/dom')
+const {getAttVal, getAttDefinition} = require('../utils/dom')
 
-
+/**
+ * Parses the "watch" special attribute.
+ */
 function parseWATCH(attString) {
   if (attString) {
     const chunks = attString.split(':')
@@ -29,7 +31,9 @@ function parseWATCH(attString) {
   }
 }
 
-
+/**
+ * Parses the "on" special attribute.
+ */
 function parseON(attString) {
   if (attString) {
     const chunks = attString.split(':')
@@ -41,6 +45,9 @@ function parseON(attString) {
   }
 }
 
+/**
+ * Collects all the special attribute for a node.
+ */
 function findRedRunnerAtts(node) {
   const nodeAtts = node.rawAttrs
   return {
@@ -51,28 +58,28 @@ function findRedRunnerAtts(node) {
   }
 }
 
-
-
-/** Find locations of text in string
- */
-function stripRedRunnerAtts(attStr) {
-  Object.values(specialAttributes).forEach(att => {
-    let wholeAtt = getAttDefinition(attStr, att)
-    attStr = attStr.replace(wholeAtt, '')
-  })
-  // Just trimming extraneous whitespace
-  return attStr.split(' ').filter(s => s.length).join(' ')
-}
-
-
-/** Strips redrunner tags from html
+/** 
+ * Returns a node as string with the RedRunner code removed.
  */
 function removeRedRunnerCode(dom) {
+
+  /** 
+   * Returns the rawAttString with the special attributes removed.
+   */
+  function stripSpecialAtts(rawAttString) {
+    Object.values(specialAttributes).forEach(att => {
+      let wholeAtt = getAttDefinition(rawAttString, att)
+      rawAttString = rawAttString.replace(wholeAtt, '')
+    })
+    // Just trimming extraneous whitespace
+    return rawAttString.split(' ').filter(s => s.length).join(' ')
+  }
+
   // Function called recursively on nodes.
   function processNode(node, i) {
     let attStr = node.rawAttrs
     if (attStr) {
-      node.rawAttrs = stripRedRunnerAtts(attStr)
+      node.rawAttrs = stripSpecialAtts(attStr)
     }
     node.childNodes.forEach(processNode)
   }

@@ -1,7 +1,3 @@
-/*
-The code for generating the additional statements
-*/
-
 const htmlparse = require('node-html-parser')
 const {c, EOL} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
@@ -10,7 +6,9 @@ const {findRedRunnerAtts, removeRedRunnerCode} = require('./special-atts')
 const {lookupArgs, getWrapperCall} = require('./views')
 const {findInlineCalls} = require('./inline')
 
-
+/**
+ * A class for generating all the statements to be added to a RedRunner view.
+ */
 class ViewProcessor {
   constructor(viewData) {
     let {className, htmlString} = viewData
@@ -169,8 +167,8 @@ class ViewProcessor {
   }
 }
 
-
-/** Returns the statements as a list of strings.
+/** 
+ * Returns the statements as a list of strings.
  */
 function generateStatements(viewData) {
   const viewProcessor = new ViewProcessor(viewData)
