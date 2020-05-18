@@ -9,7 +9,7 @@ class MyView extends View {
 //----------------------------------------------------
 
 class MyView extends View {}
-
+//<span class="my-class-def {{style}}"></span>
 MyView.prototype.__wq = {
   'this.props.name': function () {
     return this.props.name;
@@ -18,7 +18,7 @@ MyView.prototype.__wq = {
 
 MyView.prototype.__wc = {
   'this.props.name': [function (n, o) {
-    this.dom.__1.text('' + n + '');
+    this.dom.__1.text(n);
   }]
 };
 

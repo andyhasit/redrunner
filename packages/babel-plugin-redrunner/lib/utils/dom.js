@@ -2,7 +2,9 @@
  * Utility functions for working with DOM and HTML.
  */
 
-const {c, EOL} = require('./constants');
+const {c, EOL} = require('./constants')
+const {JSDOM} = require("jsdom")
+const document = new JSDOM('<!doctype html><html><body></body></html>').window.document
 
 /** Extracts the args string from rawAttrs e.g. 
  *
@@ -29,6 +31,29 @@ function getAttVal(attStr, attName) {
   }
 }
 
+/**
+ * Determines whether a node from node-html-parser is a leaf node, or rather,
+ * whether it only contains TextNodes as children (or no children).
+ */
+function isLeafNode(node) {
+  return !node.childNodes.filter(n => n.nodeType != 3).length > 0
+}
+
+/** Extracts node's atts as an object.
+ */
+function extractAtts(node) {
+  const throwAway = document.createElement('template')
+  throwAway.innerHTML = node.toString()
+  const attributes = throwAway.content.firstChild.attributes
+  const obj = {}
+  if (attributes) {
+    for (let i = 0, len = attributes.length; i < len; i++) {
+      obj[attributes[i].name] = attributes[i].value;
+    }
+  }
+  return obj
+}
+
 /** 
  * Extracts the whole attribute (e.g. "as=me" from rawAttrs
  * Note that it does not allow spaces around the = sign!
@@ -51,7 +76,6 @@ function getAttDefinition(attStr, attName) {
     }
   }
 }
-
 
 /** 
  * Returns the position of the next closing tag, or whitespace, whichever comes 
@@ -99,8 +123,10 @@ function stripHtml(htmlString) {
 }
 
 module.exports = {
+  extractAtts,
   findNextClosingTagOrWhiteSpace,
   getAttVal,
   getAttDefinition,
+  isLeafNode,
   stripHtml
 }

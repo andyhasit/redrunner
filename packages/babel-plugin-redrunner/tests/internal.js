@@ -2,7 +2,11 @@
 The test suite for the internal functionality.
 */
 
-const {getAttVal, getAttDefinition, findNextClosingTagOrWhiteSpace} = require('../lib/utils/dom');
+const {
+	findNextClosingTagOrWhiteSpace, 
+	getAttVal, getAttDefinition, 
+	isLeafNode} = require('../lib/utils/dom');
+const {htmlparse} = require('../lib/utils/constants');
 const {red, green, reset} = require('./utils');
 
 let ExitCode = 0;
@@ -46,5 +50,14 @@ test('getAttDefinition with single quotes inside',
     getAttDefinition(`as="1, 'a'"`, 'as'), `as="1, 'a'"`)
 test('getAttDefinition with double quotes inside', 
     getAttDefinition(`as='1, "a"' `, 'as'), `as='1, "a"'`)
+
+
+function getTopNode(html) {
+	return htmlparse.parse(html).childNodes[0]
+}
+
+test('isLeafNode works', isLeafNode(getTopNode('<div></div>')), true)
+test('isLeafNode works', isLeafNode(getTopNode('<div>Yo!</div>')), true)
+test('isLeafNode works', isLeafNode(getTopNode('<div><span></span></div>')), false)
 
 process.exit(ExitCode)

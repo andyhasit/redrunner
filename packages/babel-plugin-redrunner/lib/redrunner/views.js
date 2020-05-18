@@ -36,4 +36,12 @@ function expandField(field) {
   return 'this.props.' + field
 }
 
-module.exports = {expandField, getWrapperCall, lookupArgs}
+function parseTarget(target) {
+  const [method, arg] = target.split(':')
+  if (arg) {
+    return `${method}('${arg}', `
+  }
+  return target + '('
+}
+
+module.exports = {expandField, getWrapperCall, lookupArgs, parseTarget}

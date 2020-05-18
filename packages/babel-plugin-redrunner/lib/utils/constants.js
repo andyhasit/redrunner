@@ -1,4 +1,5 @@
-const EOL = require('os').EOL
 const c = console
+const EOL = require('os').EOL
+const htmlparse = require('node-html-parser')
 
-module.exports = {c, EOL}
+module.exports = {c, EOL, htmlparse}

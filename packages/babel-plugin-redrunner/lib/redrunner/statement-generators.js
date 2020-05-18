@@ -1,10 +1,9 @@
-const htmlparse = require('node-html-parser')
-const {c, EOL} = require('../utils/constants')
+const {c, EOL, htmlparse} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
 const {addPrototypeFunction, addPrototypeObject} = require('../utils/javascript')
 const {findRedRunnerAtts, removeRedRunnerCode} = require('./special-atts')
-const {lookupArgs, getWrapperCall} = require('./views')
-const {extractInlineCalls} = require('./inline')
+const {lookupArgs, getWrapperCall, parseTarget} = require('./views')
+const {extractInlineCallWatches} = require('./inline')
 
 /**
  * A class for generating all the statements to be added to a RedRunner view.
@@ -112,7 +111,7 @@ class ViewProcessor {
     /* Generates a unique variable name if saveAs has not been defined */
     const implicitSave = _ => saveAs = saveAs ?  saveAs : this.getUniqueVarName()
 
-    const inlineCallsWatches = extractInlineCalls(node)
+    const inlineCallsWatches = extractInlineCallWatches(node)
     
     if (inlineCallsWatches.length > 0) {
       implicitSave()
@@ -140,12 +139,15 @@ class ViewProcessor {
    *
    */
   addNodeWatch(watch, saveAs) {
-    let  callbackStatement, callbackBody, wrapper = `this.dom.${saveAs}`
+    let callbackStatement, callbackBody, wrapper = `this.dom.${saveAs}`
     if (watch.target) {
-      if (watch.convert) {
-        callbackBody = `${wrapper}.${watch.target}(${watch.convert}(n, o))`
+      const targetString = parseTarget(watch.target)
+      if (watch.raw) {
+        callbackBody = `${wrapper}.${targetString}${watch.raw})`
+      } else if (watch.convert) {
+        callbackBody = `${wrapper}.${targetString}${watch.convert}(n, o))`
       } else {
-        callbackBody = `${wrapper}.${watch.target}(n)`
+        callbackBody = `${wrapper}.${targetString}n)`
       }
     } else {
       // assume convert is provided

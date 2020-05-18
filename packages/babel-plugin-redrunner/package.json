@@ -12,6 +12,7 @@
   "author": "Andrew Buchan",
   "license": "ISC",
   "dependencies": {
+    "jsdom": "^16.2.2",
     "node-html-parser": "^1.2.8"
   },
   "devDependencies": {
