@@ -1,20 +1,14 @@
-const {
-  EOL,
-  c,
-  htmlparse,
-  redrunnerAtts
-} = require('./constants');
+/*
+The code for generating the additional statements
+*/
 
-const {
-  addPrototypeFunction,
-  addPrototypeObject,
-  getAttVal,
-  removeRedRunnerCode,
-  findNextClosingTagOrWhiteSpace,
-  stripHtml
-} = require('./utils');
-
-const {expandField, getNodeSpec, lookupArgs, getWrapperCall} = require('./html-spec');
+const htmlparse = require('node-html-parser')
+const {c, EOL} = require('../utils/constants')
+const {stripHtml} = require('../utils/dom')
+const {addPrototypeFunction, addPrototypeObject} = require('../utils/javascript')
+const {findRedRunnerAtts, removeRedRunnerCode} = require('./special-atts')
+const {lookupArgs, getWrapperCall} = require('./views')
+const {findInlineCalls} = require('./inline')
 
 
 class ViewProcessor {
@@ -27,6 +21,7 @@ class ViewProcessor {
     this.watchCallbackItems = {}  // Entries for the __wc object
     this.watchQueryItems = {}     // Entries for the __wq object
     this.randVarCount = 0
+    this.dom = undefined
 
     // The final statements, as strings:
     this.statementFor__bv = undefined
@@ -34,6 +29,7 @@ class ViewProcessor {
     this.statementFor__wq = undefined
   }
   processView() {
+    this.dom = htmlparse.parse(this.strippedHtml)
     this.parseHtmlProperty()
     //this.parseWatchProperty() ...?
 
@@ -57,11 +53,10 @@ class ViewProcessor {
     }
     
     const nodePath = []    // The path of current node recursion
-    const dom = htmlparse.parse(this.strippedHtml)
-    processNode(dom)
+    processNode(this.dom)
   }
   createStatementFor__bv() {
-    const lines = ['view.root = wrap(`' + removeRedRunnerCode(this.strippedHtml) + '`);']
+    const lines = ['view.root = wrap(`' + removeRedRunnerCode(this.dom) + '`);']
 
     // Add remaining lines (must come before dom!)
     this.buildMethodLines.forEach(n => lines.push(n))
@@ -100,7 +95,7 @@ class ViewProcessor {
     }
   }
   processViewNode(nodePath, node, tagName) {
-    let {args, saveAs} = getNodeSpec(node)
+    let {args, saveAs} = findRedRunnerAtts(node)
     const lines = this.buildMethodLines
     const constructorStr = args? `view.nest(${tagName}, ${args})` : `view.nest(${tagName})`;
     
@@ -113,15 +108,17 @@ class ViewProcessor {
     }
   }
   processNormalNode(nodePath, node, tagName) {
-    let {saveAs, on, watch} = getNodeSpec(node)
+    let {saveAs, on, watch} = findRedRunnerAtts(node)
     let chainedCalls = ''
+    const implicitSave = _ => saveAs = saveAs ?  saveAs : this.getRandVarName()
+    const inlineCalls = findInlineCalls(node)
     if (watch) {
-      saveAs = saveAs ?  saveAs : this.getRandVarName()
+      implicitSave()
       this.addNodeWatch(watch, saveAs)
     }
-    // We can use a chained call on the wrapper because it returns this
     if (on) {
-      saveAs = saveAs ?  saveAs : this.getRandVarName()
+      implicitSave()
+      // We can use a chained call on the wrapper because it returns "this"
       chainedCalls = `.on('${on.event}', ${on.callback})`
     }
     if (saveAs) {

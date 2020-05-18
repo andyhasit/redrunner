@@ -32,8 +32,8 @@ A.prototype.build = function () {...}
 */
 
 const babel = require('@babel/core');
-const {getNodeHtmlString, removeProperty} = require('./babel-helpers');
-const {generateStatements} = require('./statement-generators');
+const {getNodeHtmlString, removeProperty} = require('./utils/babel');
+const {generateStatements} = require('./redrunner/statement-generators');
 
 
 module.exports = () => {
@@ -42,11 +42,8 @@ module.exports = () => {
       Class(path, state) {
         if (path.type == 'ClassDeclaration') {
           let requiresGeneratedStatements = false
-          // Build object containing view data
-          let viewData = {
-            className: path.node.id.name
-          }
-
+          let viewData = {className: path.node.id.name}
+          
           // Iterate over classe's nodes to find ones we care about
           for (node of path.node.body.body) {
             let propName = node.key.name
@@ -54,15 +51,15 @@ module.exports = () => {
               requiresGeneratedStatements = true
               viewData.htmlString = getNodeHtmlString(node)
               removeProperty(path)
-            } else if (propName == '__watch__') {
-              requiresGeneratedStatements = true
-              // TODO: handle this
-              removeProperty(path)
-            }
+            } 
+            // TODO: decide if this is required
+            // else if (propName == '__watch__') {
+            //   requiresGeneratedStatements = true
+            //   removeProperty(path)
+            // }
           }
 
           if (requiresGeneratedStatements) {
-            // Build statements using collected data
             let generatedStatements = generateStatements(viewData)
 
             // Add the generated statements 

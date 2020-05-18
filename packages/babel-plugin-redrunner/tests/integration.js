@@ -18,10 +18,8 @@ with spacing, commas etc...
 const babel = require('@babel/core');
 const fs = require('fs');
 const redRunnerBabelPlugin = require('../lib/index');
-const EOL = require('os').EOL;
 const printDiff = require('print-diff');
-const {green, red, reset} = require('./utils');
-const c = console;
+const {c, EOL, green, red, reset} = require('./utils');
 
 
 const transformOptions = {plugins: [

@@ -1,9 +1,7 @@
-const {
-  EOL,
-  htmlparse,
-  redrunnerAtts
-} = require('./constants');
-
+/*
+Utility functions for working with DOM and HTML
+*/
+const {c, EOL} = require('./constants');
 
 /** Extracts the args string from rawAttrs e.g. 
  *
@@ -52,32 +50,6 @@ function getAttDefinition(attStr, attName) {
   }
 }
 
-/** Strips redrunner tags from html
- */
-function removeRedRunnerCode(html) {
-  // Function called recursively on nodes.
-  function processNode(node, i) {
-    let attStr = node.rawAttrs
-    if (attStr) {
-      node.rawAttrs = stripRedRunnerAtts(attStr)
-    }
-    node.childNodes.forEach(processNode)
-  }
-  let dom = htmlparse.parse(html)
-  processNode(dom)
-  return dom.toString()
-}
-
-/** Find locations of text in string
- */
-function stripRedRunnerAtts(attStr) {
-  Object.values(redrunnerAtts).forEach(att => {
-    let wholeAtt = getAttDefinition(attStr, att)
-    attStr = attStr.replace(wholeAtt, '')
-  })
-  // Just trimming extraneous whitespace
-  return attStr.split(' ').filter(s => s.length).join(' ')
-}
 
 /** Find where to cut, i.e. position of next '>' or ' ' whichever comes first.
  * str at posttion start must not start with whitespace.
@@ -119,24 +91,13 @@ function stripHtml(htmlString) {
     .replace(/\>[\t ]+$/g, ">")
 }
 
-function addPrototypeFunction(className, name, signature, body) {
-  return [`${className}.prototype.${name} = function(${signature}){`, body, '};'].join(EOL)
-}
-
-function addPrototypeObject(className, name, body) {
-  return [`${className}.prototype.${name} = {`, body, '};'].join(EOL)
-}
-
 
 /* Exporting everything we want to test too because changing the above is
  * quicker using TDD 
  */
 module.exports = {
-  addPrototypeFunction,
-  addPrototypeObject,
+  findNextClosingTagOrWhiteSpace,
   getAttVal,
   getAttDefinition,
-  removeRedRunnerCode,
-  findNextClosingTagOrWhiteSpace,
   stripHtml
 }

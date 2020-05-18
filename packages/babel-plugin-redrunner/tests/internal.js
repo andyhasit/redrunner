@@ -2,11 +2,7 @@
 The test suite for the internal functionality.
 */
 
-const {
-	getAttVal,
-	getAttDefinition,
-	findNextClosingTagOrWhiteSpace
-} = require('../lib/utils');
+const {getAttVal, getAttDefinition, findNextClosingTagOrWhiteSpace} = require('../lib/utils/dom');
 const {red, green, reset} = require('./utils');
 
 let ExitCode = 0;
