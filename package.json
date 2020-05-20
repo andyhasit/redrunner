@@ -1,21 +1,24 @@
 {
   "name": "redrunner",
-  "version": "0.0.4",
-  "description": "A simple UI framework",
+  "version": "0.0.5",
+  "description": "A tiny framework with legs",
   "scripts": {
+    "prepublish": "babel src -d lib",
     "build": "microbundle",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Andrew Buchan",
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ]
+  },
   "files": [
-    "dist",
+    "lib",
     "src"
   ],
   "license": "MIT",
-  "main": "dist/redrunner.js",
-  "umd:main": "dist/redrunner.umd.js",
-  "module": "dist/redrunner.m.js",
-  "source": "src/redrunner.js",
+  "main": "lib/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/andyhasit/redrunner"
