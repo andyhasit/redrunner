@@ -11,6 +11,10 @@
   "babel": {
     "presets": [
       "@babel/preset-env"
+    ],
+    "plugins": [
+      "@babel/plugin-proposal-class-properties", 
+      "babel-plugin-redrunner"
     ]
   },
   "files": [
@@ -25,9 +29,12 @@
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
     "microbundle": "^0.12.0"
   },
   "dependencies": {
+    "babel-core": "^7.0.0-bridge.0",
     "babel-plugin-redrunner": "~0.0.1"
   }
 }
