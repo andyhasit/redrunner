@@ -1,6 +1,6 @@
 {
   "name": "redrunner",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A simple UI framework",
   "scripts": {
     "build": "microbundle -d dist src/redrunner.js src/router.js src/store.js",
