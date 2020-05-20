@@ -19,4 +19,15 @@ h4 {
     margin: 12px 0;
 }
 
+.emoji {
+    font-size: 84px;
+}
 
+.homepage-logo {
+    font-size: 400px;
+    color: #608ceb;
+}
+
+.smoothie-list {
+    text-align: center;
+}

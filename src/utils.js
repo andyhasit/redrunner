@@ -1,5 +1,103 @@
 const doc = document;
 
+/**
+ * Some utility functions
+ */
+export const und = x => x === undefined
+export const isStr = x => typeof x === 'string'
+
+/**
+ * Creates and mounts a view onto an element.
+ *
+ * @param {unsure} elementOrId Either a string representing an id, or an
+ *     element.
+ * @param {class} cls The class of View to create
+ * @param {object} props The props to pass to the view (optional)
+ * @param {object} parent The parent view (optional)
+ * @param {int} seq The sequence (optional)
+ */
+export function mount(elementOrId, cls, props, parent, seq) {
+  let view = createView(cls, props, parent, seq)
+  let target = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId
+  target.parentNode.replaceChild(view.root.e, target)
+  return view
+}
+
+/**
+ * Creates a wrapper from an HTML string.
+ */
+export function wrap(html) {
+  let throwAway = document.createElement('template')
+  throwAway.innerHTML = html
+  return new Wrapper(throwAway.content.firstChild)
+}
+
+/**
+ * Creates a wrapper of type tag and sets inner.
+ * TODO: allow class in tag?
+ */
+export function h(tag, inner) {
+  return new Wrapper(document.createElement(tag)).inner(inner)
+}
+
+/**
+ * Creates a view, builds its DOM, and updates it.
+ *
+ * @param {class} cls The class of View to create
+ * @param {object} parent The parent view (optional)
+ * @param {object} props The props to pass to the view (optional)
+ * @param {int} seq The sequence (optional)
+ */
+export function createView(cls, props, parent, seq) {
+  let view = new cls(parent, props, seq)
+  view.__bv(view, wrap)
+  view.init()
+  view.update()
+  return view
+}
+
+/**
+ * An object which caches and returns views of a same type.
+ *
+@cls -- any valid subclass of View
+@cacheBy -- either:
+    <undefined> in which case the sequence is used as key*
+    A string used to lookup a property on the item. Can be dotted. e.g. 'user.id'
+    A function called with (props, seq) which must return a key
+*/
+
+export class ViewCache {
+  /**
+   * @param {class} cls The class of View to create
+   * @param {object} parent The parent view (optional)
+   */
+  constructor(cls, view, keyFn) {
+    let defaultKeyFn = (props, seq) => seq
+    this.view = view
+    this.cls = cls
+    this.cache = {}
+    this.keyFn = keyFn || defaultKeyFn
+    this._seq = 0
+  }
+  reset() {
+    this._seq = 0
+  }
+  get(props) {
+    /*
+    Gets a view, potentially from cache
+    */
+    let view, key = this.keyFn(props, this._seq)
+    if (this.cache.hasOwnProperty(key)) {
+      view = this.cache[key]
+    } else {
+      view = createView(this.cls, props, this.view, this._seq)
+      this.cache[key] = view
+    }
+    view.update(props)
+    this._seq += 1
+    return view
+  }
+}
 
 export class Wrapper {
   constructor(element, view) {
@@ -53,7 +151,7 @@ export class Wrapper {
     this._prepRepeat()
     let view
     for (var i=0, il=items.length; i<il; i++) {
-      view = this._c.getEl(items[i])
+      view = this._c.get(items[i])
       this._nest(view)
       this.e.appendChild(view.root.e)
     }
@@ -125,25 +223,25 @@ export class Wrapper {
     /* Returns the value of the element */
     return this.e.value
   }
-  cls(style) {
+  css(style) {
     this.e.className = style
     return this
   }
-  clsAdd(style) {
+  cssAdd(style) {
     this.e.classList.add(style)
     return this
   }
-  clsAddTrans(style) {
+  cssAddTrans(style) {
     return this.transition(_ => this.e.classList.add(style))
   }
-  clsRemove(style) {
+  cssRemove(style) {
     this.e.classList.remove(style)
     return this
   }
-  clsRemoveTrans(style) {
+  cssRemoveTrans(style) {
     return this.transition(_ => this.e.classList.remove(style))
   }
-  clsToggle(style) {
+  cssToggle(style) {
     this.e.classList.toggle(style)
     return this
   }
@@ -197,146 +295,5 @@ export class Wrapper {
   }
   visible(visible) {
     return this.style('visibility', visible? 'visible' : 'hidden')
-  }
-}
-
-export function getNode(elementOrId) {
-  // We're assuming it starts with #
-  let el = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)): elementOrId
-  return el
-}
-
-/*
- * Mounts a view onto an element.
- */
-export function mount(elementOrId, cls, props, parent, seq) {
-  let view = createView(cls, parent, props, seq)
-  let target = getNode(elementOrId)
-  target.parentNode.replaceChild(view.root.e, target)
-  return view
-}
-
-
-/* This function extracts properties from a target based on a path string
- *
- *   "app.items.length"
- *   "app.items().length"
- *
- * The path may include parentheses calls in which case the member is called.
- * The parentheses may not contain parameters.
- * It doesn't work for square brackets.
- */
-const _red = (o,i)=> i.endsWith('()') ? o[i.substr(0, i.length -2)].bind(o)() : o[i]
-export function getProp(target, path) {
-  return path.split('.').reduce(_red, target)
-}
-
-
-export function und(x) {
-  return x === undefined
-}
-
-export function isStr(x) {
-  return typeof x === 'string'
-}
-
-
-/*
- * Creates the DOM element. Doesn't process inner.
- */
-
-//
-// I think this was an attempt to get round the issue of not being able to track
-// nested_elements
-//
-// export function h(desc, inner) {
-// 	let tag, rest, el, firstChar, label, ccsClass
-// 	[tag, ...rest] = desc.trim().split(' ')
-// 	el = document.createElement(tag)
-// 	for (var i=0, il=rest.length; i<il; i++) {
-// 		firstChar = i[0]
-// 		if (firstChar == '#') {
-// 			label = el.id = i.slice(1)
-// 		} else if (firstChar == '#') {
-// 			label = i.slice(1)
-// 		} else {
-// 			ccsClass = ccsClass? i : ccsClass += ' ' + i
-// 		}
-//   }
-//   if (ccsClass) {
-//   	el.setAttribute('class', ccsClass)
-//   }
-//   return {c: undefined, e: el, i: inner, l: label} // This is a nodeDef
-// }
-
-// TODO this is wrong-- is it?
-// export function h(desc, inner) {
-//   return new Wrapper(document.createElement(desc))
-// }
-
-// //TODO: do we need this?!
-// export function c(cls, obj, label) {
-// 	let newView = new cls(obj)
-// 	newView.update()
-// 	return {c: newView, e: undefined, i: undefined, l: label}
-// }
-
-/* Creates a wrapper from an HTML string. Does not mount it
- * Feels inefficent creating a throw away element 
- */
-export function wrap(html) {
-  let throwAway = document.createElement('template')
-  throwAway.innerHTML = html
-  return new Wrapper(throwAway.content.firstChild)
-}
-
-export function createView(cls, parent, props, seq) {
-  let view = new cls(parent, props, seq)
-  //(nest, bubble, el, s, seq, watch)
-  //v.init(v.nest.bind(v), v.bubble.bind(v), v.el.bind(v), v, v.seq, v.watch.bind(v))
-  // TODO restore the above
-  // could even create the literal object here..?
-  view.__bv(view, wrap)
-  view.init()
-  view.update()
-  return view
-}
-
-
-export class ViewCache {
-  constructor(cls, view, keyFn) {
-    /*
-    An object which caches and returns views of a same type.
-    
-    @cls -- any valid subclass of View
-    @cacheBy -- either:
-        <undefined> in which case the sequence is used as key*
-        A string used to lookup a property on the item. Can be dotted. e.g. 'user.id'
-        A function called with (props, seq) which must return a key
-    */
-    let defaultKeyFn = (props, seq) => seq
-    this.view = view
-    this.cls = cls
-    this.cache = {}
-    this.keyFn = keyFn || defaultKeyFn
-    this._seq = 0
-  }
-  reset() {
-    this._seq = 0
-  }
-  getEl(props) {
-    /*
-    Gets a view, potentially from cache
-    */
-    let view, key = this.keyFn(props, this._seq)
-    if (this.cache.hasOwnProperty(key)) {
-      view = this.cache[key]
-    } else {
-      view = createView(this.cls, this.view, props, this._seq)
-      this.cache[key] = view
-    }
-    view.update(props)
-    this._seq += 1
-    return view
   }
 }

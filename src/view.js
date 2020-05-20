@@ -1,6 +1,5 @@
 import {
-  createView, 
-  getProp, 
+  createView,
   und, 
   wrap, // Keep this, its used by babel
   Wrapper
@@ -27,7 +26,7 @@ import {
  *  __ia (IsAttached)
  *  __gw (GetWrapper) -- returns a wrapper at a specific path
  *  __nv (NestedViews)
- *  __pv (PreviousValues)
+ *  __ov (OldValues)
  *  __rn (ReplaceNode)
  *  __un (Update Nested Views)
  *  __uw (Update Watches)
@@ -44,7 +43,7 @@ export class View {
     s.__nv = []         // Array of arrays of nested views
 
     // These relate to watchers
-    s.__pv = {}       // The previous values for watches to compare against  
+    s.__ov = {}       // The old values for watches to compare against  
 
     // These will be set by __bv()
     s.root = null           // the root wrapper, will be set by __bv
@@ -82,12 +81,12 @@ export class View {
     lines.push('}')
     c.log(lines.join('\n'))
   }
-  nest(cls, props) {
+  nest(cls, props, seq) {
     /*
      * Builds a nested view of the specified class. Its up to you how you attach it.
      * No caching is used. Use a cache object returned by this.cache() if you need caching.
      */
-    let child = createView(cls, this, props, 0)
+    let child = createView(cls, props, this, seq)
     this.__nv.push(child)
     return child
   }
@@ -100,6 +99,9 @@ export class View {
       }
       target = target.parent
     }
+  }
+  old(name) {
+    return this.__ov[name]
   }
   watch(path, callback) {
     /*
@@ -142,14 +144,14 @@ export class View {
     let path, newValue, previousValue, callbacks
     for (path in this.__wc) {
       newValue = this.__wq[path].apply(this)
-      previousValue = this.__pv[path]
+      previousValue = this.__ov[path]
       if (path === '' || previousValue !== newValue) {
         callbacks = this.__wc[path]
         for (var i=0, il=callbacks.length; i<il; i++) {
           callbacks[i].apply(this, [newValue, previousValue])
         }
       }
-      this.__pv[path] = newValue
+      this.__ov[path] = newValue
     }
   }
   __rn(path, view) {
