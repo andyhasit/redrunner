@@ -1,9 +1,9 @@
 {
   "name": "redrunner",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A simple UI framework",
   "scripts": {
-    "build": "microbundle",
+    "build": "microbundle -d dist src/redrunner.js src/router.js src/store.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Andrew Buchan",
