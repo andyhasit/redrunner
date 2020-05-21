@@ -1,6 +1,6 @@
 {
   "name": "redrunner",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A tiny framework with legs",
   "scripts": {
     "prepublish": "babel src -d lib",
