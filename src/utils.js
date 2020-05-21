@@ -20,6 +20,8 @@ export function mount(elementOrId, cls, props, parent, seq) {
   let view = createView(cls, props, parent, seq)
   let target = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId
   target.parentNode.replaceChild(view.root.e, target)
+  console.log(view.root.e.outerHTML)
+  console.log(target.outerHTML)
   return view
 }
 

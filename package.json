@@ -5,7 +5,7 @@
   "scripts": {
     "prepublish": "babel src -d lib",
     "build": "microbundle",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "Andrew Buchan",
   "babel": {
@@ -27,9 +27,9 @@
     "type": "git",
     "url": "https://github.com/andyhasit/redrunner"
   },
-  "source": true,
   "devDependencies": {
     "babel-preset-env": "^1.7.0",
+    "jest": "^26.0.1",
     "microbundle": "^0.12.0"
   },
   "dependencies": {
