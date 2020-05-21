@@ -1,4 +1,4 @@
-import {View} from '../../src/redrunner'
+import {View} from '../../src/index'
 import {fruit} from './fruit'
 import {smoothies} from './smoothies'
 
