@@ -1,7 +1,8 @@
 const c = console
-const {prettyPrint} = require("html")
-import {View, mount} from '../src/index'
+const {prettyPrint} = require('html')
 
+import diff from 'jest-diff'
+import {View, mount} from '../src/index'
 
 /**
  * Returns a new div appended to the document body.
@@ -17,14 +18,13 @@ function getDiv() {
  */
 class TestMount {
   constructor(cls, props) {
-  	this.el = getDiv()
-  	this.view = mount(this.el, cls, props)
-    this.el = this.view.root.e // important :-D
+  	this.view = mount(getDiv(), cls, props)
+    this.el = this.view.root.e
   	this.html = undefined
   	this.setHtml()
   }
-  update() {
-  	this.view.update()
+  update(props) {
+  	this.view.update(props)
   	this.setHtml()
   }
   setHtml() {
@@ -33,9 +33,9 @@ class TestMount {
 }
 
 /**
- * Convenience function for creating a TestMount.
+ * Convenience function for creating and loading a TestMount.
  */
-function mnt(cls, props) {
+function load(cls, props) {
   return new TestMount(cls, props)
 }
 
@@ -56,10 +56,33 @@ function tidy(html) {
   return prettyPrint(stripHtml(html), {indent_size: 2})
 }
 
+/**
+ * A matcher for jest tests which checks that a TestMount's html matches
+ * what is specified, adjusting for whitespace and indentation.
+ *
+ * @param {TestMount} testMount An instance of TestMount.
+ * @param {string} expectedHtml The expected HTML.
+ *
+ */
+expect.extend({
+  toShow(testMount, expectedHtml) {
+    const received = tidy(testMount.el.outerHTML)
+    const expected = tidy(expectedHtml)
+    const pass = received === expected
+    const passMessage = () => 'OK'
+    const failMessage = () => {
+        const diffString = diff(expected, received, {
+          expand: this.expand,
+        });
+        return this.utils.matcherHint('.toBe') + (diffString ? `\n\nDifference:\n\n${diffString}` : '')
+      }
+    const message = pass ? passMessage : failMessage
+    return {actual: received, message, pass}
+  },
+});
 
 module.exports = {
 	c,
-	mnt,
-	View,
-	tidy
+	load,
+	View
 }
