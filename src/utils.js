@@ -18,10 +18,8 @@ export const isStr = x => typeof x === 'string'
  */
 export function mount(elementOrId, cls, props, parent, seq) {
   let view = createView(cls, props, parent, seq)
-  let target = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId
-  target.parentNode.replaceChild(view.root.e, target)
-  console.log(view.root.e.outerHTML)
-  console.log(target.outerHTML)
+  let nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId
+  nodeToReplace.parentNode.replaceChild(view.root.e, nodeToReplace)
   return view
 }
 
@@ -29,7 +27,7 @@ export function mount(elementOrId, cls, props, parent, seq) {
  * Creates a wrapper from an HTML string.
  */
 export function wrap(html) {
-  let throwAway = document.createElement('template')
+  let throwAway = doc.createElement('template')
   throwAway.innerHTML = html
   return new Wrapper(throwAway.content.firstChild)
 }
@@ -39,7 +37,7 @@ export function wrap(html) {
  * TODO: allow class in tag?
  */
 export function h(tag, inner) {
-  return new Wrapper(document.createElement(tag)).inner(inner)
+  return new Wrapper(doc.createElement(tag)).inner(inner)
 }
 
 /**

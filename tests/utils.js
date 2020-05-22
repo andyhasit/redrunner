@@ -1,13 +1,16 @@
 const {View, mount} = require('../src/index')
 
 const c = console
+const m = document.createElement('div')
+m.id = "main"
+document.body.appendChild(m)
 
 /**
  * Returns a new div appended to the document body.
  */
 function getDiv() {
 	const div = document.createElement('div')
-  document.body.appendChild(div)
+  m.appendChild(div)
   return div
 }
 
@@ -18,6 +21,7 @@ class TestMount {
   constructor(cls, props) {
   	this.el = getDiv()
   	this.view = mount(this.el, cls, props)
+    this.el = this.view.root.e // important :-D
   	this.html = undefined
   	this.setHtml()
   }
@@ -43,7 +47,6 @@ function mnt(cls, props) {
 function tidy(html) {
   return html
 }
-
 
 
 module.exports = {
