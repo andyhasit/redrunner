@@ -1,16 +1,14 @@
-const {View, mount} = require('../src/index')
-
 const c = console
-const m = document.createElement('div')
-m.id = "main"
-document.body.appendChild(m)
+const {prettyPrint} = require("html")
+import {View, mount} from '../src/index'
+
 
 /**
  * Returns a new div appended to the document body.
  */
 function getDiv() {
 	const div = document.createElement('div')
-  m.appendChild(div)
+  document.body.appendChild(div)
   return div
 }
 
@@ -42,10 +40,20 @@ function mnt(cls, props) {
 }
 
 /**
- * Generate tidy HTML so it can be meaningfully compared and diffed.
+ * Strips extraneous whitespace from HTML
+ */
+function stripHtml(htmlString) {
+  return htmlString.replace(/\n/g, "")
+    .replace(/[\t ]+\</g, "<")
+    .replace(/\>[\t ]+\</g, "><")
+    .replace(/\>[\t ]+$/g, ">")
+}
+
+/**
+ * Return tidy HTML so it can be meaningfully compared and prettily diffed.
  */
 function tidy(html) {
-  return html
+  return prettyPrint(stripHtml(html), {indent_size: 2})
 }
 
 
