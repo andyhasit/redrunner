@@ -2,7 +2,7 @@ const c = console
 const {prettyPrint} = require('html')
 
 import diff from 'jest-diff'
-import {View, mount} from '../src/index'
+import {h, mount, View} from '../src/index'
 
 /**
  * Returns a new div appended to the document body.
@@ -83,6 +83,7 @@ expect.extend({
 
 module.exports = {
 	c,
+  h,
 	load,
 	View
 }

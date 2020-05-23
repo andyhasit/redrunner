@@ -28,14 +28,16 @@ class TestView extends View {
       <span>{{..service.getName()}}</span>
     </div>
   `
-  geName() {
-  	return 'lisa'
+  init() {
+    this.name = 'lisa'
+  }
+  getName() {
+  	return this.name
   }
 }
 
 
-
-test('Inline functions called correctly', () => {
+test('Inline functions called on load', () => {
   const div = load(TestView, props)
   expect(div).toShow(`
   	<div>
@@ -43,6 +45,21 @@ test('Inline functions called correctly', () => {
 	    <span>lisa</span>
       <span>joe</span>
       <span>jane</span>
+    </div>
+  `)
+})
+
+test('Inline functions called on update', () => {
+  const div = load(TestView, props)
+  div.view.name = 'alice'
+  service.name = 'jana'
+  div.update()
+  expect(div).toShow(`
+    <div>
+      <span>bob</span>
+      <span>alice</span>
+      <span>joe</span>
+      <span>jana</span>
     </div>
   `)
 })

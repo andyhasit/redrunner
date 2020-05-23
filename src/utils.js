@@ -1,4 +1,5 @@
-const doc = document;
+const c = console
+const doc = document
 
 /**
  * Some utility functions
@@ -71,9 +72,8 @@ export class ViewCache {
    * @param {class} cls The class of View to create
    * @param {object} parent The parent view (optional)
    */
-  constructor(cls, view, keyFn) {
+  constructor(cls, keyFn) {
     let defaultKeyFn = (props, seq) => seq
-    this.view = view
     this.cls = cls
     this.cache = {}
     this.keyFn = keyFn || defaultKeyFn
@@ -82,15 +82,22 @@ export class ViewCache {
   reset() {
     this._seq = 0
   }
-  get(props) {
+  getMany(items, parentView, reset) {
+    if (reset) {
+      this.reset()
+    }
+    return items.map(props => this.get(props, parentView))
+  }
+  get(props, parentView) {
     /*
     Gets a view, potentially from cache
     */
     let view, key = this.keyFn(props, this._seq)
     if (this.cache.hasOwnProperty(key)) {
       view = this.cache[key]
+      view.__sp(parentView)
     } else {
-      view = createView(this.cls, props, this.view, this._seq)
+      view = createView(this.cls, props, parentView, this._seq)
       this.cache[key] = view
     }
     view.update(props)
@@ -99,129 +106,83 @@ export class ViewCache {
   }
 }
 
+/**
+ * A wrapper around a DOM element.
+ * All methods (some exceptions) return this, meaning they can be chained.
+ */
 export class Wrapper {
   constructor(element, view) {
     this.e = element
-    this._c = undefined // The viewCache, if any
-    this._n = undefined //  
     this.view = view
   }
-  
-  // Methods which potentially change the containing view's nested views 
-  append(item) {
-    return this._append(item)
+  /**
+   * Converts unknown item into an Element.
+   */
+  __cu(item) {
+    let ct = item.constructor.name
+    if (ct == 'Wrapper') {
+      return item.e
+    } else if (ct == 'View') {
+      return item.root.e
+    }
+    return doc.createTextNode(item)
   }
-  _append(item) {
-    return this.e.appendChild(item.e)
-  }
-  child(item) {
+  /**
+   * Set element's items.
+   *
+   * @param {array} items An array of items
+   * @param {getEl} items A function which extracts the element from the item
+   */
+  items(items, getEl) {
     this.clear()
-    return this._append(item)
+    for (var i=0, il=items.length; i<il; i++) {
+      this.e.appendChild(getEl(items[i]))
+    }
+    return this
   }
-  replace(el) {
-    this.e.parentNode.replaceChild(el, this.e)
+  /**
+   * Gets the element's value. Cannot be chained.
+   */
+  getValue() {
+    /* Returns the value of the element */
+    return this.e.value
+  }
+  transition(fn) {
+    return new Promise(resolve => {
+      fn()
+      let transitionEnded = e => {
+        this.e.removeEventListener('transitionend', transitionEnded)
+        resolve()
+      }
+    this.e.addEventListener('transitionend', transitionEnded)
+    })
+  }
+
+  /* Every method below must return 'this' so it can be chained */
+
+  append(wrapper) {
+    this.e.appendChild(wrapper.e)
+    return this
+  }
+  att(name, value) {
+    this.e.setAttribute(name, value)
+    return this
+  }
+  atts(atts) {
+    for (let name in atts) {
+      this.att(name, atts[name])
+    }
+    return this
   }
   clear() {
-    if (this._n) {
-      this._n.length = 0
-    }
     this.e.innerHTML = ''
     this.e.textContent = ''
     this.e.value = ''
     return this
   }
-  html(html) {
-    this.e.innerHTML = html
+  checked(value) {
+    this.e.checked = value
     return this
-  }
-  inner(items) {
-    /*
-     * Use this for adding standard lists of items. Use items() is you used use()
-     */
-    if (!Array.isArray(items)) {
-      return this.child(items)
-    }
-    this._prepRepeat()
-    for (var i=0, il=items.length; i<il; i++) {
-      this._append(items[i])
-    }
-    return this._done()
-  }
-  items(items) {
-    this._prepRepeat()
-    let view
-    for (var i=0, il=items.length; i<il; i++) {
-      view = this._c.get(items[i])
-      this._nest(view)
-      this.e.appendChild(view.root.e)
-    }
-    return this._done()
-  }
-  _nest(view) {
-    //TODO: the idea of this it to keep track of nested views. Check it works...
-    if (!this._n) {
-      this._n = this.view.__nv
-    }
-    this._n.push(view)
-  }
-  _prepRepeat() {
-    this.visible(false)
-    this.clear()
-  }
-  _done() {
-    this.visible(true)
-    return this
-  }
-  use(cls) {
-    this._c = new ViewCache(cls, this)
-    return this
-  }
-  watch(desc, callback) {
-    /*
-     *   Watch a value and do something if it has changed.
-     * 
-     *   This method has two forms.
-     * 
-     *   If desc does not contain ":" then the callback is simply called if the value 
-     *   changes (during the view's update() call)
-     *
-     *   The callback parameters are (newVal, oldVal, wrapper) 
-     *   E.g.
-     *
-     *      h('div').watch('clickCount', (n,o,w) => w.text(n))
-     *
-     *   If the desc contains ":" (e.g. "text:clickCount") then we assume what is to 
-     *   the left of : to be a method of the wrapper to call if the value has changed.
-     *   E.g.
-     *
-     *       h('div').watch('text:clickCount')  // equates to wrapper.text(newValue)
-     *   
-     *   In this form, a callback may be provided to transform the value before it is
-     *   used. Its parameters are (newVal, oldVal) 
-     *   
-     *    E.g.
-     *
-     *       h('div').watch('text:clickCount', (n,o) => `Click count is ${n}`)
-     *   
-     */
-    let path, func, chunks = desc.split(':')
-    if (chunks.length === 1) {
-      path = chunks[0]
-      func = (n,o) => callback(n,o,this)
-    } else {
-      let method = chunks[0]
-      path = chunks[1]
-      func = und(callback) ? n => this[method](n) : (n,o) => this[method](callback(n,o,this)) 
-    }
-    this.view.watch(path, func)
-    return this
-  }
-
-  // These methods are mostly simple DOM wrappers
-
-  get Value() {
-    /* Returns the value of the element */
-    return this.e.value
   }
   css(style) {
     this.e.className = style
@@ -245,55 +206,57 @@ export class Wrapper {
     this.e.classList.toggle(style)
     return this
   }
-  att(name, value) {
-    this.e.setAttribute(name, value)
-    return this
-  }
-  atts(atts) {
-    for (let name in atts) {
-      this.att(name, atts[name])
-    }
-    return this
-  }
-  checked(value) {
-    this.e.checked = value
-    return this
-  }
   href(value) {
     return this.att('href', value)
+  }
+  html(html) {
+    this.e.innerHTML = html
+    return this
   }
   id(value) {
     return this.att('id', value)
   }
-  src(value) {
-    return this.att('src', value)
+  /*
+   * Add anything, including individual things.
+   */
+  inner(items) {
+    if (!Array.isArray(items)) {
+      items = [items]
+    }
+    return this.items(items, item => this.__cu(item))
   }
-  value(value) {
-    return this.att('value', value)
+  /*
+   * Set nested items as wrappers
+   */
+  wrappers(wrappers) {
+    return this.items(wrappers, wrapper => wrapper.e)
   }
-  text(value) {
-    this.e.textContent = value
-    return this
+  /*
+   * Set nested items as views
+   */
+  views(views) {
+    return this.items(views, view => view.root.e)
   }
+
   on(event, callback) {
     this.e.addEventListener(event, e => callback(e, this))
     return this
+  }
+  src(value) {
+    return this.att('src', value)
   }
   style(name, value) {
     this.e.style[name] = value
     return this
   }
-  transition(fn) {
-    return new Promise(resolve => {
-      fn()
-      let transitionEnded = e => {
-        this.e.removeEventListener('transitionend', transitionEnded)
-        resolve()
-      }
-    this.e.addEventListener('transitionend', transitionEnded)
-    })
+  text(value) {
+    this.e.textContent = value
+    return this
   }
   visible(visible) {
     return this.style('visibility', visible? 'visible' : 'hidden')
+  }
+  value(value) {
+    return this.att('value', value)
   }
 }

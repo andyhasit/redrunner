@@ -135,7 +135,7 @@ export class Route {
   constructor(config) {
     this.resources = config.resources
     let paramStr, path = config.path;
-    this._vc = new ViewCache(config.cls, this, config.keyFn || defaultKeyFn);
+    this._vc = new ViewCache(config.cls, config.keyFn || defaultKeyFn);
     [path, paramStr] = path.split('?')
     this.chunks = this.buildChunks(path) // An array of string or RouteArg
     this.params = this.buildParams(paramStr)
@@ -163,7 +163,7 @@ export class Route {
     return params
   }
   getView(routeData) {
-    return this.resolve(routeData, this).then(result => {return this._vc.get(result)})
+    return this.resolve(routeData, this).then(result => {return this._vc.get(result, this)})
   }
   match(url) {
     let front, paramStr, definedChunkCount = this.chunks.length, args = {};

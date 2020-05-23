@@ -1,10 +1,12 @@
 import {
   createView,
   und, 
-  wrap, // Keep this, its used by babel
+  ViewCache, 
+  wrap, // Keep this, its used by babel (but maybe use better way)
   Wrapper
 } from './utils'
 
+const c = console;
 /*
  * Public members:
  *
@@ -130,33 +132,7 @@ export class View {
     let el = path.reduce((accumulator, index) => accumulator.childNodes[index], this.root.e)
     return new Wrapper(el, this)
   }
-  __un() {
-    this.__nv.forEach(child => {
-      if (child.__ia()) {
-         child.update()
-      }
-    })
-  }
-  __uw() {
-    /*
-     * Iterates through watches. If the value has changed, call callback.
-     */
-    let path, newValue, previousValue, callbacks
-    for (path in this.__wc) {
-      newValue = this.__wq[path].apply(this)
-      previousValue = this.__ov[path]
-      if (path === '' || previousValue !== newValue) {
-        callbacks = this.__wc[path]
-        for (var i=0, il=callbacks.length; i<il; i++) {
-          callbacks[i].apply(this, [newValue, previousValue])
-        }
-      }
-      this.__ov[path] = newValue
-    }
-  }
-  __rn(path, view) {
-    this.__gw(path).replace(view.root.e)
-  }
+
   __ia() {
     let el = this
     // TODO: loop until parent
@@ -167,6 +143,52 @@ export class View {
     // }
     return el.root.e.parentNode
   }
+  __nc(cls, keyFn) {
+    return new ViewCache(cls, keyFn)
+  }
+  /**
+   * Switch to new parent.
+   */
+  __sp(newParent) {
+    if (this.parent && this.parent.__nv) {
+      const nv = this.parent.__nv
+      nv.splice(nv.indexOf(this), 1)
+    }
+    this.parent = newParent
+  }
+  /**
+   * Update nested views.
+   */
+  __un() {
+    this.__nv.forEach(child => {
+      if (child.__ia()) {
+        child.update()
+      }
+    })
+  }
+  /**
+   * UpdateWatches. Iterates through watches. If the value has changed, or it is
+   * an empty watch ('') call callback.
+   *
+   */
+  __uw() {
+    let path, newValue, oldValue, callbacks
+    for (path in this.__wc) {
+      newValue = this.__wq[path].apply(this)
+      oldValue = this.__ov[path]
+      if (path === '' || oldValue !== newValue) {
+        callbacks = this.__wc[path]
+        for (var i=0, il=callbacks.length; i<il; i++) {
+          callbacks[i].apply(this, [newValue, oldValue])
+        }
+      }
+      this.__ov[path] = newValue
+    }
+  }
+  __rn(path, view) {
+    this.__gw(path).replace(view.root.e)
+  }
+
 
   /* Currently unused, but we may use it in future strategy
    */
