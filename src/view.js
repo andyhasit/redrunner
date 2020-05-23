@@ -42,10 +42,10 @@ export class View {
     s.props = props         // The props passed to the view. May be changed
     s.seq = seq             // The sequence - only for nested views
     // Internal state objects
-    s.__nv = []         // Array of arrays of nested views
+    s.__nv = []             // Array of nested views
 
     // These relate to watchers
-    s.__ov = {}       // The old values for watches to compare against  
+    s.__ov = {}             // The old values for watches to compare against  
 
     // These will be set by __bv()
     s.root = null           // the root wrapper, will be set by __bv
@@ -130,7 +130,7 @@ export class View {
     This is used by the babel plugin.
     */
     let el = path.reduce((accumulator, index) => accumulator.childNodes[index], this.root.e)
-    return new Wrapper(el, this)
+    return new Wrapper(el)
   }
 
   __ia() {
@@ -160,11 +160,13 @@ export class View {
    * Update nested views.
    */
   __un() {
-    this.__nv.forEach(child => {
+    const items = this.__nv
+    for (var i=0, il=items.length; i<il; i++) {
+      let child = items[i]
       if (child.__ia()) {
         child.update()
       }
-    })
+    }
   }
   /**
    * UpdateWatches. Iterates through watches. If the value has changed, or it is

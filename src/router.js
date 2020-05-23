@@ -163,7 +163,7 @@ export class Route {
     return params
   }
   getView(routeData) {
-    return this.resolve(routeData, this).then(result => {return this._vc.get(result, this)})
+    return this.resolve(routeData, this).then(result => {return this._vc.getOne(result, this)})
   }
   match(url) {
     let front, paramStr, definedChunkCount = this.chunks.length, args = {};

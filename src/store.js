@@ -2,13 +2,13 @@
 export class Store {
   constructor(items) {
     this.nextId = 1
-    this.change = 0
+    this.changed = 0
     this.items = []
     this.hash = {}
     this.load(items)
   }
   add(item) {
-    this.change
+    this.changed
     return Promise.resolve(this._add(item))
   }
   _add(item) {
@@ -21,7 +21,7 @@ export class Store {
   update(id, item) {
     let target = this.hash[id]
     Object.assign(target, item, {id: id})
-    this.change
+    this.changed
     return Promise.resolve(target)
   }
   get(id) {
@@ -33,7 +33,7 @@ export class Store {
   delete(id) {  
     this.items = this.items.filter(item => item.id !== id)
     delete this.hash[id]
-    this.change
+    this.changed
     return Promise.resolve(id)
   }
   load(items) {

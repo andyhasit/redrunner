@@ -70,25 +70,22 @@ export function createView(cls, props, parent, seq) {
 export class ViewCache {
   /**
    * @param {class} cls The class of View to create
-   * @param {object} parent The parent view (optional)
+   * @param {function} keyFn A function which obtains the key to cache by
    */
   constructor(cls, keyFn) {
-    let defaultKeyFn = (props, seq) => seq
+    const defaultKeyFn = (props, seq) => seq
     this.cls = cls
     this.cache = {}
     this.keyFn = keyFn || defaultKeyFn
-    this._seq = 0
-  }
-  reset() {
     this._seq = 0
   }
   getMany(items, parentView, reset) {
     if (reset) {
       this.reset()
     }
-    return items.map(props => this.get(props, parentView))
+    return items.map(props => this.getOne(props, parentView))
   }
-  get(props, parentView) {
+  getOne(props, parentView) {
     /*
     Gets a view, potentially from cache
     */
@@ -104,6 +101,9 @@ export class ViewCache {
     this._seq += 1
     return view
   }
+  reset() {
+    this._seq = 0
+  }
 }
 
 /**
@@ -111,9 +111,8 @@ export class ViewCache {
  * All methods (some exceptions) return this, meaning they can be chained.
  */
 export class Wrapper {
-  constructor(element, view) {
+  constructor(element) {
     this.e = element
-    this.view = view
   }
   /**
    * Converts unknown item into an Element.
@@ -127,19 +126,7 @@ export class Wrapper {
     }
     return doc.createTextNode(item)
   }
-  /**
-   * Set element's items.
-   *
-   * @param {array} items An array of items
-   * @param {getEl} items A function which extracts the element from the item
-   */
-  items(items, getEl) {
-    this.clear()
-    for (var i=0, il=items.length; i<il; i++) {
-      this.e.appendChild(getEl(items[i]))
-    }
-    return this
-  }
+
   /**
    * Gets the element's value. Cannot be chained.
    */
@@ -225,19 +212,19 @@ export class Wrapper {
     }
     return this.items(items, item => this.__cu(item))
   }
-  /*
-   * Set nested items as wrappers
+  /**
+   * Set element's items.
+   *
+   * @param {array} items An array of items
+   * @param {getEl} items A function which extracts the element from the item
    */
-  wrappers(wrappers) {
-    return this.items(wrappers, wrapper => wrapper.e)
+  items(items, getEl) {
+    this.clear()
+    for (var i=0, il=items.length; i<il; i++) {
+      this.e.appendChild(getEl(items[i]))
+    }
+    return this
   }
-  /*
-   * Set nested items as views
-   */
-  views(views) {
-    return this.items(views, view => view.root.e)
-  }
-
   on(event, callback) {
     this.e.addEventListener(event, e => callback(e, this))
     return this
@@ -258,5 +245,17 @@ export class Wrapper {
   }
   value(value) {
     return this.att('value', value)
+  }
+  /*
+   * Set nested items as views
+   */
+  views(views) {
+    return this.items(views, view => view.root.e)
+  }
+  /*
+   * Set nested items as wrappers
+   */
+  wrappers(wrappers) {
+    return this.items(wrappers, wrapper => wrapper.e)
   }
 }

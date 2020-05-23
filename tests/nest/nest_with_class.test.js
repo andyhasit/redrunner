@@ -5,18 +5,23 @@ const names = ['joe', 'bob', 'alice']
 
 class TestView extends View {
   __html__ = `
-  	<div nest="|.items|">
+  	<div nest="|.items|PersonView">
     </div>
   `
   items() {
-  	return names.map(i => h('span', i))
+  	return names
   }
 }
 
-const props = {name: 'joe'}
+class PersonView extends View {
+  __html__ = `
+    <span>{{.props}}</span>
+  `
+}
+
 
 test('Nest without cache declaration adds wrappers', () => {
-  const div = load(TestView, props)
+  const div = load(TestView)
 
   expect(div).toShow(`
   	<div>
