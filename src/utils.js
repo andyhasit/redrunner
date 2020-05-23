@@ -236,6 +236,10 @@ export class Wrapper {
     this.e.addEventListener(event, e => callback(e, this))
     return this
   }
+  replace(el) {
+    this.e.parentNode.replaceChild(el, this.e)
+    return this
+  }
   src(value) {
     return this.att('src', value)
   }
