@@ -1,7 +1,7 @@
 class MyView extends View {
   __html__ = `
     <div>
-      <span nest="|.items"/>
+      <span nest="|.items|"/>
     </div>
   `
 }
@@ -18,7 +18,7 @@ MyView.prototype.__wq = {
 
 MyView.prototype.__wc = {
   '': [function (n, o) {
-    this.dom.__1.items(this.items(n, o));
+    this.dom.__1.wrappers(this.items(n, o));
   }]
 };
 

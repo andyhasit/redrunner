@@ -18,7 +18,7 @@ MyView.prototype.__wq = {
 
 MyView.prototype.__wc = {
   '': [function (n, o) {
-    this.dom.__1.nest(this.dom.__2.getMany(this.items(n, o), this, true));
+    this.dom.__1.views(this.dom.__2.getMany(this.items(n, o), this, true));
   }]
 };
 

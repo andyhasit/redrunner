@@ -139,34 +139,45 @@ class ViewProcessor {
    * Adds a watch for the nest attribute.
    */
   addNestWatch(nest, saveAs) {
-    let viewCache, viewCacheGetViewsCall, callbackBody, wrapper = `this.dom.${saveAs}`
-    if (nest.cache === undefined) {
-      // Means the convert function returns any odd item
-      callbackBody = `${wrapper}.items(${nest.convert}(n, o))`
-    } else {
-      if (nest.cache.startsWith('@')) {
-        // @ means a named viewCache so name is expanded
-        // And we also call it with reset=false, because it should be managed elsewhere.
-        viewCache = expandField(nest.cache.substr(1))
-        viewCacheGetViewsCall = `${viewCache}.getMany(${nest.convert}(n, o), this, false)`
-      } else {
-        const [viewCacheClass, viewCacheKey] = nest.cache.split(':')
-        const generatedCacheName = this.getUniqueVarName()
-        viewCache = `this.dom.${generatedCacheName}`
-        let viewCacheParam = ''
-        if (nest.keyFn && viewCacheKey) {
-          this.error('You cannot provide both a keyFn and a key.', 'att:nest')
-        } else if (nest.keyFn) {
-          viewCacheParam = `, ${expandField(nest.keyFn)}`
-        } else if (viewCacheKey) {
-          viewCacheParam = `, '${viewCacheKey}'`
-        }
-        const createViewCacheStatement = `view.__nc(${viewCacheClass}${viewCacheParam})`
-        this.domObjectLines.push(`${generatedCacheName}: ${createViewCacheStatement},`)
-        viewCacheGetViewsCall = `${viewCache}.getMany(${nest.convert}(n, o), this, true)`
-      }
-      callbackBody = `${wrapper}.nest(${viewCacheGetViewsCall})`
+    let viewCacheGetViewsCall, callbackBody, wrapper = `this.dom.${saveAs}`
+
+    const buildCachedCall = (cacheName, reset) => {
+      const cacheCall = `${cacheName}.getMany(${nest.convert}(n, o), this, ${reset})`
+      return `${wrapper}.views(${cacheCall})`
     }
+
+    const namedViewCacheCall = _ => {
+      const cacheName = expandField(nest.cache.substr(1))
+      return buildCachedCall(cacheName, false)
+    }
+
+    const ownViewCacheCall = _ => {
+      const [viewCacheClass, viewCacheKey] = nest.cache.split(':')
+      const generatedCacheName = this.getUniqueVarName()
+      const cacheName = `this.dom.${generatedCacheName}`
+      let viewCacheParam = ''
+      if (nest.keyFn && viewCacheKey) {
+        this.error('You cannot provide both a keyFn and a key.', 'att:nest')
+      } else if (nest.keyFn) {
+        viewCacheParam = `, ${expandField(nest.keyFn)}`
+      } else if (viewCacheKey) {
+        viewCacheParam = `, '${viewCacheKey}'`
+      }
+      const createViewCacheStatement = `view.__nc(${viewCacheClass}${viewCacheParam})`
+      this.domObjectLines.push(`${generatedCacheName}: ${createViewCacheStatement},`)
+      return buildCachedCall(cacheName, true)
+    }
+
+    if (nest.cache === undefined) {
+      callbackBody = `${wrapper}.inner(${nest.convert}(n, o))`
+    } else if (nest.cache === '') {
+      callbackBody = `${wrapper}.wrappers(${nest.convert}(n, o))`
+    } else if (nest.cache.startsWith('@')) {
+      callbackBody = namedViewCacheCall()
+    } else {
+      callbackBody = ownViewCacheCall()
+    }
+
     this.saveWatch(nest.name, nest.property, callbackBody)
   }
   /**
