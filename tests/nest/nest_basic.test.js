@@ -13,10 +13,8 @@ class TestView extends View {
   }
 }
 
-const props = {name: 'joe'}
-
 test('Nest without cache declaration adds wrappers', () => {
-  const div = load(TestView, props)
+  const div = load(TestView)
 
   expect(div).toShow(`
   	<div>

@@ -90,14 +90,18 @@ export class ViewCache {
     Gets a view, potentially from cache
     */
     let view, key = this.keyFn(props, this._seq)
+    // TODO: can I detect whether we use seq?
     if (this.cache.hasOwnProperty(key)) {
       view = this.cache[key]
-      view.__sp(parentView)
+      if (parentView !== view.parent) {
+        view.move(parentView)
+      }
+      view.update(props)
     } else {
+      // Don't use nest
       view = createView(this.cls, props, parentView, this._seq)
       this.cache[key] = view
     }
-    view.update(props)
     this._seq += 1
     return view
   }
@@ -113,6 +117,7 @@ export class ViewCache {
 export class Wrapper {
   constructor(element) {
     this.e = element
+    this._items = [] // For advanced manipulation.
   }
   /**
    * Converts unknown item into an Element.
@@ -147,8 +152,9 @@ export class Wrapper {
 
   /* Every method below must return 'this' so it can be chained */
 
-  append(wrapper) {
-    this.e.appendChild(wrapper.e)
+  append(item) {
+    this.e.appendChild(this.__cu(item))
+    this._items.push(item)
     return this
   }
   att(name, value) {
@@ -223,6 +229,7 @@ export class Wrapper {
     for (var i=0, il=items.length; i<il; i++) {
       this.e.appendChild(getEl(items[i]))
     }
+    this._items = items
     return this
   }
   on(event, callback) {

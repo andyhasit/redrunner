@@ -83,6 +83,16 @@ export class View {
     lines.push('}')
     c.log(lines.join('\n'))
   }
+  /**
+   * Move the view to new parent.
+   */
+  move(newParent) {
+    if (this.parent && this.parent.__nv) {
+      const nv = this.parent.__nv
+      nv.splice(nv.indexOf(this), 1)
+    }
+    this.parent = newParent
+  }
   nest(cls, props, seq) {
     /*
      * Builds a nested view of the specified class. Its up to you how you attach it.
@@ -133,28 +143,23 @@ export class View {
     return new Wrapper(el)
   }
 
+  /**
+   * Is Attached.
+   * Determines whether this view is attached to the DOM.
+   *
+   * Note: currently unreliable as the view could be attached to an element which is itself detached.
+   */
   __ia() {
     let el = this
-    // TODO: loop until parent
     // let element = 
     // while (element != document && element.parentNode) {
     //   /* jump to the parent element */
     //   element = element.parentNode;
     // }
-    return el.root.e.parentNode
+    return false //el.root.e.parentNode
   }
   __nc(cls, keyFn) {
     return new ViewCache(cls, keyFn)
-  }
-  /**
-   * Switch to new parent.
-   */
-  __sp(newParent) {
-    if (this.parent && this.parent.__nv) {
-      const nv = this.parent.__nv
-      nv.splice(nv.indexOf(this), 1)
-    }
-    this.parent = newParent
   }
   /**
    * Update nested views.
