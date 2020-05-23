@@ -2,7 +2,7 @@ const {c, EOL, htmlparse} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
 const {addPrototypeFunction, addPrototypeObject} = require('../utils/javascript')
 const {findRedRunnerAtts, removeRedRunnerCode} = require('./special-atts')
-const {lookupArgs, getWrapperCall, parseTarget} = require('./views')
+const {expandField, lookupArgs, getWrapperCall, parseTarget} = require('./views')
 const {extractInlineCallWatches} = require('./inline')
 
 /**
@@ -19,6 +19,7 @@ class ViewProcessor {
     this.watchQueryItems = {}     // Entries for the __wq object
     this.randVarCount = 0
     this.dom = undefined
+    this.currentNode = undefined
 
     // The final statements, as strings:
     this.statementFor__bv = undefined
@@ -35,15 +36,15 @@ class ViewProcessor {
     this.createStatementFor__wq() 
   }
   parseHtmlProperty() {
-    const self = this
     // Recursively processes each node in the DOM
-    function processNode(node, i) {
+    const processNode = (node, i) => {
+      this.currentNode = node
       nodePath.push(i)
       const tagName = node.tagName
       if (tagName) {
         const isCapitalized = /[A-Z]/.test(tagName[0])
-        const processFunction = isCapitalized ? self.processViewNode : self.processNormalNode
-        processFunction.apply(self, [nodePath, node, tagName])
+        const processFunction = isCapitalized ? this.processViewNode : this.processNormalNode
+        processFunction.apply(this, [nodePath, node, tagName])
       }
       node.childNodes.forEach(processNode)
       nodePath.pop()
@@ -92,9 +93,9 @@ class ViewProcessor {
     }
   }
   processViewNode(nodePath, node, tagName) {
-    let {args, saveAs} = findRedRunnerAtts(node)
+    let {props, saveAs} = findRedRunnerAtts(node)
     const lines = this.buildMethodLines
-    const constructorStr = args? `view.nest(${tagName}, ${args})` : `view.nest(${tagName})`;
+    const constructorStr = props? `view.nest(${tagName}, ${props})` : `view.nest(${tagName})`;
     
     if (saveAs) {
       lines.push(`let ${saveAs} = ${constructorStr};`)
@@ -105,7 +106,7 @@ class ViewProcessor {
     }
   }
   processNormalNode(nodePath, node, tagName) {
-    let {saveAs, on, watch} = findRedRunnerAtts(node)
+    let {nest, on, saveAs, watch} = findRedRunnerAtts(node)
     let chainedCalls = ''
 
     /* Generates a unique variable name if saveAs has not been defined */
@@ -121,6 +122,10 @@ class ViewProcessor {
       implicitSave()
       this.addNodeWatch(watch, saveAs)
     }
+    if (nest) {
+      implicitSave()
+      this.addNestWatch(nest, saveAs)
+    }
     if (on) {
       implicitSave()
       // We can use a chained call on the wrapper because it returns "this"
@@ -130,7 +135,40 @@ class ViewProcessor {
       this.domObjectLines.push(`${saveAs}: view.${getWrapperCall(nodePath)}${chainedCalls},`)
     }
   }
-
+  /**
+   * Adds a watch for the nest attribute.
+   */
+  addNestWatch(nest, saveAs) {
+    let viewCache, viewCacheGetViewsCall, callbackBody, wrapper = `this.dom.${saveAs}`
+    if (nest.cache === undefined) {
+      // Means the convert function returns any odd item
+      callbackBody = `${wrapper}.items(${nest.convert}(n, o))`
+    } else {
+      if (nest.cache.startsWith('@')) {
+        // @ means a named viewCache so name is expanded
+        // And we also call it with reset=false, because it should be managed elsewhere.
+        viewCache = expandField(nest.cache.substr(1))
+        viewCacheGetViewsCall = `${viewCache}.getMany(${nest.convert}(n, o), this, false)`
+      } else {
+        const [viewCacheClass, viewCacheKey] = nest.cache.split(':')
+        const generatedCacheName = this.getUniqueVarName()
+        viewCache = `this.dom.${generatedCacheName}`
+        let viewCacheParam = ''
+        if (nest.keyFn && viewCacheKey) {
+          this.error('You cannot provide both a keyFn and a key.', 'att:nest')
+        } else if (nest.keyFn) {
+          viewCacheParam = `, ${expandField(nest.keyFn)}`
+        } else if (viewCacheKey) {
+          viewCacheParam = `, '${viewCacheKey}'`
+        }
+        const createViewCacheStatement = `view.__nc(${viewCacheClass}${viewCacheParam})`
+        this.domObjectLines.push(`${generatedCacheName}: ${createViewCacheStatement},`)
+        viewCacheGetViewsCall = `${viewCache}.getMany(${nest.convert}(n, o), this, true)`
+      }
+      callbackBody = `${wrapper}.nest(${viewCacheGetViewsCall})`
+    }
+    this.saveWatch(nest.name, nest.property, callbackBody)
+  }
   /**
    * Adds a watch, creating both the callback and the query functions.
    *
@@ -139,7 +177,7 @@ class ViewProcessor {
    *
    */
   addNodeWatch(watch, saveAs) {
-    let callbackStatement, callbackBody, wrapper = `this.dom.${saveAs}`
+    let callbackBody, wrapper = `this.dom.${saveAs}`
     if (watch.target) {
       const targetString = parseTarget(watch.target)
       if (watch.raw) {
@@ -153,20 +191,36 @@ class ViewProcessor {
       // assume convert is provided
       callbackBody = `${watch.convert}(n, o, ${wrapper})`
     }
-    callbackStatement = ['function(n, o) {', callbackBody, '},'].join(EOL)
-    this.getWatchCallbackItems(watch.name).push(callbackStatement)
-    this.watchQueryItems[watch.name] = `function() {return ${watch.name}}`
+    this.saveWatch(watch.name, watch.property, callbackBody)
   }
-  // Return array
+  saveWatch(name, property, callbackBody) {
+    const callbackStatement = ['function(n, o) {', callbackBody, '},'].join(EOL)
+    this.getWatchCallbackItems(name).push(callbackStatement)
+    this.watchQueryItems[name] = `function() {return ${property}}`
+  }
+  /**
+   * Returns the Array of callback for a watch, creating is necessary.
+   */
   getWatchCallbackItems(name) {
     if (!this.watchCallbackItems.hasOwnProperty(name)) {
       this.watchCallbackItems[name] = []
     }
     return this.watchCallbackItems[name]
   }
+  /**
+   * Returns a short variable name guaranteed to be unique within the view.
+   */
   getUniqueVarName() {
     this.randVarCount ++
     return '__' + this.randVarCount
+  }
+  /**
+   * Exit with an error.
+   * TODO: flesh this out to print more useful info.
+   */
+  error(message) {
+    c.log(this.currentNode)
+    new Error(message)
   }
 }
 

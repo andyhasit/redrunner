@@ -2,7 +2,7 @@ class MyView extends View {
   __html__ = `
     <div>
       <br/>
-      <NestedView args=m.obj.test/>
+      <NestedView props=m.obj.test/>
     </div>
   `
   foo() {}

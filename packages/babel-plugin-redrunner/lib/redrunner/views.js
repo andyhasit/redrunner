@@ -22,12 +22,16 @@ function lookupArgs(nodePath) {
 /**
  * Adjusts the field for shorthand notation as follows:
  *
+ *   ''       >  true
  *   field    >  this.props.field
  *   .field   >  this.field
  *   ..field  >  field
  *
  */
 function expandField(field) {
+  if (field == '') {
+    return true
+  }
   if (field.startsWith('..')) {
     return field.substr(2)
   } else if (field.startsWith('.')) {
@@ -37,6 +41,9 @@ function expandField(field) {
 }
 
 function parseTarget(target) {
+  if (target.startsWith('@')) {
+    target = 'att:' + target.substr(1)
+  }
   const [method, arg] = target.split(':')
   if (arg) {
     return `${method}('${arg}', `

@@ -12,20 +12,20 @@ class MyView extends View {
 class MyView extends View {}
 
 MyView.prototype.__wq = {
-  'this.count': function () {
+  '.count': function () {
     return this.count;
   },
-  'this.props.count': function () {
+  'count': function () {
     return this.props.count;
   }
 };
 
 
 MyView.prototype.__wc = {
-  'this.count': [function (n, o) {
+  '.count': [function (n, o) {
     this.dom.__1.text(n);
   }],
-  'this.props.count': [function (n, o) {
+  'count': [function (n, o) {
     this.dom.__2.text(n);
   }]
 };

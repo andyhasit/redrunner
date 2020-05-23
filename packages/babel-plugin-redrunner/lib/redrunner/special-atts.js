@@ -17,7 +17,8 @@ function parseWATCH(attString) {
   if (attString) {
     const chunks = attString.split(splitter)
     const values = {
-      name: expandField(chunks[0].trim()),
+      name: chunks[0].trim(),
+      property: expandField(chunks[0].trim()),
       convert: undefined,
       target: undefined,
     }
@@ -25,7 +26,41 @@ function parseWATCH(attString) {
       values.convert = expandField(chunks[1].trim())
     }
     if (chunks.length > 2) {
+      // Just replace empty target with 'text' - this is further processed later.
       values.target = chunks[2].trim() == '' ? 'text' : chunks[2].trim()
+    }
+    return values
+  }
+}
+
+/**
+ * Parses the "nest" special attribute:
+ *
+ * nest="*|.cities|CityView:id"></ul>
+ *
+ * Or you can provide a specific cache:
+ *  nest="*|.cities|@cityCache"></ul>
+ *
+ */
+function parseNEST(attString) {
+  // TODO: validate
+  if (attString) {
+    const chunks = attString.split(splitter)
+    const values = {
+      name: chunks[0].trim(),
+      property: expandField(chunks[0].trim()),
+      convert: undefined,
+      cache: undefined,
+      keyFn: undefined
+    }
+    if (chunks[1].trim() != '') {
+      values.convert = expandField(chunks[1].trim())
+    }
+    if (chunks.length > 2) {
+      values.cache = chunks[2].trim()
+    }
+    if (chunks.length > 3) {
+      values.keyFn = chunks[3].trim()
     }
     return values
   }
@@ -52,9 +87,10 @@ function parseON(attString) {
 function findRedRunnerAtts(node) {
   const nodeAtts = node.rawAttrs
   return {
-    'args': getAttVal(nodeAtts, specialAttributes.ARGS),
+    'props': getAttVal(nodeAtts, specialAttributes.PROPS),
     'saveAs': getAttVal(nodeAtts, specialAttributes.AS),
     'on': parseON(getAttVal(nodeAtts, specialAttributes.ON)),
+    'nest': parseNEST(getAttVal(nodeAtts, specialAttributes.NEST)),
     'watch': parseWATCH(getAttVal(nodeAtts, specialAttributes.WATCH)),
   }
 }

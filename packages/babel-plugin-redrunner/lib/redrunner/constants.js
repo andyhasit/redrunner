@@ -2,9 +2,10 @@
  * Special attributes that can be used in the __html__ fields.
  */
 const specialAttributes = {
-  ARGS: 'args',
+  PROPS: 'props',
   AS: 'as',
   ON: 'on',
+  NEST: 'nest',
   WATCH: 'watch'
 }
 

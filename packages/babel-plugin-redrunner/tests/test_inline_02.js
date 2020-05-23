@@ -12,19 +12,19 @@ class MyView extends View {
 class MyView extends View {}
 
 MyView.prototype.__wq = {
-  'this.props.name': function () {
+  'name': function () {
     return this.props.name;
   },
-  'this.props.style': function () {
+  'style': function () {
     return this.props.style;
   }
 };
 
 MyView.prototype.__wc = {
-  'this.props.name': [function (n, o) {
+  'name': [function (n, o) {
     this.dom.__1.text(this.getName(n, o));
   }],
-  'this.props.style': [function (n, o) {
+  'style': [function (n, o) {
     this.dom.__2.att('class', "my-style " + n);
   }]
 };

@@ -79,7 +79,7 @@ function buildInlineWatch(target, inlineCallDetails) {
 	} else {
 		raw = convert
 	}
-	return {name: expandField(name), raw: raw, target:target}
+	return {name: name, property: expandField(name), raw: raw, target:target}
 
 			// switch(inlineCall.type) {
 			//   case 'middle':
@@ -141,7 +141,7 @@ function extractInlineCallWatches(node) {
 	// extract from node attributes
   for (let [key, value] of Object.entries(atts)) {
   	if (value && !restrictedAtts.includes(key)) {
-  		if (addInlineWatches(value, `att:${key}`)) {
+  		if (addInlineWatches(value, `@${key}`)) {
   			let wholeAtt = getAttDefinition(node.rawAttrs, key)
       	node.rawAttrs = node.rawAttrs.replace(wholeAtt, '')
   		}

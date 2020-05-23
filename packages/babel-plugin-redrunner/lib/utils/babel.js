@@ -1,10 +1,9 @@
-
 /**
  * A visitor which removes a property, because that's Babel wants you to do it.
  */
 const RemoveClassPropertyVisitor = {
   ClassProperty(path) {
-    path.remove()
+  	path.remove()
   }
 }
 

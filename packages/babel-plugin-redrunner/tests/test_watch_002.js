@@ -16,16 +16,16 @@ class MyView extends View {
 class MyView extends View {}
 
 MyView.prototype.__wq = {
-  'this.props.count': function () {
+  'count': function () {
     return this.props.count;
   },
-  'this.props.countChanged()': function () {
+  'countChanged()': function () {
     return this.props.countChanged();
   }
 };
 
 MyView.prototype.__wc = {
-  'this.props.count': [function (n, o) {
+  'count': [function (n, o) {
     this.dom.__1.text(n);
   }, function (n, o) {
     this.dom.__2.css(n);
@@ -36,7 +36,7 @@ MyView.prototype.__wc = {
   }, function (n, o) {
     foo(n, o, this.dom.__5);
   }],
-  'this.props.countChanged()': [function (n, o) {
+  'countChanged()': [function (n, o) {
     this.dom.__6.enabled(n);
   }]
 };

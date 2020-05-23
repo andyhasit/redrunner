@@ -1,7 +1,7 @@
 class MyView extends View {
   __html__ = `
     <div>
-      <span>{{name}}</span>
+      <span watch="||"/>
     </div>
   `
 }
@@ -9,15 +9,15 @@ class MyView extends View {
 //----------------------------------------------------
 
 class MyView extends View {}
-//<span class="my-class-def {{style}}"></span>
+
 MyView.prototype.__wq = {
-  'name': function () {
-    return this.props.name;
+  '': function () {
+    return true;
   }
 };
 
 MyView.prototype.__wc = {
-  'name': [function (n, o) {
+  '': [function (n, o) {
     this.dom.__1.text(n);
   }]
 };
