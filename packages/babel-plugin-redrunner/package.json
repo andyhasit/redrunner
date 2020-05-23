@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-redrunner",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "A babel plugin for RedRunner",
   "main": "lib/index.js",
   "directories": {
