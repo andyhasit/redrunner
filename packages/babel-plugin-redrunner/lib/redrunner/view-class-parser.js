@@ -1,6 +1,6 @@
 const {c, EOL, htmlparse} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
-const {addPrototypeFunction, addPrototypeObject} = require('../utils/javascript')
+const {addPrototypeField, addPrototypeFunction, addPrototypeObject} = require('../utils/javascript')
 const {findRedRunnerAtts, removeRedRunnerCode} = require('./special-atts')
 const {expandField, lookupArgs, getWrapperCall, parseTarget} = require('./views')
 const {extractInlineCallWatches} = require('./inline')
@@ -8,9 +8,10 @@ const {extractInlineCallWatches} = require('./inline')
 /**
  * A class for generating all the statements to be added to a RedRunner view.
  */
-class ViewProcessor {
+class ViewClassParser {
   constructor(viewData) {
     let {className, htmlString} = viewData
+    this.cloneNode = viewData.cloneNode
     this.className = className
     this.strippedHtml = stripHtml(htmlString)
     this.buildMethodLines = []    // The method lines, as code
@@ -22,18 +23,32 @@ class ViewProcessor {
     this.currentNode = undefined
 
     // The final statements, as strings:
-    this.statementFor__bv = undefined
-    this.statementFor__wc = undefined
-    this.statementFor__wq = undefined
+    this.statementFor__bv = undefined  // The build view method 
+    this.statementFor__cn = undefined  // The clonable node
+    this.statementFor__ht = undefined  // The HTML string
+    this.statementFor__wc = undefined  // The watcher callbacks
+    this.statementFor__wq = undefined  // The watcher queries
   }
-  processView() {
+  generateStatements() {
     this.dom = htmlparse.parse(this.strippedHtml)
     this.parseHtmlProperty()
     //this.parseWatchProperty() ...?
 
-    this.createStatementFor__bv() 
-    this.createStatementFor__wc() 
-    this.createStatementFor__wq() 
+    // Assemble the statements
+    this.assembleStatementFor__bv()
+    this.assembleStatementFor__cn()
+    this.assembleStatementFor__ht()
+    this.assembleStatementFor__wc()
+    this.assembleStatementFor__wq()
+
+    // Return only statements which contain something...
+    return [
+      this.statementFor__bv,
+      this.statementFor__cn,
+      this.statementFor__ht,
+      this.statementFor__wc, 
+      this.statementFor__wq,
+    ].filter(s => s)
   }
   parseHtmlProperty() {
     // Recursively processes each node in the DOM
@@ -53,9 +68,10 @@ class ViewProcessor {
     const nodePath = []    // The path of current node recursion
     processNode(this.dom)
   }
-  createStatementFor__bv() {
-    const lines = ['view.root = wrap(`' + removeRedRunnerCode(this.dom) + '`);']
-
+  assembleStatementFor__bv() {
+    const lines = []
+    lines.push(`view.__bd(prototype, ${this.cloneNode});`)
+    
     // Add remaining lines (must come before dom!)
     this.buildMethodLines.forEach(n => lines.push(n))
 
@@ -68,9 +84,20 @@ class ViewProcessor {
       lines.push('view.dom = {};')
     }
     const body = lines.join(EOL)
-    this.statementFor__bv = addPrototypeFunction(this.className, '__bv', 'view, wrap', body)
+    this.statementFor__bv = addPrototypeFunction(this.className, '__bv', 'view, prototype', body)
   }
-  createStatementFor__wc() {
+  assembleStatementFor__cn() {
+    if (this.cloneNode) {
+      this.statementFor__cn = addPrototypeField(this.className, '__cn', 'undefined')
+    }
+  }
+  assembleStatementFor__ht() {
+    // This only removes redrunner atts, the inlines we removed in place.
+    // Perhaps change this to make behaviour consistent.
+    const htmlString = removeRedRunnerCode(this.dom)
+    this.statementFor__ht = addPrototypeField(this.className, '__ht', `'${htmlString}'`)  
+  }
+  assembleStatementFor__wc() {
     const lines = []
     for (let [key, value] of Object.entries(this.watchCallbackItems)) {
       lines.push(`'${key}': [`)
@@ -82,7 +109,7 @@ class ViewProcessor {
       this.statementFor__wc = addPrototypeObject(this.className, '__wc', body)
     }
   }
-  createStatementFor__wq() {
+  assembleStatementFor__wq() {
     const lines = []
     for (let [key, value] of Object.entries(this.watchQueryItems)) {
       lines.push(`'${key}': ${value},`)
@@ -235,20 +262,5 @@ class ViewProcessor {
   }
 }
 
-/** 
- * Returns the statements as a list of strings.
- */
-function generateStatements(viewData) {
-  const viewProcessor = new ViewProcessor(viewData)
-  const names = ['statementFor__bv', 'statementFor__wc', 'statementFor__wq']
-  viewProcessor.processView()
-  statements = []
-  names.forEach(s => {
-    if (viewProcessor[s]) {
-      statements.push(viewProcessor[s])
-    }
-  })
-  return statements
-}
 
-module.exports = {generateStatements}
+module.exports = {ViewClassParser}

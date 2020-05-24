@@ -12,8 +12,10 @@ class MyView extends View {
   foo() {}
 }
 
-MyView.prototype.__bv = function (view, wrap) {
-  view.root = wrap(`<div></div>`);
+MyView.prototype.__ht = '<div></div>';
+
+MyView.prototype.__bv = function (view, prototype) {
+  view.__bd(prototype, false);
   view.dom = {
     main: view.__gw([])
   };

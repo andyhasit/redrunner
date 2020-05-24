@@ -33,7 +33,7 @@ A.prototype.build = function () {...}
 
 const babel = require('@babel/core');
 const {getNodeHtmlString, removeProperty} = require('./utils/babel');
-const {generateStatements} = require('./redrunner/statement-generators');
+const {ViewClassParser} = require('./redrunner/view-class-parser');
 
 
 module.exports = () => {
@@ -47,7 +47,8 @@ module.exports = () => {
           // Iterate over classe's nodes to find ones we care about
           for (node of path.node.body.body) {
             let propName = node.key.name
-            if (propName == '__html__') {
+            if (propName == '__html__' || propName == '__clone__') {
+              viewData.cloneNode = propName == '__clone__'
               requiresGeneratedStatements = true
               viewData.htmlString = getNodeHtmlString(node)
               removeProperty(path)
@@ -60,11 +61,11 @@ module.exports = () => {
           }
 
           if (requiresGeneratedStatements) {
-            let generatedStatements = generateStatements(viewData)
-
-            // Add the generated statements 
+            const viewClassParser = new ViewClassParser(viewData)
             // Note that babel does its own adjustments with spaces, commas etc...
-            generatedStatements.forEach(statement => path.insertAfter(babel.template.ast(statement)))
+            viewClassParser.generateStatements().forEach(statement => 
+              path.insertAfter(babel.template.ast(statement))
+            )
           }
         }
       }

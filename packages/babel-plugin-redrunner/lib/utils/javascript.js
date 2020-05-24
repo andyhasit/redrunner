@@ -17,4 +17,12 @@ function addPrototypeObject(className, name, body) {
   return [`${className}.prototype.${name} = {`, body, '};'].join(EOL)
 }
 
-module.exports = {addPrototypeFunction, addPrototypeObject}
+/**
+ * Returns a statment adding a field to a prototype.
+ */
+function addPrototypeField(className, name, statment) {
+  return [`${className}.prototype.${name} = `, statment, ';'].join(EOL)
+}
+
+
+module.exports = {addPrototypeFunction, addPrototypeObject, addPrototypeField}

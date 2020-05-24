@@ -41,8 +41,10 @@ MyView.prototype.__wc = {
   }]
 };
 
-MyView.prototype.__bv = function (view, wrap) {
-  view.root = wrap(`<div><span></span><span></span><span></span><span></span><span></span><span></span></div>`);
+MyView.prototype.__ht = '<div><span></span><span></span><span></span><span></span><span></span><span></span></div>';
+
+MyView.prototype.__bv = function (view, prototype) {
+  view.__bd(prototype, false);
   view.dom = {
     __1: view.__gw([0]),
     __2: view.__gw([1]),

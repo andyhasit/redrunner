@@ -12,8 +12,10 @@ class MyView extends View {
 
 class MyView extends View {}
 
-MyView.prototype.__bv = function (view, wrap) {
-  view.root = wrap(`<div><span></span><span></span><span></span></div>`);
+MyView.prototype.__ht = '<div><span></span><span></span><span></span></div>';
+
+MyView.prototype.__bv = function (view, prototype) {
+  view.__bd(prototype, false);
   view.dom = {
     __1: view.__gw([0]).on('click', (e, w) => this.props.foo(e, w)),
     __2: view.__gw([1]).on('click', (e, w) => this.foo(e, w)),

@@ -22,8 +22,10 @@ MyView.prototype.__wc = {
   }]
 };
 
-MyView.prototype.__bv = function (view, wrap) {
-  view.root = wrap(`<div><span></span></div>`);
+MyView.prototype.__ht = '<div><span></span></div>';
+
+MyView.prototype.__bv = function (view, prototype) {
+  view.__bd(prototype, false);
   view.dom = {
     __2: view.__nc(TodoView, this.getKey),
     __1: view.__gw([0])

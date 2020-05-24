@@ -14,8 +14,10 @@ class MyView extends View {
   foo() {}
 }
 
-MyView.prototype.__bv = function (view, wrap) {
-  view.root = wrap(`<div><br /><NestedView></NestedView></div>`);
+MyView.prototype.__ht = '<div><br /><NestedView></NestedView></div>';
+
+MyView.prototype.__bv = function (view, prototype) {
+  view.__bd(prototype, false);
   view.__rn([1], view.nest(NestedView, 2, 'a'));
   view.dom = {};
 };
