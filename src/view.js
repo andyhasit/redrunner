@@ -3,7 +3,6 @@ import {
   und, 
   ViewCache, 
   makeEl,
-  wrap,
   Wrapper
 } from './utils'
 
@@ -26,6 +25,7 @@ const c = console;
  * Private members (for internal use) start with __ and are listed here:
  *
  *  __bv (BuildView)  -- is built by babel
+ *  __bd (BuildDOM)  
  *  __ia (IsAttached)
  *  __gw (GetWrapper) -- returns a wrapper at a specific path
  *  __nv (NestedViews)
@@ -155,7 +155,7 @@ export class View {
    */ 
   __bd(prototype, clone) {
     if (clone && !prototype.__cn) {
-       prototype.__cn = makeEl(prototype.__ht)
+      prototype.__cn = makeEl(prototype.__ht)
     }
     const element = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht)
     this.__sr(element)

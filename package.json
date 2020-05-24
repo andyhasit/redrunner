@@ -4,8 +4,9 @@
   "description": "A tiny framework with legs",
   "scripts": {
     "prepublish": "babel src -d lib",
-    "build": "microbundle",
-    "test": "jest"
+    "build": "babel src -d lib",
+    "test": "jest",
+    "clear-jest": "jest --clearCache"
   },
   "author": "Andrew Buchan",
   "babel": {

@@ -59,7 +59,7 @@ export function h(tag, inner) {
  */
 export function createView(cls, props, parent, seq) {
   let view = new cls(parent, props, seq)
-  view.__bv(view, wrap)
+  view.__bv(view, cls.prototype)
   view.init()
   view.update()
   return view
@@ -75,16 +75,18 @@ export function createView(cls, props, parent, seq) {
     A function called with (props, seq) which must return a key
 */
 
+
+const defaultKeyFn = (props, seq) => seq
+
 export class ViewCache {
   /**
    * @param {class} cls The class of View to create
    * @param {function} keyFn A function which obtains the key to cache by
    */
   constructor(cls, keyFn) {
-    const defaultKeyFn = (props, seq) => seq
     this.cls = cls
     this.cache = {}
-    this.keyFn = keyFn || defaultKeyFn
+    this.keyFn = isStr(keyFn) ? props => props[keyFn] : (keyFn || defaultKeyFn)
     this._seq = 0
   }
   getMany(items, parentView, reset) {
@@ -233,12 +235,11 @@ export class Wrapper {
    * @param {getEl} items A function which extracts the element from the item
    */
   items(items, getEl) {
-    this.clear()
-    const frag = doc.createDocumentFragment()
+    const e = this.e
+    e.innerHTML = ''
     for (var i=0, il=items.length; i<il; i++) {
-      frag.appendChild(getEl(items[i]))
+      e.appendChild(getEl(items[i]))
     }
-    this.e.appendChild(frag)
     this._items = items
     return this
   }
