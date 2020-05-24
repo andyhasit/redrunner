@@ -9,7 +9,7 @@
 const {c} = require('../utils/constants')
 const {extractAtts, getAttDefinition, isLeafNode} = require('../utils/dom')
 const {specialAttributes, splitter} = require('./constants')
-const {expandField} = require('./views')
+const {adjustName, expandConverter, expandProperty} = require('./views')
 
 /**
  * Returns undefined if string is only whitespace, else the original string.
@@ -53,23 +53,10 @@ function splitInlineText(rawStr) {
 
 /**
  * Builds the watch object.
-
-
-  function (n, o) {
-    
-  }
-
-  , function (n, o) {
-    foo(n, o, this.dom.__5);
-  }],
-
-
- * 
  */
 function buildInlineWatch(target, inlineCallDetails) {
 	let {name, convert, before, after} = inlineCallDetails
-	/* this.dom.__4.css(raw); */
-	convert = convert ? `${expandField(convert)}(n, o)` : 'n'
+	convert = convert ? expandConverter(convert) : 'n'
 	if (before && after) {
 		raw = `"${before}" + ${convert} + "${after}"`
 	} else if (before && !after) {
@@ -79,22 +66,22 @@ function buildInlineWatch(target, inlineCallDetails) {
 	} else {
 		raw = convert
 	}
-	return {name: name, property: expandField(name), raw: raw, target:target}
+	return {name: adjustName(name), property: expandProperty(name), raw: raw, target:target}
 
-			// switch(inlineCall.type) {
-			//   case 'middle':
-			//     // code block
-			//     break;
-			//   case 'full':
-			//     // code block
-			//     break;
-			//   case 'start':
-			//     // code block
-			//     break;
-			//   case 'end':
-			//     // code block
-			//     break;
-			// }
+	// switch(inlineCall.type) {
+	//   case 'middle':
+	//     // code block
+	//     break;
+	//   case 'full':
+	//     // code block
+	//     break;
+	//   case 'start':
+	//     // code block
+	//     break;
+	//   case 'end':
+	//     // code block
+	//     break;
+	// }
 }
 
 /**

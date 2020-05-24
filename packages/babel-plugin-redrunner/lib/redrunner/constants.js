@@ -14,4 +14,9 @@ const specialAttributes = {
  */
 const splitter = '|'
 
-module.exports = {specialAttributes, splitter}
+/** 
+ * The args string for watch callbacks.
+ */
+const watchArgs = '(n, o)'
+
+module.exports = {specialAttributes, splitter, watchArgs}

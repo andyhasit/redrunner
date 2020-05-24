@@ -1,3 +1,5 @@
+const {watchArgs} = require('./constants')
+
 /**
  * Functionality relating to RedRunner Views
  */
@@ -20,15 +22,17 @@ function lookupArgs(nodePath) {
 }
 
 /**
- * Adjusts the field for shorthand notation as follows:
+ * Expands a field's shorthand notation as follows:
  *
- *   ''       >  true
  *   field    >  this.props.field
  *   .field   >  this.field
  *   ..field  >  field
  *
+ *   And a special exception, which does not belong here!
+ *
+ *   ''       >  true
  */
-function expandField(field) {
+function expandShorthand(field) {
   if (field == '') {
     return true
   }
@@ -38,6 +42,51 @@ function expandField(field) {
     return 'this.' + field.substr(1)
   }
   return 'this.props.' + field
+}
+
+/**
+ * expands the convert slot, including the expandShorthand 
+ *
+ *   undefined  >  undefined
+ *   ''         >  undefined
+ *   foo        >  this.props.foo
+ *   foo?       >  this.props.foo(n, o)
+ *   foo()      >  this.props.foo()
+ *   foo(x, 2)  >  this.props.foo(x, 2)
+ *   .foo       >  this.foo
+ *   ..foo      >  foo
+ *
+ */
+function expandConverter(convert) {
+  if (convert && (convert !== '')) {
+    const expanded = expandShorthand(convert)
+    return convert.endsWith('?') ? `${expanded.slice(0, -1)}${watchArgs}` : expanded
+  }
+}
+
+/**
+ * expands the watched property slot, including the expandShorthand: 
+ *
+ *   undefined  >  undefined
+ *   ''         >  undefined
+ *   foo        >  this.props.foo
+ *   foo?       >  this.props.foo()
+ *   foo()      >  this.props.foo()
+ *   foo(x, 2)  >  this.props.foo(x, 2)
+ *   .foo       >  this.foo
+ *   ..foo      >  foo
+ *
+ */
+function expandProperty(property) {
+  const expanded = expandShorthand(property)
+  return property.endsWith('?') ? expanded.slice(0, -1) + '()' : expanded
+}
+
+/**
+ * Replaces the () at the end of name with ? so we don't create two watches for the same thing
+ */
+function adjustName(name) {
+  return name.endsWith('()') ? name.slice(0, -2) + '?' : name
 }
 
 function parseTarget(target) {
@@ -51,4 +100,12 @@ function parseTarget(target) {
   return target + '('
 }
 
-module.exports = {expandField, getWrapperCall, lookupArgs, parseTarget}
+module.exports = {
+  adjustName,
+  expandConverter, 
+  expandProperty, 
+  expandShorthand, 
+  getWrapperCall, 
+  lookupArgs, 
+  parseTarget
+}

@@ -1,8 +1,9 @@
 const {c, EOL, htmlparse} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
+const {watchArgs} = require('./constants')
 const {addPrototypeField, addPrototypeFunction, addPrototypeObject} = require('../utils/javascript')
 const {findRedRunnerAtts, removeRedRunnerCode} = require('./special-atts')
-const {expandField, lookupArgs, getWrapperCall, parseTarget} = require('./views')
+const {expandShorthand, lookupArgs, getWrapperCall, parseTarget} = require('./views')
 const {extractInlineCallWatches} = require('./inline')
 
 /**
@@ -169,12 +170,12 @@ class ViewClassParser {
     let viewCacheGetViewsCall, callbackBody, wrapper = `this.dom.${saveAs}`
 
     const buildCachedCall = (cacheName, reset) => {
-      const cacheCall = `${cacheName}.getMany(${nest.convert}(n, o), this, ${reset})`
+      const cacheCall = `${cacheName}.getMany(${nest.convert}, this, ${reset})`
       return `${wrapper}.views(${cacheCall})`
     }
 
     const namedViewCacheCall = _ => {
-      const cacheName = expandField(nest.cache.substr(1))
+      const cacheName = expandShorthand(nest.cache.substr(1))
       return buildCachedCall(cacheName, false)
     }
 
@@ -186,7 +187,7 @@ class ViewClassParser {
       if (nest.keyFn && viewCacheKey) {
         this.error('You cannot provide both a keyFn and a key.', 'att:nest')
       } else if (nest.keyFn) {
-        viewCacheParam = `, ${expandField(nest.keyFn)}`
+        viewCacheParam = `, ${expandShorthand(nest.keyFn)}`
       } else if (viewCacheKey) {
         viewCacheParam = `, '${viewCacheKey}'`
       }
@@ -196,9 +197,9 @@ class ViewClassParser {
     }
 
     if (nest.cache === undefined) {
-      callbackBody = `${wrapper}.inner(${nest.convert}(n, o))`
+      callbackBody = `${wrapper}.inner(${nest.convert})`
     } else if (nest.cache === '') {
-      callbackBody = `${wrapper}.wrappers(${nest.convert}(n, o))`
+      callbackBody = `${wrapper}.wrappers(${nest.convert})`
     } else if (nest.cache.startsWith('@')) {
       callbackBody = namedViewCacheCall()
     } else {
@@ -221,13 +222,20 @@ class ViewClassParser {
       if (watch.raw) {
         callbackBody = `${wrapper}.${targetString}${watch.raw})`
       } else if (watch.convert) {
-        callbackBody = `${wrapper}.${targetString}${watch.convert}(n, o))`
+        callbackBody = `${wrapper}.${targetString}${watch.convert})`
       } else {
         callbackBody = `${wrapper}.${targetString}n)`
       }
     } else {
-      // assume convert is provided
-      callbackBody = `${watch.convert}(n, o, ${wrapper})`
+      // No watch target. Assume convert is provided.
+      // But it needs messy adjusting...
+      if (watch.convert.endsWith(watchArgs)) {
+        callbackBody = `${watch.convert.slice(0, -1)}, ${wrapper})`
+      } else if (watch.convert.endsWith(')')) {
+        callbackBody = `${watch.convert}`
+      } else {
+        callbackBody = `${watch.convert}${watchArgs.slice(0, -1)}, ${wrapper})`
+      } 
     }
     this.saveWatch(watch.name, watch.property, callbackBody)
   }

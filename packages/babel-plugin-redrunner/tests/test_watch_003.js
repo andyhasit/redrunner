@@ -1,7 +1,7 @@
 class MyView extends View {
   __html__ = `
     <div>
-      <span watch="count | .foo |"/>
+      <span watch="count | .foo? |"/>
       <span watch="count | ..foo |"/>
     </div>
   `
@@ -21,7 +21,7 @@ MyView.prototype.__wc = {
   'count': [function (n, o) {
     this.dom.__1.text(this.foo(n, o));
   }, function (n, o) {
-    this.dom.__2.text(foo(n, o));
+    this.dom.__2.text(foo);
   }]
 };
 

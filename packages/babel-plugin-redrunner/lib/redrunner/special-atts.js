@@ -7,7 +7,7 @@
  */
 
 const {specialAttributes, splitter} = require('./constants')
-const {expandField} = require('./views')
+const {adjustName, expandConverter, expandProperty, expandShorthand} = require('./views')
 const {getAttVal, getAttDefinition} = require('../utils/dom')
 
 /**
@@ -17,13 +17,13 @@ function parseWATCH(attString) {
   if (attString) {
     const chunks = attString.split(splitter)
     const values = {
-      name: chunks[0].trim(),
-      property: expandField(chunks[0].trim()),
+      name: adjustName(chunks[0].trim()),
+      property: expandProperty(chunks[0].trim()),
       convert: undefined,
       target: undefined,
     }
     if (chunks[1].trim() != '') {
-      values.convert = expandField(chunks[1].trim())
+      values.convert = expandConverter(chunks[1].trim())
     }
     if (chunks.length > 2) {
       // Just replace empty target with 'text' - this is further processed later.
@@ -47,14 +47,14 @@ function parseNEST(attString) {
   if (attString) {
     const chunks = attString.split(splitter)
     const values = {
-      name: chunks[0].trim(),
-      property: expandField(chunks[0].trim()),
+      name: adjustName(chunks[0].trim()),
+      property: expandProperty(chunks[0].trim()),
       convert: undefined,
       cache: undefined,
       keyFn: undefined
     }
     if (chunks[1].trim() != '') {
-      values.convert = expandField(chunks[1].trim())
+      values.convert = expandConverter(chunks[1].trim())
     }
     if (chunks.length > 2) {
       values.cache = chunks[2].trim()
@@ -75,7 +75,7 @@ function parseON(attString) {
     //TODO warn if no second chunk.
     const values = {
       event: chunks[0].trim(),
-      callback: `(e, w) => ${expandField(chunks[1].trim())}(e, w)`
+      callback: `(e, w) => ${expandShorthand(chunks[1].trim())}(e, w)`
     }
     return values
   }

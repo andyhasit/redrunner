@@ -3,9 +3,9 @@ class MyView extends View {
     <div>
       <span watch="count||"/>
       <span watch="count||css"/>
-      <span watch="count|foo|"/>
+      <span watch="count|foo?|"/>
       <span watch="count|.foo|css"/>
-      <span watch="count|..foo"/>
+      <span watch="count|..foo?"/>
       <span watch="countChanged()||enabled"/>
     </div>
   `
@@ -19,7 +19,7 @@ MyView.prototype.__wq = {
   'count': function () {
     return this.props.count;
   },
-  'countChanged()': function () {
+  'countChanged?': function () {
     return this.props.countChanged();
   }
 };
@@ -32,11 +32,11 @@ MyView.prototype.__wc = {
   }, function (n, o) {
     this.dom.__3.text(this.props.foo(n, o));
   }, function (n, o) {
-    this.dom.__4.css(this.foo(n, o));
+    this.dom.__4.css(this.foo);
   }, function (n, o) {
     foo(n, o, this.dom.__5);
   }],
-  'countChanged()': [function (n, o) {
+  'countChanged?': [function (n, o) {
     this.dom.__6.enabled(n);
   }]
 };
