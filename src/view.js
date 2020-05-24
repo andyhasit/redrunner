@@ -2,7 +2,8 @@ import {
   createView,
   und, 
   ViewCache, 
-  wrap, // Keep this, its used by babel (but maybe use better way)
+  makeEl,
+  wrap,
   Wrapper
 } from './utils'
 
@@ -134,11 +135,42 @@ export class View {
     this.__wc[path].push(callback)
     return this // Keep this because people may use it like on the wrapper.
   }
+  // /**
+  //  * Build from clone. The __bv method will call this if the class was set to clone.
+  //  */
+  // __fc(view, prototype) {
+  //   if (!prototype.__cn) {
+  //     prototype.__cn = makeEl(prototype.__ht)
+  //   }
+  //   this.__sr(prototype.cloneNode(true))
+  // }
+  // /**
+  //  * Build from html. The __bv method will call this if the class was not set to clone.
+  //  */ 
+  // __fh(prototype) {
+  //   this.__sr((makeEl(prototype.__ht))
+  // }
+  /**
+   * Build the DOM. We pass prototype as local var for speed.
+   */ 
+  __bd(prototype, clone) {
+    if (clone && !prototype.__cn) {
+       prototype.__cn = makeEl(prototype.__ht)
+    }
+    const element = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht)
+    this.__sr(element)
+  }
+  /**
+   * Set root
+   */
+  __sr(el) {
+    this.root = new Wrapper(el)
+  }
+  /**
+   * Returns a wrapper around element at path, where path is an array of indices.
+   * This is used by the babel plugin.
+   */
   __gw(path) {
-    /*
-    Returns a wrapper around element at path, where path is an array of indices.
-    This is used by the babel plugin.
-    */
     let el = path.reduce((accumulator, index) => accumulator.childNodes[index], this.root.e)
     return new Wrapper(el)
   }

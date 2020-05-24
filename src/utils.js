@@ -24,13 +24,21 @@ export function mount(elementOrId, cls, props, parent, seq) {
   return view
 }
 
+const throwAway = doc.createElement('template')
+
+/** 
+ * Create an element from html string
+ */
+export function makeEl(html) {
+  throwAway.innerHTML = html
+  return throwAway.content.firstChild
+}
+
 /**
  * Creates a wrapper from an HTML string.
  */
 export function wrap(html) {
-  let throwAway = doc.createElement('template')
-  throwAway.innerHTML = html
-  return new Wrapper(throwAway.content.firstChild)
+  return new Wrapper(makeEl(html))
 }
 
 /**
@@ -226,9 +234,11 @@ export class Wrapper {
    */
   items(items, getEl) {
     this.clear()
+    const frag = doc.createDocumentFragment()
     for (var i=0, il=items.length; i<il; i++) {
-      this.e.appendChild(getEl(items[i]))
+      frag.appendChild(getEl(items[i]))
     }
+    this.e.appendChild(frag)
     this._items = items
     return this
   }
