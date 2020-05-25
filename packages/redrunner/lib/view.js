@@ -345,10 +345,8 @@ var View = /*#__PURE__*/function () {
 }();
 
 exports.View = View;
-View.prototype.__ht = '<div></div>';
 
-View.prototype.__bv = function (view, prototype) {
-  view.__bd(prototype, false);
-
+View.prototype.__bv = function (view, wrap) {
+  view.root = wrap("<div></div>");
   view.dom = {};
 };

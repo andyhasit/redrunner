@@ -1,4 +1,3 @@
-demos/.cache/
-demos/dist/
-demos/old/
+.cache/
 node_modules/
+dist/
