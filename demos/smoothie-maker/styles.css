@@ -1,0 +1,33 @@
+.demo-component {
+    float: left;
+    max-width: 220px;
+    border: 1px solid black;
+    border-radius: 14px;
+    padding: 0 15px 20px;
+}
+
+.demo-component.h4 {
+    margin: 12px 0;
+}
+
+
+.click-counter {
+    padding: 10px 0;
+}
+
+h4 {
+    margin: 12px 0;
+}
+
+.emoji {
+    font-size: 84px;
+}
+
+.homepage-logo {
+    font-size: 400px;
+    color: #608ceb;
+}
+
+.smoothie-list {
+    text-align: center;
+}
