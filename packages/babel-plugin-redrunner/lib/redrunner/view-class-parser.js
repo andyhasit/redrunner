@@ -124,7 +124,6 @@ class ViewClassParser {
     let {props, saveAs} = findRedRunnerAtts(node)
     const lines = this.buildMethodLines
     const constructorStr = props? `view.nest(${tagName}, ${props})` : `view.nest(${tagName})`;
-    
     if (saveAs) {
       lines.push(`let ${saveAs} = ${constructorStr};`)
       lines.push(`view.__rn(${lookupArgs(nodePath)}, ${saveAs});`)
@@ -134,7 +133,7 @@ class ViewClassParser {
     }
   }
   processNormalNode(nodePath, node, tagName) {
-    let {nest, on, saveAs, watch} = findRedRunnerAtts(node)
+    let {nest, on, saveAs, watch, wrapperClass} = findRedRunnerAtts(node)
     let chainedCalls = ''
 
     /* Generates a unique variable name if saveAs has not been defined */
@@ -160,7 +159,8 @@ class ViewClassParser {
       chainedCalls = `.on('${on.event}', ${on.callback})`
     }
     if (saveAs) {
-      this.domObjectLines.push(`${saveAs}: view.${getWrapperCall(nodePath)}${chainedCalls},`)
+      const wrapperCall = getWrapperCall(nodePath, wrapperClass)
+      this.domObjectLines.push(`${saveAs}: ${wrapperCall}${chainedCalls},`)
     }
   }
   /**

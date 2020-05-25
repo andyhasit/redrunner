@@ -5,10 +5,20 @@ const {watchArgs} = require('./constants')
  */
 
 /**
- * Returns the string for call to __gw() including the args based on nodePath.
+ * Returns the call for creating a new wrapper based on nodePath.
+ *
+ * If wrapperClass is provided, it is initiated with new, and the class better
+ * be in scope. That is why we do it with new here rather than passing the class
+ * to __gw or so. 
+ * Similarly, that is why we use __gw, because we know "Wrapper" will be in scope
+ * there, but it isn't guaranteed to be where the view is defined.
+ *
+ * I'm a bit uneasy having 'view' explicitly named here in case we change it
+ * should probably be a constant.
  */
-function getWrapperCall(nodePath) {
-  return `__gw(${lookupArgs(nodePath)})`
+function getWrapperCall(nodePath, wrapperClass) {
+  const path = lookupArgs(nodePath)
+  return wrapperClass ? `new ${wrapperClass}(view.__lu(${path}))` : `view.__gw(${path})` 
 }
 
 /**

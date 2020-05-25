@@ -6,6 +6,7 @@
  *
  */
 
+const {c} = require('../utils/constants')
 const {specialAttributes, splitter} = require('./constants')
 const {adjustName, expandConverter, expandProperty, expandShorthand} = require('./views')
 const {getAttVal, getAttDefinition} = require('../utils/dom')
@@ -82,12 +83,22 @@ function parseON(attString) {
 }
 
 /**
+ * Parses the "props" special attribute (for passing props to a nested view)
+ */
+function parsePROPS(attString) {
+  if (attString) {
+    return expandShorthand(attString.trim())
+  }
+}
+
+/**
  * Collects all the special attribute for a node.
  */
 function findRedRunnerAtts(node) {
   const nodeAtts = node.rawAttrs
   return {
-    'props': getAttVal(nodeAtts, specialAttributes.PROPS),
+    'wrapperClass': getAttVal(nodeAtts, specialAttributes.CLASS),
+    'props': parsePROPS(getAttVal(nodeAtts, specialAttributes.PROPS)),
     'saveAs': getAttVal(nodeAtts, specialAttributes.AS),
     'on': parseON(getAttVal(nodeAtts, specialAttributes.ON)),
     'nest': parseNEST(getAttVal(nodeAtts, specialAttributes.NEST)),
