@@ -1,46 +1,45 @@
 # RedRunner
 
-A tiny framework with legs.
+A progressive frontend framework.
 
-## About
+#### Update May 2020
 
-RedRunner is a tiny, fast and productive front end JavaScript framework where you can:
+RedRunner works (experimentally) and looks very promising, but is in alpha mode, so anything could change.
 
-* Use expressive template tags, like Angular.
-* Compose your app using components defined as classes, like React.
-* Enjoy lightening fast performance resulting from compiled code without a virtual DOM, like Svelte.
+To see how it works, look at the **tests** and **demos** (user guide coming).
 
-Out of the box RedRunner is extremely fast, and you can do most things very intuitively. It also has a trump card: you can **progressively trade expressiveness for control**. 
+I've been testing performance using [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) and it measures up pretty well. It is faster than React in almost every test, the bundles are much smaller, and the code looks nicer too. 
 
-At 1.7kb gzipped, RedRunner is also one of the smallest frameworks around.
+I'm yet to raise a PR on there to add RedRunner, just been testing it locally to date.
 
-## Installation
+#### Installation
 
-Its not ready to use yet! Wait till version 0.1.0 (Planned end of May 2020).
-
-### Development
-
-There are no unit tests yet, so develop using the demos.
-
-#### Demos
-
-Run demos individually with parcel:
-
-```bash
-parcel demos/click_counter/index.html
-```
-
-The demos use relative imports to **src** and have no external dependencies.
-
-#### Build
-
-Use [microbundle](https://github.com/developit/microbundle) to build to **dist**:
+Use npm:
 
 ```
-npm run build
+npm install redrunner
+```
+
+This will install both **redrunner** and a compatible version of **babel-plugin-redrunner** which is required to process your code. 
+
+You will also need **@babel/plugin-proposal-class-properties** but you ***must*** specify them in this order:
+
+```json
+"plugins": [
+  ["babel-plugin-redrunner"],
+  ["@babel/plugin-proposal-class-properties"]
+]
+```
+
+#### Tests
+
+Run with:
+
+```
+npm test
 ```
 
 
-#### LICENSE
+#### License
 
 MIT
