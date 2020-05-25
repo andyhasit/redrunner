@@ -7,12 +7,12 @@ function getNext(n) {
 }
 
 class TestView extends View {
-  __html__ = '<span watch="|..getNext|"></span>'
+  __html__ = '<span watch="|..getNext?|"></span>'
 }
 
 const props = {name: 'joe'}
 
-test('Star notation always updates', () => {
+test('Empty property notation always updates', () => {
   const div = load(TestView, props)
   expect(div).toShow('<span>1</span>')
   div.update()

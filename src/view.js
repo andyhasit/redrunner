@@ -171,10 +171,15 @@ export class View {
    * This is used by the babel plugin.
    */
   __gw(path) {
-    let el = path.reduce((accumulator, index) => accumulator.childNodes[index], this.root.e)
-    return new Wrapper(el)
+    return new Wrapper(this.__lu(path))
   }
-
+  /**
+   * Returns an element at specified path, where path is an array of indices.
+   * This is used by the babel plugin.
+   */
+  __lu(path) {
+    return path.reduce((acc, index) => acc.childNodes[index], this.root.e)
+  }
   /**
    * Is Attached.
    * Determines whether this view is attached to the DOM.
@@ -188,7 +193,7 @@ export class View {
     //   /* jump to the parent element */
     //   element = element.parentNode;
     // }
-    return false //el.root.e.parentNode
+    return el.root.e.parentNode
   }
   __nc(cls, keyFn) {
     return new ViewCache(cls, keyFn)

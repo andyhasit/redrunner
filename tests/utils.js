@@ -2,7 +2,7 @@ const c = console
 const {prettyPrint} = require('html')
 
 import diff from 'jest-diff'
-import {h, mount, View} from '../src/index'
+import {h, mount, View, Wrapper} from '../src/index'
 
 /**
  * Returns a new div appended to the document body.
@@ -85,5 +85,6 @@ module.exports = {
 	c,
   h,
 	load,
-	View
+	View,
+  Wrapper
 }

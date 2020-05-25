@@ -1,16 +1,12 @@
 import {c, h, load, View} from '../utils'
 
-
 const names = ['joe', 'bob', 'alice']
 
 class TestView extends View {
   __html__ = `
-  	<div nest="|.items|PersonView">
+  	<div nest="|..names|PersonView">
     </div>
   `
-  items() {
-  	return names
-  }
 }
 
 class PersonView extends View {

@@ -9,12 +9,9 @@ import {c, load, View} from '../utils'
 
 class TestView extends View {
   __html__ = `
-    <div nest="|.items|NestedView:id">
+    <div nest="|..names|NestedView:id">
     </div>
   `
-  items() {
-    return names
-  }
 }
 
 class NestedView extends View {
@@ -30,9 +27,8 @@ class NestedView extends View {
   }
 }
 
-/*
-Code to track how many times each view was updated.
-*/
+
+// Code to track how many times each view was updated.
 let _seq = 0
 const _counter = {}
 const getSeq = () => {
@@ -53,8 +49,7 @@ const names = [
   {id: 3, name: 'kiwi'}
 ]
 const div = load(TestView)
-
-/* Important to make sure load isn't accidentally called twice somewhere */
+//* Run this first to make sure load isn't accidentally called twice somewhere
 test('Nested views update just once on load', () => {
   expect(div).toShow(`
     <div>
