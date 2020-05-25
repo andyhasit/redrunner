@@ -6,7 +6,7 @@
  *
  */
 
-const {c} = require('../utils/constants')
+const {c, EOL} = require('../utils/constants')
 const {specialAttributes, splitter} = require('./constants')
 const {adjustName, expandConverter, expandProperty, expandShorthand} = require('./views')
 const {getAttVal, getAttDefinition} = require('../utils/dom')
@@ -74,9 +74,15 @@ function parseON(attString) {
   if (attString) {
     const chunks = attString.split(splitter)
     //TODO warn if no second chunk.
+
+    let text = expandShorthand(chunks[1].trim())
+    const extra = text.endsWith(')') ? '' : '(e, w)'
+    text = text.endsWith('?') ? text.slice(0, -1) : text
+    text = text.startsWith('this.') ? 'view' + text.substr(4) : text
+    const body = `${text}${extra}`
     const values = {
       event: chunks[0].trim(),
-      callback: `(e, w) => ${expandShorthand(chunks[1].trim())}(e, w)`
+      callback: ['function(e, w) {', body, '}'].join(EOL)
     }
     return values
   }

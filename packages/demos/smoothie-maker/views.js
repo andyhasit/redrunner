@@ -46,19 +46,22 @@ class SmoothieItem extends View {
   }
 }
 
+function toggle() {
+  alert('wooo hiiii')
+}
 
 export class SmoothieDetail extends View {
   __html__ = `
     <div>
-      <button>X</button>
+      <button on="click|.toggle?">X</button>
       <span>{{name}}</span>
     </div>
   `
   init() {
-    this.debug()//on="click|.toggle?"
+    this.debug()//
   }
   toggle() {
-    smoothies.updateSmoothie(this.props.id)
+    smoothies.update(this.props.id, {name: 'yo'})
     this.update()
   }
 }
