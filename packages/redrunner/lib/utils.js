@@ -8,7 +8,7 @@ exports.makeEl = makeEl;
 exports.wrap = wrap;
 exports.h = h;
 exports.createView = createView;
-exports.Wrapper = exports.ViewCache = exports.isStr = exports.und = void 0;
+exports.Wrapper = exports.isStr = exports.und = void 0;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -98,91 +98,10 @@ function createView(cls, props, parent, seq) {
   return view;
 }
 /**
- * An object which caches and returns views of a same type.
- *
-@cls -- any valid subclass of View
-@cacheBy -- either:
-    <undefined> in which case the sequence is used as key*
-    A string used to lookup a property on the item. Can be dotted. e.g. 'user.id'
-    A function called with (props, seq) which must return a key
-*/
-
-
-var defaultKeyFn = function defaultKeyFn(props, seq) {
-  return seq;
-};
-
-var ViewCache = /*#__PURE__*/function () {
-  /**
-   * @param {class} cls The class of View to create
-   * @param {function} keyFn A function which obtains the key to cache by
-   */
-  function ViewCache(cls, keyFn) {
-    _classCallCheck(this, ViewCache);
-
-    this.cls = cls;
-    this.cache = {};
-    this.keyFn = isStr(keyFn) ? function (props) {
-      return props[keyFn];
-    } : keyFn || defaultKeyFn;
-    this._seq = 0;
-  }
-
-  _createClass(ViewCache, [{
-    key: "getMany",
-    value: function getMany(items, parentView, reset) {
-      var _this = this;
-
-      if (reset) {
-        this.reset();
-      }
-
-      return items.map(function (props) {
-        return _this.getOne(props, parentView);
-      });
-    }
-  }, {
-    key: "getOne",
-    value: function getOne(props, parentView) {
-      /*
-      Gets a view, potentially from cache
-      */
-      var view,
-          key = this.keyFn(props, this._seq); // TODO: can I detect whether we use seq?
-
-      if (this.cache.hasOwnProperty(key)) {
-        view = this.cache[key];
-
-        if (parentView !== view.parent) {
-          view.move(parentView);
-        }
-
-        view.update(props);
-      } else {
-        // Don't use nest
-        view = createView(this.cls, props, parentView, this._seq);
-        this.cache[key] = view;
-      }
-
-      this._seq += 1;
-      return view;
-    }
-  }, {
-    key: "reset",
-    value: function reset() {
-      this._seq = 0;
-    }
-  }]);
-
-  return ViewCache;
-}();
-/**
  * A wrapper around a DOM element.
  * All methods (some exceptions) return this, meaning they can be chained.
  */
 
-
-exports.ViewCache = ViewCache;
 
 var Wrapper = /*#__PURE__*/function () {
   function Wrapper(element) {
@@ -222,18 +141,18 @@ var Wrapper = /*#__PURE__*/function () {
   }, {
     key: "transition",
     value: function transition(fn) {
-      var _this2 = this;
+      var _this = this;
 
       return new Promise(function (resolve) {
         fn();
 
         var transitionEnded = function transitionEnded(e) {
-          _this2.e.removeEventListener('transitionend', transitionEnded);
+          _this.e.removeEventListener('transitionend', transitionEnded);
 
           resolve();
         };
 
-        _this2.e.addEventListener('transitionend', transitionEnded);
+        _this.e.addEventListener('transitionend', transitionEnded);
       });
     }
     /* Every method below must return 'this' so it can be chained */
@@ -291,10 +210,10 @@ var Wrapper = /*#__PURE__*/function () {
   }, {
     key: "cssAddTrans",
     value: function cssAddTrans(style) {
-      var _this3 = this;
+      var _this2 = this;
 
       return this.transition(function (_) {
-        return _this3.e.classList.add(style);
+        return _this2.e.classList.add(style);
       });
     }
   }, {
@@ -306,10 +225,10 @@ var Wrapper = /*#__PURE__*/function () {
   }, {
     key: "cssRemoveTrans",
     value: function cssRemoveTrans(style) {
-      var _this4 = this;
+      var _this3 = this;
 
       return this.transition(function (_) {
-        return _this4.e.classList.remove(style);
+        return _this3.e.classList.remove(style);
       });
     }
   }, {
@@ -341,14 +260,14 @@ var Wrapper = /*#__PURE__*/function () {
   }, {
     key: "inner",
     value: function inner(items) {
-      var _this5 = this;
+      var _this4 = this;
 
       if (!Array.isArray(items)) {
         items = [items];
       }
 
       return this.items(items, function (item) {
-        return _this5.__cu(item);
+        return _this4.__cu(item);
       });
     }
     /**
@@ -374,10 +293,10 @@ var Wrapper = /*#__PURE__*/function () {
   }, {
     key: "on",
     value: function on(event, callback) {
-      var _this6 = this;
+      var _this5 = this;
 
       this.e.addEventListener(event, function (e) {
-        return callback(e, _this6);
+        return callback(e, _this5);
       });
       return this;
     }

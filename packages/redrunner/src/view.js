@@ -1,7 +1,7 @@
+import {ViewCache} from './view-cache'
 import {
   createView,
-  und, 
-  ViewCache, 
+  und,
   makeEl,
   Wrapper
 } from './utils'

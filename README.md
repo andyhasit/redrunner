@@ -36,7 +36,7 @@ You will also need **@babel/plugin-proposal-class-properties** but you ***must**
 Run with:
 
 ```
-npm test
+lerna run test
 ```
 
 
