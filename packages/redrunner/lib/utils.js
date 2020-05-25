@@ -196,6 +196,13 @@ var Wrapper = /*#__PURE__*/function () {
       return this;
     }
   }, {
+    key: "child",
+    value: function child(wrapper) {
+      this.e.innerHTML = '';
+      this.e.appendChild(wrapper.e);
+      return this;
+    }
+  }, {
     key: "css",
     value: function css(style) {
       this.e.className = style;

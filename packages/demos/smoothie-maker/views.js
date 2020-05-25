@@ -1,4 +1,4 @@
-import {View} from '../../src/index'
+import {View} from 'redrunner'
 import {fruit} from './fruit'
 import {smoothies} from './smoothies'
 
@@ -15,7 +15,7 @@ export class HomePage extends View {
 
 export class Fruit extends View {
   __html__ = `
-    <div watch="color|.applyColor|atts">
+    <div watch="color|.applyColor?|atts">
       <span watch="emoji||"/>
       <span watch="name||"/>
     </div>
@@ -28,22 +28,9 @@ export class Fruit extends View {
 export class SmoothieList extends View {
   __html__ = `
     <div>
-      <div class="smoothie-list" as="list" watch="..smoothies.change|.smoothieItems|items"></div>
+      <div class="smoothie-list" as="list" nest="|..smoothies.items|SmoothieItem"></div>
     </div>
   `
-  init() {
-    this.dom.list.use(SmoothieItem) //.items(smoothies.items)
-    /*
-    this.dom.fruit.use(Fruit) //.items(fruit.items)
-    <div class="fruit-list" as=fruit watch="fruit.change:.fruitItems:items"></div>
-    */
-  }
-  smoothieItems() {
-    return smoothies.items
-  }
-  fruitItems() {
-    return fruit.items
-  }
 }
 
 
@@ -51,7 +38,7 @@ class SmoothieItem extends View {
   __html__ = `
     <div>
       <h3>{{name}}</h3>
-      <a href="{{.link()}}">Edit</a>
+      <a href="{{.link?}}">Edit</a>
     </div>
   `
   link() {
@@ -63,12 +50,12 @@ class SmoothieItem extends View {
 export class SmoothieDetail extends View {
   __html__ = `
     <div>
-      <button on="click|.toggle">X</button>
+      <button>X</button>
       <span>{{name}}</span>
     </div>
   `
   init() {
-    this.debug()
+    this.debug()//on="click|.toggle?"
   }
   toggle() {
     smoothies.updateSmoothie(this.props.id)

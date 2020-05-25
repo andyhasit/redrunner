@@ -1,0 +1,41 @@
+{
+  "private": "true",
+  "name": "redrunner-demos",
+  "version": "1.0.0",
+  "description": "A set of demos for RedRunner",
+  "scripts": {
+    "build": "babel src -d lib",
+    "test": "echo 'No tests'"
+  },
+  "author": "Andrew Buchan",
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ],
+    "plugins": [
+      "babel-plugin-redrunner",
+      "@babel/plugin-proposal-class-properties"
+    ]
+  },
+  "files": [
+    "lib",
+    "src"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andyhasit/redrunner"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.9.6",
+    "babel-plugin-redrunner": "^0.1.0",
+    "babel-preset-env": "^1.7.0",
+    "redrunner": "^0.1.1"
+  },
+  "dependencies": {
+    "redrunner-router": "^0.1.1"
+  }
+}

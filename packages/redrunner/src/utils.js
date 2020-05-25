@@ -132,6 +132,11 @@ export class Wrapper {
     this.e.checked = value
     return this
   }
+  child(wrapper) {
+    this.e.innerHTML = ''
+    this.e.appendChild(wrapper.e)
+    return this
+  }
   css(style) {
     this.e.className = style
     return this

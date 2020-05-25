@@ -1,4 +1,4 @@
-import {Store} from '../../src/store'
+import {Store} from './store'
 
 export const fruit = new Store([
   {name: 'grape', emoji: '🍇', color: '#be31e0'},

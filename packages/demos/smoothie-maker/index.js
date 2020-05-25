@@ -1,5 +1,5 @@
-import {Router} from '../../src/router'
-import {mount} from '../../src/utils'
+import {Router} from 'redrunner-router'
+import {mount} from 'redrunner'
 import {routerConfig} from './routes'
 
 mount('#main', Router, routerConfig)
