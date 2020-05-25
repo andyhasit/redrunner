@@ -9,12 +9,9 @@ import {c, load, View} from '../utils'
 
 class TestView extends View {
   __html__ = `
-    <div nest="|.items|NestedView">
+    <div nest="|..names|NestedView">
     </div>
   `
-  items() {
-    return names
-  }
 }
 
 class NestedView extends View {
