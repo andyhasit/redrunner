@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.View = void 0;
 
+var _viewCache = require("./view-cache");
+
 var _utils = require("./utils");
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
@@ -273,7 +275,7 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "__nc",
     value: function __nc(cls, keyFn) {
-      return new _utils.ViewCache(cls, keyFn);
+      return new _viewCache.ViewCache(cls, keyFn);
     }
     /**
      * Update nested views.

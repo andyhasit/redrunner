@@ -5,9 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RouteArg = exports.Route = exports.Router = void 0;
 
-var _view = require("./view");
-
-var _utils = require("./utils");
+var _redrunner = require("redrunner");
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
@@ -205,7 +203,7 @@ var Router = /*#__PURE__*/function (_View) {
   }]);
 
   return Router;
-}(_view.View);
+}(_redrunner.View);
 /*
  * A route.
  * The path is used for matching and extracting args & params.
@@ -246,7 +244,7 @@ var Route = /*#__PURE__*/function () {
     this.resources = config.resources;
     var paramStr,
         path = config.path;
-    this._vc = new _utils.ViewCache(config.cls, config.keyFn || defaultKeyFn);
+    this._vc = new _redrunner.ViewCache(config.cls, config.keyFn || defaultKeyFn);
 
     var _path$split = path.split('?');
 
@@ -330,7 +328,7 @@ var Route = /*#__PURE__*/function () {
           args[definedChunk.name] = function (_) {
             return definedChunk.convert(foundChunk);
           };
-        } else if ((0, _utils.isStr)(definedChunk) && definedChunk != foundChunk) {
+        } else if ((0, _redrunner.isStr)(definedChunk) && definedChunk != foundChunk) {
           return {
             v: false
           };

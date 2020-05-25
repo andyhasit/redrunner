@@ -1,5 +1,4 @@
-import {View} from './view'
-import {ViewCache, isStr} from './utils'
+import {View, ViewCache, isStr} from 'redrunner'
 
 /*
  * The defaultKeyFn for a route's ViewCache.
