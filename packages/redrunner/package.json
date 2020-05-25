@@ -1,6 +1,6 @@
 {
   "name": "redrunner",
-  "version": "0.0.10",
+  "version": "0.1.0",
   "description": "A tiny framework with legs",
   "scripts": {
     "prepublish": "babel src -d lib",
@@ -36,6 +36,6 @@
   },
   "dependencies": {
     "babel-core": "^7.0.0-bridge.0",
-    "babel-plugin-redrunner": "~0.0.1"
+    "babel-plugin-redrunner": "^0.1.0"
   }
 }
