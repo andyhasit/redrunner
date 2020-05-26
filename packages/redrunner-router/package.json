@@ -1,6 +1,6 @@
 {
   "name": "redrunner-router",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A router for RedRunner",
   "scripts": {
     "prepublish": "babel src -d lib",
@@ -32,7 +32,7 @@
     "jest": "^26.0.1"
   },
   "dependencies": {
-    "babel-plugin-redrunner": "^0.1.0",
-    "redrunner": "^0.1.1"
+    "babel-plugin-redrunner": "^0.2.0",
+    "redrunner": "^0.2.0"
   }
 }
