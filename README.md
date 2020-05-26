@@ -1,6 +1,6 @@
 # RedRunner
 
-A progressive frontend framework.
+A tiny progressive frontend framework.
 
 #### Update May 2020
 
@@ -8,9 +8,15 @@ RedRunner works (experimentally) and looks very promising, but is in alpha mode,
 
 To see how it works, look at the **tests** and **demos** (user guide coming soon).
 
-I've been testing performance using [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) and it measures up pretty well. It is faster than React in almost every test, the bundles are much smaller, and the code looks nicer too. 
+#### Performance
+
+I've been testing performance using [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) and it measures up pretty well. 
+
+It is faster than React in all but one test, the bundles are *much*\* smaller, and the code looks nicer too. 
 
 I'm yet to raise a PR on there to add RedRunner, just been testing it locally to date.
+
+\* The same benchmark app is 4.8K compared to 39K (both gzipped).
 
 #### Installation
 

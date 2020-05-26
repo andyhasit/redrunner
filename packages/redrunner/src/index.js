@@ -1,5 +1,14 @@
+import {createView, h, mount} from  './utils'
 import {View} from './view'
-import {h, mount, wrap, Wrapper, isStr} from './utils'
 import {ViewCache} from './view-cache'
+import {Wrapper, wrap} from './wrapper'
 
-module.exports = {mount, h, isStr, View, ViewCache, wrap, Wrapper}
+module.exports = {
+	createView,
+	h,
+	mount,
+	View,
+	ViewCache,
+	Wrapper,
+	wrap
+}

@@ -7,11 +7,15 @@ exports.ViewCache = void 0;
 
 var _utils = require("./utils");
 
+var _helpers = require("./helpers");
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+//TODO remove
 
 /**
  * An object which caches and returns views of a same type.
@@ -36,7 +40,7 @@ var ViewCache = /*#__PURE__*/function () {
 
     this.cls = cls;
     this.cache = {};
-    this.keyFn = (0, _utils.isStr)(keyFn) ? function (props) {
+    this.keyFn = (0, _helpers.isStr)(keyFn) ? function (props) {
       return props[keyFn];
     } : keyFn || defaultKeyFn;
     this._seq = 0;

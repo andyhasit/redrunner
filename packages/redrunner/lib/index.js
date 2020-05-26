@@ -1,17 +1,19 @@
 "use strict";
 
-var _view = require("./view");
-
 var _utils = require("./utils");
+
+var _view = require("./view");
 
 var _viewCache = require("./view-cache");
 
+var _wrapper = require("./wrapper");
+
 module.exports = {
-  mount: _utils.mount,
+  createView: _utils.createView,
   h: _utils.h,
-  isStr: _utils.isStr,
+  mount: _utils.mount,
   View: _view.View,
   ViewCache: _viewCache.ViewCache,
-  wrap: _utils.wrap,
-  Wrapper: _utils.Wrapper
+  Wrapper: _wrapper.Wrapper,
+  wrap: _wrapper.wrap
 };

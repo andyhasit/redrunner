@@ -1,4 +1,5 @@
-import {createView, isStr, Wrapper} from './utils'
+import {createView} from './utils'
+import {isStr} from './helpers' //TODO remove
 
 /**
  * An object which caches and returns views of a same type.

@@ -9,6 +9,10 @@ var _viewCache = require("./view-cache");
 
 var _utils = require("./utils");
 
+var _helpers = require("./helpers");
+
+var _wrapper = require("./wrapper");
+
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -36,17 +40,17 @@ var c = console;
  *  dom     -- an object containing all the saved wrappers
  *  emit    -- emit an event to be handled by a parent views
  *  handle  -- register a function to handle an event emitted by a nested view
- *  init    -- override to set initial state 
+ *  init    -- override to set initial state
  *  parent  -- the parent view
  *  props   -- the props passed to the view
  *  root    -- the root wrapper (should root even be a wrapper?)
  *  seq     -- the sequence
  *  update  -- method which gets called when a view is updated
- *  
+ *
  * Private members (for internal use) start with __ and are listed here:
  *
  *  __bv (BuildView)  -- is built by babel
- *  __bd (BuildDOM)  
+ *  __bd (BuildDOM)
  *  __ia (IsAttached)
  *  __gw (GetWrapper) -- returns a wrapper at a specific path
  *  __nv (NestedViews)
@@ -73,12 +77,14 @@ var View = /*#__PURE__*/function () {
     s.__nv = []; // Array of nested views
     // These relate to watchers
 
-    s.__ov = {}; // The old values for watches to compare against  
-    // These will be set by __bv()
+    s.__ov = {}; // The old values for watches to compare against
+    // These will be set during build
 
-    s.root = null; // the root wrapper, will be set by __bv
+    s.root = null; // the root wrapper
 
-    s.dom = null; // the named wrappers, will be set by __bv
+    s.e = null; // the element
+
+    s.dom = null; // the named wrappers
   }
   /* This field gets transformed by the babel plugin.
    * Providing a default here so that child classes get processed.
@@ -92,11 +98,11 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "update",
     value: function update(props) {
-      /*  
-       *   The external call to update the view. 
+      /*
+       *   The external call to update the view.
        *   @props -- new props, else it keeps its old (which is fine)
        */
-      if (!(0, _utils.und)(props)) {
+      if (!(0, _helpers.und)(props)) {
         this.props = props;
       }
 
@@ -158,7 +164,7 @@ var View = /*#__PURE__*/function () {
     value: function emit(name, args) {
       var target = this;
 
-      while (!(0, _utils.und)(target)) {
+      while (!(0, _helpers.und)(target)) {
         var handlers = target._handlers_;
 
         if (name in handlers) {
@@ -180,10 +186,8 @@ var View = /*#__PURE__*/function () {
       Watch a property and call the callback during update if it has changed.
        @path -- A dotted path to the value
          e.g. 'user.id'
-      
-      @callback -- a function to be called with (newValue, oldValue)
-      
-        e.g. (n,o) => alert(`Value changed from ${o} to ${n}`)
+       @callback -- a function to be called with (newValue, oldValue)
+         e.g. (n,o) => alert(`Value changed from ${o} to ${n}`)
        */
       if (!this.__wc.hasOwnProperty(path)) {
         this.__wc[path] = [];
@@ -203,7 +207,7 @@ var View = /*#__PURE__*/function () {
     // }
     // /**
     //  * Build from html. The __bv method will call this if the class was not set to clone.
-    //  */ 
+    //  */
     // __fh(prototype) {
     //   this.__sr((makeEl(prototype.__ht))
     // }
@@ -216,10 +220,10 @@ var View = /*#__PURE__*/function () {
     key: "__bd",
     value: function __bd(prototype, clone) {
       if (clone && !prototype.__cn) {
-        prototype.__cn = (0, _utils.makeEl)(prototype.__ht);
+        prototype.__cn = (0, _helpers.makeEl)(prototype.__ht);
       }
 
-      var element = clone ? prototype.__cn.cloneNode(true) : (0, _utils.makeEl)(prototype.__ht);
+      var element = clone ? prototype.__cn.cloneNode(true) : (0, _helpers.makeEl)(prototype.__ht);
 
       this.__sr(element);
     }
@@ -230,7 +234,8 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "__sr",
     value: function __sr(el) {
-      this.root = new _utils.Wrapper(el);
+      this.root = new _wrapper.Wrapper(el);
+      this.e = this.root.e;
     }
     /**
      * Returns a wrapper around element at path, where path is an array of indices.
@@ -240,7 +245,7 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "__gw",
     value: function __gw(path) {
-      return new _utils.Wrapper(this.__lu(path));
+      return new _wrapper.Wrapper(this.__lu(path));
     }
     /**
      * Returns an element at specified path, where path is an array of indices.
@@ -264,7 +269,7 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "__ia",
     value: function __ia() {
-      var el = this; // let element = 
+      var el = this; // let element =
       // while (element != document && element.parentNode) {
       //   /* jump to the parent element */
       //   element = element.parentNode;

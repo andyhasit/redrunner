@@ -9,6 +9,9 @@
   "scripts": {
     "test": "node tests/internal.js && node tests/integration.js"
   },
+  "files": [
+    "lib"
+  ],
   "author": "Andrew Buchan",
   "license": "MIT",
   "repository": {

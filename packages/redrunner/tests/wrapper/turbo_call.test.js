@@ -1,12 +1,12 @@
 import {c, load, View, Wrapper} from '../utils'
 
 class TestView extends View {
-  __html__ = '<span :cls="SpecialWrapper" :watch="|name|"></span>'
+  __html__ = '<span :cls="SpecialWrapper" :watch="|..items|turbo"></span>'
 }
 
 
 class SpecialWrapper extends Wrapper {
-  text(value) {
+  turbo(value) {
     this.e.textContent = 'ALICE'
     return this
   }
