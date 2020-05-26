@@ -8,8 +8,8 @@ function toUpper(n) {
 class TestView extends View {
   __html__ = `
   	<div>
-    	<span watch="name||"></span>
-      <span watch="name|..toUpper?|"></span>
+    	<span :watch="name||"></span>
+      <span :watch="name|..toUpper?|"></span>
     </div>
   `
 }

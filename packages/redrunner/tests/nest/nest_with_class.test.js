@@ -4,7 +4,7 @@ const names = ['joe', 'bob', 'alice']
 
 class TestView extends View {
   __html__ = `
-  	<div nest="|..names|PersonView">
+  	<div :nest="|..names|PersonView">
     </div>
   `
 }

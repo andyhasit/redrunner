@@ -2,12 +2,12 @@
  * Special attributes that can be used in the __html__ fields.
  */
 const specialAttributes = {
-  AS: 'as',
-  CLASS: 'cls',
-  NEST: 'nest',
-  ON: 'on',
-  PROPS: 'props',
-  WATCH: 'watch'
+  AS: ':as',
+  CLASS: ':cls',
+  NEST: ':nest',
+  ON: ':on',
+  PROPS: ':props',
+  WATCH: ':watch'
 }
 
 /** 

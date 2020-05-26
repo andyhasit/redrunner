@@ -7,7 +7,7 @@ function getNext(n) {
 }
 
 class TestView extends View {
-  __html__ = '<span watch="|..getNext?|"></span>'
+  __html__ = '<span :watch="|..getNext?|"></span>'
 }
 
 const props = {name: 'joe'}

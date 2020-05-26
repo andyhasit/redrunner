@@ -1,6 +1,6 @@
 class MyView extends View {
   __html__ = `
-    <div as="main" cls="SpecialWrapper">
+    <div :as="main" :cls="SpecialWrapper">
     </div>
   `
   foo() {}

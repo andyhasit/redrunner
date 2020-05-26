@@ -1,9 +1,9 @@
 class MyView extends View {
   __html__ = `
     <div>
-      <span nest="|.items|"/>
-      <span nest="|.items?|"/>
-      <span nest="|.items()|"/>
+      <span :nest="|.items|"/>
+      <span :nest="|.items?|"/>
+      <span :nest="|.items()|"/>
     </div>
   `
 }

@@ -8,9 +8,9 @@ function getName() {
 class TestView extends View {
   __html__ = `
   	<div>
-    	<span watch="name||"></span>
-      <span watch=".name||"></span>
-      <span watch="..getName()||"></span>
+    	<span :watch="name||"></span>
+      <span :watch=".name||"></span>
+      <span :watch="..getName()||"></span>
     </div>
   `
   init() {

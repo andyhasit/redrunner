@@ -2,9 +2,9 @@ class MyView extends View {
   __html__ = `
     <div>
       <br/>
-      <NestedView props="name"/>
-      <NestedView props=".name"/>
-      <NestedView props="..name"/>
+      <NestedView :props="name"/>
+      <NestedView :props=".name"/>
+      <NestedView :props="..name"/>
     </div>
   `
   foo() {}

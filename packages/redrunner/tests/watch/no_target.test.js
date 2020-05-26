@@ -8,7 +8,7 @@ function setSpan(n,o,w) {
 class TestView extends View {
   __html__ = `
   	<div>
-      <span watch="name|..setSpan"></span>
+      <span :watch="name|..setSpan"></span>
     </div>
   `
 }

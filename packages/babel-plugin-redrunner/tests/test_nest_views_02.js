@@ -1,7 +1,7 @@
 class MyView extends View {
   __html__ = `
     <div>
-      <span nest="|.items()|TodoView:id"/>
+      <span :nest="|.items()|TodoView:id"/>
     </div>
   `
 }

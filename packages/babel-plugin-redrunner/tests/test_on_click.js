@@ -1,10 +1,10 @@
 class MyView extends View {
   __html__ = `
     <div>
-      <span on="click|foo"></span>
-      <span on="click|.foo"></span>
-      <span on="click|..foo?"></span>
-      <span on="click|..foo(2)"></span>
+      <span :on="click|foo"></span>
+      <span :on="click|.foo"></span>
+      <span :on="click|..foo?"></span>
+      <span :on="click|..foo(2)"></span>
     </div>
   `
 }

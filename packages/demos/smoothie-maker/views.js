@@ -15,9 +15,9 @@ export class HomePage extends View {
 
 export class Fruit extends View {
   __html__ = `
-    <div watch="color|.applyColor?|atts">
-      <span watch="emoji||"/>
-      <span watch="name||"/>
+    <div :watch="color|.applyColor?|atts">
+      <span :watch="emoji||"/>
+      <span :watch="name||"/>
     </div>
   `
   applyColor(n) {
@@ -28,7 +28,7 @@ export class Fruit extends View {
 export class SmoothieList extends View {
   __html__ = `
     <div>
-      <div class="smoothie-list" as="list" nest="|..smoothies.items|SmoothieItem"></div>
+      <div class="smoothie-list" :nest="|..smoothies.items|SmoothieItem"></div>
     </div>
   `
 }
@@ -46,14 +46,11 @@ class SmoothieItem extends View {
   }
 }
 
-function toggle() {
-  alert('wooo hiiii')
-}
 
 export class SmoothieDetail extends View {
   __html__ = `
     <div>
-      <button on="click|.toggle?">X</button>
+      <button :on="click|.toggle?">X</button>
       <span>{{name}}</span>
     </div>
   `

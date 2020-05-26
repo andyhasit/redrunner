@@ -3,9 +3,9 @@
   "version": "0.1.1",
   "description": "A tiny framework with legs",
   "scripts": {
-    "prepublish": "babel src -d lib",
+    "prepublish": "npm test && babel src -d lib",
     "build": "babel src -d lib",
-    "test": "jest",
+    "test": "jest --clearCache && jest",
     "clear-jest": "jest --clearCache"
   },
   "author": "Andrew Buchan",
