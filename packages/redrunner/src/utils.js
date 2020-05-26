@@ -14,7 +14,7 @@ import {Wrapper} from './wrapper'
 export function mount(elementOrId, cls, props, parent, seq) {
   let view = createView(cls, props, parent, seq)
   let nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId
-  nodeToReplace.parentNode.replaceChild(view.root.e, nodeToReplace)
+  nodeToReplace.parentNode.replaceChild(view.e, nodeToReplace)
   return view
 }
 

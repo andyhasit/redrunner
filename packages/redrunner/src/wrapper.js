@@ -18,7 +18,7 @@ export class Wrapper {
     if (ct == 'Wrapper') {
       return item.e
     } else if (ct == 'View') {
-      return item.root.e
+      return item.e
     }
     return doc.createTextNode(item)
   }
@@ -158,7 +158,7 @@ export class Wrapper {
    * Set nested items as views
    */
   views(views) {
-    return this.items(views, view => view.root.e)
+    return this.items(views, view => view.e)
   }
   /*
    * Set nested items as wrappers

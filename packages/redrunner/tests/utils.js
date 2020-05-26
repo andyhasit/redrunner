@@ -19,7 +19,7 @@ function getDiv() {
 class TestMount {
   constructor(cls, props) {
   	this.view = mount(getDiv(), cls, props)
-    this.el = this.view.root.e
+    this.el = this.view.e
   	this.html = undefined
   	this.setHtml()
   }

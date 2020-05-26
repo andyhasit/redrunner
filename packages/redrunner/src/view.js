@@ -7,6 +7,7 @@ const c = console;
 /*
  * Public members:
  *
+ *  e       -- the root element
  *  nest    -- create a nested view
  *  debug   -- prints out debug info
  *  dom     -- an object containing all the saved wrappers
@@ -15,7 +16,6 @@ const c = console;
  *  init    -- override to set initial state
  *  parent  -- the parent view
  *  props   -- the props passed to the view
- *  root    -- the root wrapper (should root even be a wrapper?)
  *  seq     -- the sequence
  *  update  -- method which gets called when a view is updated
  *
@@ -46,7 +46,6 @@ export class View {
     s.__ov = {}             // The old values for watches to compare against
 
     // These will be set during build
-    s.root = null           // the root wrapper
     s.e = null              // the element
     s.dom = null            // the named wrappers
   }
@@ -155,15 +154,7 @@ export class View {
     if (clone && !prototype.__cn) {
       prototype.__cn = makeEl(prototype.__ht)
     }
-    const element = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht)
-    this.__sr(element)
-  }
-  /**
-   * Set root
-   */
-  __sr(el) {
-    this.root = new Wrapper(el)
-    this.e = this.root.e
+    this. e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht)
   }
   /**
    * Returns a wrapper around element at path, where path is an array of indices.
@@ -177,7 +168,7 @@ export class View {
    * This is used by the babel plugin.
    */
   __lu(path) {
-    return path.reduce((acc, index) => acc.childNodes[index], this.root.e)
+    return path.reduce((acc, index) => acc.childNodes[index], this.e)
   }
   /**
    * Is Attached.
@@ -192,7 +183,7 @@ export class View {
     //   /* jump to the parent element */
     //   element = element.parentNode;
     // }
-    return el.root.e.parentNode
+    return el.e.parentNode
   }
   __nc(cls, keyFn) {
     return new ViewCache(cls, keyFn)
@@ -229,7 +220,7 @@ export class View {
     }
   }
   __rn(path, view) {
-    this.__gw(path).replace(view.root.e)
+    this.__gw(path).replace(view.e)
   }
 
 
