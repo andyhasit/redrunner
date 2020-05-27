@@ -52,7 +52,7 @@ function parseNEST(attString) {
       property: expandProperty(chunks[0].trim()),
       convert: undefined,
       cache: undefined,
-      keyFn: undefined
+      config: undefined
     }
     if (chunks[1].trim() != '') {
       values.convert = expandConverter(chunks[1].trim())
@@ -61,7 +61,7 @@ function parseNEST(attString) {
       values.cache = chunks[2].trim()
     }
     if (chunks.length > 3) {
-      values.keyFn = chunks[3].trim()
+      values.config = chunks[3].trim()
     }
     return values
   }
@@ -112,7 +112,7 @@ function findRedRunnerAtts(node) {
   }
 }
 
-/** 
+/**
  * Returns a node as string with the RedRunner code removed.
  */
 function removeRedRunnerCode(dom) {
@@ -127,8 +127,8 @@ function removeRedRunnerCode(dom) {
     // Just trimming extraneous whitespace
     return rawAttString.split(' ').filter(s => s.length).join(' ')
   }
-  /* 
-   * Function called recursively on nodes. 
+  /*
+   * Function called recursively on nodes.
    */
   function processNode(node, i) {
     let attStr = node.rawAttrs

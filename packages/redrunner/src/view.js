@@ -113,25 +113,26 @@ export class View {
   old(name) {
     return this.__ov[name]
   }
-  watch(path, callback) {
-    /*
-    Watch a property and call the callback during update if it has changed.
+ /*
+  Watch a property and call the callback during update if it has changed.
 
-    @path -- A dotted path to the value
+  @path -- A dotted path to the value
 
-      e.g. 'user.id'
+    e.g. 'user.id'
 
-    @callback -- a function to be called with (newValue, oldValue)
+  @callback -- a function to be called with (newValue, oldValue)
 
-      e.g. (n,o) => alert(`Value changed from ${o} to ${n}`)
+    e.g. (n,o) => alert(`Value changed from ${o} to ${n}`)
 
-    */
-    if (!this.__wc.hasOwnProperty(path)) {
-      this.__wc[path] = []
-    }
-    this.__wc[path].push(callback)
-    return this // Keep this because people may use it like on the wrapper.
-  }
+  */
+  // watch(path, callback) {
+
+  //   if (!this.__wc.hasOwnProperty(path)) {
+  //     this.__wc[path] = []
+  //   }
+  //   this.__wc[path].push(callback)
+  //   return this // Keep this because people may use it like on the wrapper.
+  // }
   // /**
   //  * Build from clone. The __bv method will call this if the class was set to clone.
   //  */
@@ -157,11 +158,18 @@ export class View {
     this. e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht)
   }
   /**
-   * Returns a wrapper around element at path, where path is an array of indices.
+   * Returns a refular wrapper around element at path, where path is an array of indices.
    * This is used by the babel plugin.
    */
   __gw(path) {
     return new Wrapper(this.__lu(path))
+  }
+  /**
+   * Returns a cached wrapper around element at path, where path is an array of indices.
+   * This is used by the babel plugin.
+   */
+  __cw(path, cache, config) {
+    return new CachedWrapper(this.__lu(path), cache, config)
   }
   /**
    * Returns an element at specified path, where path is an array of indices.
@@ -185,8 +193,11 @@ export class View {
     // }
     return el.e.parentNode
   }
-  __nc(cls, keyFn) {
-    return new ViewCache(cls, keyFn)
+  __kc(cls, keyFn) {
+    return new KeyedCache(cls, keyFn)
+  }
+  __sc(cls) {
+    return new SequentialCache(cls)
   }
   /**
    * Update nested views.

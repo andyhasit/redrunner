@@ -2,7 +2,7 @@ const {c, EOL, htmlparse} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
 const {watchArgs} = require('./constants')
 const {findRedRunnerAtts, removeRedRunnerCode} = require('./special-atts')
-const {expandShorthand, lookupArgs, getWrapperCall, parseTarget} = require('./views')
+const {expandShorthand, lookupArgs, parseTarget} = require('./views')
 const {extractInlineCallWatches} = require('./inline')
 
 /**
@@ -63,7 +63,7 @@ class ViewClassParser {
   }
   processNormalNode(nodePath, node, tagName) {
     let {nest, on, saveAs, watch, wrapperClass} = findRedRunnerAtts(node)
-    let chainedCalls = ''
+    let wrapperCall, chainedCalls = ''
 
     /* Generates a unique variable name if saveAs has not been defined */
     const implicitSave = _ => saveAs = saveAs ?  saveAs : this.getUniqueVarName()
@@ -81,6 +81,7 @@ class ViewClassParser {
     if (nest) {
       implicitSave()
       this.addNestWatch(nest, saveAs)
+      wrapperCall = this.getCachedWrapperCall(nest, nodePath, wrapperClass)
     }
     if (on) {
       implicitSave()
@@ -88,53 +89,60 @@ class ViewClassParser {
       chainedCalls = `.on('${on.event}', ${on.callback})`
     }
     if (saveAs) {
-      const wrapperCall = getWrapperCall(nodePath, wrapperClass)
+      wrapperCall = wrapperCall || this.getRegularWrapperCall(nodePath, wrapperClass)
       this.domObjectLines.push(`${saveAs}: ${wrapperCall}${chainedCalls},`)
     }
+  }
+  /**
+   * Returns the call for creating a new wrapper based on nodePath.
+   *
+   * If wrapperClass is provided, it is initiated with new, and the class better
+   * be in scope. That is why we do it with new here rather than passing the class
+   * to __gw or so.
+   * Similarly, that is why we use __gw, because we know "Wrapper" will be in scope
+   * there, but it isn't guaranteed to be where the view is defined.
+   *
+   * I'm a bit uneasy having 'view' - should probably be a constant.
+   */
+  getRegularWrapperCall(nodePath, wrapperClass) {
+    const path = lookupArgs(nodePath)
+    return wrapperClass ? `new ${wrapperClass}(view.__lu(${path}))` : `view.__gw(${path})`
+  }
+  getCachedWrapperCall(nest, nodePath, wrapperClass) {
+    const path = lookupArgs(nodePath)
+    const config = nest.config? expandShorthand(nest.config) : '{}'
+    let cache
+
+    const getCacheKeyFunction = key => {
+      if (key.endsWith('?')) {
+        return expandShorthand(key.slice(0, -1))
+      }
+      return `function(props) {return props.${key}}`
+    }
+    // Build cache call
+    if (nest.cache.startsWith('@')) {
+      cache = expandShorthand(nest.cache.substr(1))
+    } else {
+      const [viewCacheClass, viewCacheKey] = nest.cache.split(':')
+      if (viewCacheKey) {
+        const keyFn = getCacheKeyFunction(viewCacheKey)
+        cache = `view.__kc(${viewCacheClass}, ${keyFn})`
+      } else {
+        cache = `view.__sc(${viewCacheClass})`
+      }
+    }
+
+    if (wrapperClass) {
+      return `new ${wrapperClass}(view.__lu(${path}), ${cache}, ${config})`
+    }
+    return `view.__cw(${path}, ${cache}, ${config})`
   }
   /**
    * Adds a watch for the nest attribute.
    */
   addNestWatch(nest, saveAs) {
-    let viewCacheGetViewsCall, callbackBody, wrapper = `this.dom.${saveAs}`
-
-    const buildCachedCall = (cacheName, reset) => {
-      const cacheCall = `${cacheName}.getMany(${nest.convert}, this, ${reset})`
-      return `${wrapper}.views(${cacheCall})`
-    }
-
-    const namedViewCacheCall = _ => {
-      const cacheName = expandShorthand(nest.cache.substr(1))
-      return buildCachedCall(cacheName, false)
-    }
-
-    const ownViewCacheCall = _ => {
-      const [viewCacheClass, viewCacheKey] = nest.cache.split(':')
-      const generatedCacheName = this.getUniqueVarName()
-      const cacheName = `this.dom.${generatedCacheName}`
-      let viewCacheParam = ''
-      if (nest.keyFn && viewCacheKey) {
-        this.error('You cannot provide both a keyFn and a key.', 'att:nest')
-      } else if (nest.keyFn) {
-        viewCacheParam = `, ${expandShorthand(nest.keyFn)}`
-      } else if (viewCacheKey) {
-        viewCacheParam = `, '${viewCacheKey}'`
-      }
-      const createViewCacheStatement = `view.__nc(${viewCacheClass}${viewCacheParam})`
-      this.domObjectLines.push(`${generatedCacheName}: ${createViewCacheStatement},`)
-      return buildCachedCall(cacheName, true)
-    }
-
-    if (nest.cache === undefined) {
-      callbackBody = `${wrapper}.inner(${nest.convert})`
-    } else if (nest.cache === '') {
-      callbackBody = `${wrapper}.wrappers(${nest.convert})`
-    } else if (nest.cache.startsWith('@')) {
-      callbackBody = namedViewCacheCall()
-    } else {
-      callbackBody = ownViewCacheCall()
-    }
-
+    const wrapper = `this.dom.${saveAs}`
+    const callbackBody = `${wrapper}.items(${nest.convert})`
     this.saveWatch(nest.name, nest.property, callbackBody)
   }
   /**
