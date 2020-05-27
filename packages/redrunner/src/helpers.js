@@ -1,4 +1,4 @@
-const c = console
+export const c = console
 export const doc = document
 const throwAway = doc.createElement('template')
 

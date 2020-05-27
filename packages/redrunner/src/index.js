@@ -1,4 +1,5 @@
 import {createView, h, mount, wrap} from  './utils'
+import {isStr} from  './helpers'
 import {View} from './view'
 import {KeyedCache, SequentialCache} from './view-cache'
 import {CachedWrapper, Wrapper} from './wrapper'
@@ -8,6 +9,7 @@ module.exports = {
 	h,
 	mount,
 	KeyedCache,
+	isStr,
 	SequentialCache,
 	View,
 	Wrapper,

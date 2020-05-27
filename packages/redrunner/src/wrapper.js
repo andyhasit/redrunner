@@ -1,4 +1,4 @@
-import {doc} from './helpers'
+import {c, doc} from './helpers'
 
 /**
  * A wrapper around a DOM element.
@@ -157,7 +157,7 @@ export class Wrapper {
 const rtnSelf = x => x
 
 /**
- * A special wrapper for large lists. TODO: implement sharper sort algorithm.
+ * A wrapper which uses a cache.
  */
 export class CachedWrapper extends Wrapper {
   constructor(element, cache, config) {
@@ -169,42 +169,46 @@ export class CachedWrapper extends Wrapper {
   }
   items(items) {
     const e = this.e
+    const childNodes = e.childNodes
     const cache = this.cache
-    cache.reset()
-
     const cmp = cache.keyFn || rtnSelf
     const oldKeys = this.oldKeys
     const newKeys = []
     const itemsLength = items.length
+    let canAddNow = oldKeys.length - 1
+    let offset = 0
+    cache.reset()
 
-    for (let i=0, il=itemsLength; i<il; i++) {
+    /*
+     * We loop over the newKeys and pull Elements forward.
+     * oldKeys will be edited in place to look like newKeys, but may have trailing
+     * keys which represent the items to be removed.
+     */
+    for (let i=0; i<itemsLength; i++) {
       let item = items[i]
-      let key = cmp(items[i]) // we'll change this
-      newKeys.push(key)
+      let key = cmp(items[i]) // TODO change to get from cache with key
       let view = this.cache.getOne(items[i]) // view is now updated
-      view.seq = i
+      newKeys.push(key)
 
-      if (i > oldKeys.length - 1) {
-        // By the time we reach this, all new views
+      if (i > canAddNow) {
         e.appendChild(view.e, this)
-      } else if (key !== oldKeys[i]) {
-        e.insertBefore(view.e, e.childNodes[i])
-
-        let removeKeyAt = oldKeys.indexOf(key)
-        if (removeKeyAt > -1) {
-          oldKeys.splice(removeKeyAt, 1)
-          oldKeys.splice(i, 0, key)
-        }
+      } else if (key !== oldKeys[i + offset]) {
+        /*
+         * Note: insertBefore removes the element from the DOM if attached
+         * elsewhere, which should either only be further down in the
+         * childNodes, or in case of a shared cache, somewhere we don't
+         * care about removing it from, so its OK.
+         */
+        e.insertBefore(view.e, childNodes[i])
+        offset ++
       }
     }
 
-    let remaining = (oldKeys.length - itemsLength) + 1
-    if (remaining > 0) {
-      while(--remaining) {
-        e.removeChild(e.childNodes[itemsLength])
-      }
+    let lastIndex = childNodes.length - 1
+    let keepIndex = itemsLength - 1
+    for (let i=lastIndex; i>keepIndex; i--) {
+      e.removeChild(childNodes[i])
     }
-
     this.oldKeys = newKeys
     this._items = items
     return this
