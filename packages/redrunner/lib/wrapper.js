@@ -269,12 +269,16 @@ var Wrapper = /*#__PURE__*/function () {
 
   return Wrapper;
 }();
-/**
- * A special wrapper for large lists. TODO: implement sharper sort algorithm.
- */
-
 
 exports.Wrapper = Wrapper;
+
+var rtnSelf = function rtnSelf(x) {
+  return x;
+};
+/**
+ * A wrapper which uses a cache.
+ */
+
 
 var CachedWrapper = /*#__PURE__*/function (_Wrapper) {
   _inherits(CachedWrapper, _Wrapper);
@@ -290,6 +294,7 @@ var CachedWrapper = /*#__PURE__*/function (_Wrapper) {
     _this5.cache = cache;
     _this5.config = config;
     _this5._items = [];
+    _this5.oldKeys = [];
     return _this5;
   }
 
@@ -297,14 +302,50 @@ var CachedWrapper = /*#__PURE__*/function (_Wrapper) {
     key: "items",
     value: function items(_items2) {
       var e = this.e;
-      e.innerHTML = '';
-      this.cache.reset();
+      var cache = this.cache;
+      cache.reset();
+      var cmp = cache.keyFn || rtnSelf;
+      var oldKeys = this.oldKeys;
+      var newKeys = [];
+      var itemsLength = _items2.length;
 
-      for (var i = 0, il = _items2.length; i < il; i++) {
-        var view = this.cache.getOne(_items2[i]);
+      for (var i = 0, il = itemsLength; i < il; i++) {
+        var item = _items2[i];
+        var key = cmp(_items2[i]); // TODO change to get from cache with key
+
+        newKeys.push(key); // TODO remove this (test first)
+
+        var view = this.cache.getOne(_items2[i]); // view is now updated
+
         view.seq = i;
-        e.appendChild(view.e, this);
+
+        if (i > oldKeys.length - 1) {
+          e.appendChild(view.e, this);
+          oldKeys.push(key);
+        } else if (key !== oldKeys[i]) {
+          // This will tear the element out from where it was before
+          // Which is OK because it can only be further down
+          // (assuming cache isn't shared)
+          e.insertBefore(view.e, e.childNodes[i]); // Update the oldKeys to match
+
+          var removeKeyAt = oldKeys.indexOf(key);
+
+          if (removeKeyAt > -1) {
+            oldKeys.splice(removeKeyAt, 1);
+            oldKeys.splice(i, 0, key);
+          }
+        }
       }
+
+      var remaining = oldKeys.length - itemsLength + 1;
+
+      if (remaining > 0) {
+        while (--remaining) {
+          e.removeChild(e.childNodes[itemsLength]);
+        }
+      }
+
+      this.oldKeys = newKeys; // TODO remove this (test first)
 
       this._items = _items2;
       return this;

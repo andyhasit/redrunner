@@ -9,92 +9,132 @@ import {c, load, View} from '../utils'
 
 class TestView extends View {
   __html__ = `
-    <div :nest="|..names|NestedView:id">
-    </div>
+    <div :nest="|..fruit|NestedView:id"/>
   `
 }
 
 class NestedView extends View {
   __html__ = `
-    <span>{{name}}</span>
+    <div>{{name}}</div>
   `
   init() {
-    this.uniqueSeq = getSeq()
+    this.uniqueSeq = counter.next()
   }
   update(props) {
     super.update(props)
-    updateCounter(this.uniqueSeq)
+    counter.increment(this.uniqueSeq)
+  }
+}
+
+/*
+ * A thing which counts updates.
+ */
+class UpdateCounter {
+  constructor() {
+    this.updates = {}
+    this._seq = 0
+  }
+  reset() {
+    this.updates = {}
+    this._seq = 0
+  }
+  next() {
+    this._seq ++
+    return this._seq
+  }
+  increment(uniqueSeq) {
+    if (!(uniqueSeq in this.updates)) {
+      this.updates[uniqueSeq] = 0
+    }
+    this.updates[uniqueSeq] ++
   }
 }
 
 
-// Code to track how many times each view was updated.
-let _seq = 0
-const _counter = {}
-const getSeq = () => {
-  _seq ++
-  return _seq
-}
-const updateCounter = (uniqueSeq) => {
-  if (!(uniqueSeq in _counter)) {
-    _counter[uniqueSeq] = 0
-  }
-  _counter[uniqueSeq] ++
+let fruit, div, counter = new UpdateCounter()
+function init() {
+  counter.reset()
+  div = load(TestView)
 }
 
-
-const names = [
-  {id: 1, name: 'apple'},
-  {id: 2, name: 'carrot'},
-  {id: 3, name: 'kiwi'}
-]
-const div = load(TestView)
-//* Run this first to make sure load isn't accidentally called twice somewhere
+// Run this first to make sure update isn't accidentally called twice somewhere.
 test('Nested views update just once on load', () => {
+  fruit = [
+    {id: 1, name: 'apple'},
+    {id: 2, name: 'carrot'},
+    {id: 3, name: 'kiwi'}
+  ]
+  init()
   expect(div).toShow(`
     <div>
-      <span>apple</span>
-      <span>carrot</span>
-      <span>kiwi</span>
+      <div>apple</div>
+      <div>carrot</div>
+      <div>kiwi</div>
     </div>
   `)
-  expect(_counter).toEqual({1:1, 2:1, 3:1})
+  expect(counter.updates).toEqual({1:1, 2:1, 3:1})
 })
 
 test('Nested views update again', () => {
-  names.push({id: 4, name: 'orange'})
+  fruit = [
+    {id: 1, name: 'apple'},
+    {id: 2, name: 'carrot'},
+    {id: 3, name: 'kiwi'}
+  ]
+  init()
+  fruit.push({id: 4, name: 'orange'})
   div.update()
   expect(div).toShow(`
     <div>
-      <span>apple</span>
-      <span>carrot</span>
-      <span>kiwi</span>
-      <span>orange</span>
+      <div>apple</div>
+      <div>carrot</div>
+      <div>kiwi</div>
+      <div>orange</div>
     </div>
   `)
-  expect(_counter).toEqual({1:2, 2:2, 3:2, 4:1})
+  expect(counter.updates).toEqual({1:2, 2:2, 3:2, 4:1})
 })
+
 
 test('Removed views are not updated', () => {
-  names.length = 0
-  names.push({id: 5, name: 'lemons'})
+  fruit = [
+    {id: 1, name: 'apple'},
+    {id: 2, name: 'carrot'},
+    {id: 3, name: 'kiwi'}
+  ]
+  init()
+  expect(counter.updates).toEqual({1:1, 2:1, 3:1})
+
+  fruit.length = 0
+  fruit.push({id: 4, name: 'lemon'})
   div.update()
   expect(div).toShow(`
     <div>
-      <span>lemons</span>
+      <div>lemon</div>
     </div>
   `)
-  expect(_counter).toEqual({1:2, 2:2, 3:2, 4:1, 5:1})
+  expect(counter.updates).toEqual({1:1, 2:1, 3:1, 4:1})
 })
 
-test('Readed items us their old views', () => {
-  names.push({id: 1, name: 'apple'})
+test('Re-added items use their old views', () => {
+  fruit = [
+    {id: 1, name: 'apple'},
+    {id: 2, name: 'carrot'},
+    {id: 3, name: 'kiwi'}
+  ]
+  init()
+  expect(counter.updates).toEqual({1:1, 2:1, 3:1})
+  fruit.length = 0
   div.update()
+  expect(counter.updates).toEqual({1:1, 2:1, 3:1})
+  fruit.push({id: 4, name: 'lemon'})
+  fruit.push({id: 1, name: 'green apple'})
+  div.update()
+  expect(counter.updates).toEqual({1:2, 2:1, 3:1, 4:1})
   expect(div).toShow(`
     <div>
-      <span>lemons</span>
-      <span>apple</span>
+      <div>lemon</div>
+      <div>green apple</div>
     </div>
   `)
-  expect(_counter).toEqual({1:3, 2:2, 3:2, 4:1, 5:2})
 })
