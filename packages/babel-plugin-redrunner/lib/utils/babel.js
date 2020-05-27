@@ -7,7 +7,7 @@ const RemoveClassPropertyVisitor = {
   }
 }
 
-/** 
+/**
  * Convenience function for removing a property from the visited class.
  */
 function removeProperty(path){
@@ -15,7 +15,7 @@ function removeProperty(path){
 }
 
 /**
- * Returns the node's HTML as a string (as it is stored differently if the 
+ * Returns the node's HTML as a string (as it is stored differently if the
  *    string uses quasi quotes instead of normal quotes)
  */
 function getNodeHtmlString(node) {
@@ -23,7 +23,15 @@ function getNodeHtmlString(node) {
   return rawText
 }
 
+
+function getEnv(defaultValue = "development") {
+  return process.env.BABEL_ENV || process.env.NODE_ENV || defaultValue;
+}
+
+const ENV = getEnv()
+
 module.exports = {
+	ENV,
   getNodeHtmlString,
   removeProperty
 }

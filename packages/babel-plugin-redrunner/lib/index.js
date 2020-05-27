@@ -32,9 +32,12 @@ A.prototype.build = function () {...}
 */
 
 const babel = require('@babel/core');
-const {getNodeHtmlString, removeProperty} = require('./utils/babel');
+const {c} = require('./utils/constants');
+const {ENV, getNodeHtmlString, removeProperty} = require('./utils/babel');
 const {generateStatements} = require('./redrunner/statement-builder');
+const {addDevToolsHelper, addViewInfo} = require('./devtools/helper');
 
+let devToolsHelperAdded = false
 
 module.exports = () => {
   return {
@@ -48,8 +51,8 @@ module.exports = () => {
           for (node of path.node.body.body) {
             let propName = node.key.name
             if (propName == '__html__' || propName == '__clone__') {
-              viewData.cloneNode = propName == '__clone__'
               requiresGeneratedStatements = true
+              viewData.cloneNode = propName == '__clone__'
               viewData.htmlString = getNodeHtmlString(node)
               removeProperty(path)
             }
@@ -66,14 +69,22 @@ module.exports = () => {
             statements.forEach(statement =>
               path.insertAfter(babel.template.ast(statement))
             )
-            // viewClassParser.generateStatements().forEach(statement =>
-            //   path.insertAfter(babel.template.ast(statement))
-            // )
-            // const viewClassParser = new ViewClassParser(viewData)
-            // // Note that babel does its own adjustments with spaces, commas etc...
-            // viewClassParser.generateStatements().forEach(statement =>
-            //   path.insertAfter(babel.template.ast(statement))
-            // )
+
+            if (ENV == 'development') {
+              if (!devToolsHelperAdded) {
+                // It gets chucked in front of the first class, pretty arbitrary...
+                path.insertBefore(babel.template.ast(addDevToolsHelper()))
+                devToolsHelperAdded = true
+                // c.log(Object.keys(path))
+                // c.log(Object.keys(path.hub))
+                // c.log(Object.keys(path.hub.file))
+                // c.log(Object.keys(path.hub.file.opts))
+                // c.log(path.hub.file.opts.cwd)
+              }
+              let fileName = path.hub.file.opts.filename
+              path.insertAfter(babel.template.ast(addViewInfo(viewData, fileName)))
+              //throw path.buildCodeFrameError("Error message here");
+            }
           }
         }
       }

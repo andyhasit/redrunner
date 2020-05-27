@@ -22,11 +22,13 @@ const printDiff = require('print-diff');
 const {c, EOL, green, red, reset} = require('./utils');
 
 
-const transformOptions = {plugins: [
-	["@babel/plugin-syntax-class-properties"],  // Enable class properties syntax without touching
-	[redRunnerBabelPlugin],
-	["@babel/plugin-proposal-class-properties"] // Transforms them
-]};
+const transformOptions = {
+	plugins: [
+		["@babel/plugin-syntax-class-properties"],  // Enable class properties syntax without touching
+		[redRunnerBabelPlugin],
+		["@babel/plugin-proposal-class-properties"] // Transforms them
+	]
+};
 
 
 
@@ -79,7 +81,7 @@ function testAllFilesInDir() {
 			testFile(__dirname + '/' + file);
 		}
 	});
-	
+
 }
 
 let ExitCode = 0

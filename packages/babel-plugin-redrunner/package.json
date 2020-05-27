@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "node tests/internal.js && node tests/integration.js"
+    "test": "NODE_ENV=test node tests/internal.js && NODE_ENV=test node tests/integration.js"
   },
   "files": [
     "lib"
