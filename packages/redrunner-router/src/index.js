@@ -1,8 +1,8 @@
-import {View, ViewCache, isStr} from 'redrunner'
+import {View, KeyedCache, isStr} from 'redrunner'
 
 /*
  * The defaultKeyFn for a route's ViewCache.
- * It returns 1, which causes the same view to be reused each time, which is most likely 
+ * It returns 1, which causes the same view to be reused each time, which is most likely
  * what we want, but means the view should must be stateless.
  */
 const defaultKeyFn = _ => 1
@@ -33,7 +33,7 @@ params vs vars
 /* RouterView
  * A view which responds to changes in the hash url.
  * Arg 'data' must be an object like {routes, resources}
- * 
+ *
  * @data.routes: an array of objects which will get passed as arg 'config' to new Route()
  * @data.resources: an object representing load-once resources as name:function
  *   the function will be called with (this) and must return a promise.
@@ -56,7 +56,7 @@ export class Router extends View {
     window.addEventListener('hashchange', e => this._hashChanged())
     window.addEventListener('load', e => this._hashChanged())
   }
-  /* 
+  /*
    */
   _resolveResources(resources) {
     let promises = []
@@ -86,7 +86,8 @@ export class Router extends View {
         matched = true
         this._resolveResources(route.resources).then(_ => {
           route.getView(routeData).then(view => {
-            this.root.child(view.root)
+            this.e.innerHTML = ''
+            this.e.appendChild(view.e)
             // Use this? bubble?
             // call back?
             //this.app.emit('route_changed', {routeData, url, view})
@@ -113,8 +114,8 @@ export class Router extends View {
  *   /todos/detail/001?name=joe  (yes, as everything after ? are params)
  *   /todos/001/detail           (no, as chunk[1] != 'detail')
  *   /todos/detail/001/next      (no, as it has more chunks than expected)
- * 
- * Config example: 
+ *
+ * Config example:
  * {
  *   path: '/todos',
  *   resources: ['todos', 'settings'],
@@ -122,10 +123,10 @@ export class Router extends View {
  *   keyFn: foo,            # optional used as cache arg for view
  *   resolve: foo,          # optional used to create data for view
  * }
- * 
+ *
  * The path may specify params after ? (but all params are passed to the view anyway)
  *  /todos/detail?id,date
- * 
+ *
  * Args and params may specify a type, in which case they are converted.
  * resolve gets called with (routeData, [this router]) and must return a promise, the return
  * value is passed as data to the view. routeData is {args, params, url}
@@ -134,7 +135,7 @@ export class Route {
   constructor(config) {
     this.resources = config.resources
     let paramStr, path = config.path;
-    this._vc = new ViewCache(config.cls, config.keyFn || defaultKeyFn);
+    this._vc = new KeyedCache(config.cls, config.keyFn || defaultKeyFn);
     [path, paramStr] = path.split('?')
     this.chunks = this.buildChunks(path) // An array of string or RouteArg
     this.params = this.buildParams(paramStr)

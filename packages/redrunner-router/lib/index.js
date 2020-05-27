@@ -47,7 +47,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 
 /*
  * The defaultKeyFn for a route's ViewCache.
- * It returns 1, which causes the same view to be reused each time, which is most likely 
+ * It returns 1, which causes the same view to be reused each time, which is most likely
  * what we want, but means the view should must be stateless.
  */
 var defaultKeyFn = function defaultKeyFn(_) {
@@ -78,7 +78,7 @@ params vs vars
 /* RouterView
  * A view which responds to changes in the hash url.
  * Arg 'data' must be an object like {routes, resources}
- * 
+ *
  * @data.routes: an array of objects which will get passed as arg 'config' to new Route()
  * @data.resources: an object representing load-once resources as name:function
  *   the function will be called with (this) and must return a promise.
@@ -129,7 +129,7 @@ var Router = /*#__PURE__*/function (_View) {
         return _this._hashChanged();
       });
     }
-    /* 
+    /*
      */
 
   }, {
@@ -179,7 +179,9 @@ var Router = /*#__PURE__*/function (_View) {
 
           _this3._resolveResources(route.resources).then(function (_) {
             route.getView(routeData).then(function (view) {
-              _this3.root.child(view.root); // Use this? bubble?
+              _this3.e.innerHTML = '';
+
+              _this3.e.appendChild(view.e); // Use this? bubble?
               // call back?
               //this.app.emit('route_changed', {routeData, url, view})
 
@@ -216,8 +218,8 @@ var Router = /*#__PURE__*/function (_View) {
  *   /todos/detail/001?name=joe  (yes, as everything after ? are params)
  *   /todos/001/detail           (no, as chunk[1] != 'detail')
  *   /todos/detail/001/next      (no, as it has more chunks than expected)
- * 
- * Config example: 
+ *
+ * Config example:
  * {
  *   path: '/todos',
  *   resources: ['todos', 'settings'],
@@ -225,10 +227,10 @@ var Router = /*#__PURE__*/function (_View) {
  *   keyFn: foo,            # optional used as cache arg for view
  *   resolve: foo,          # optional used to create data for view
  * }
- * 
+ *
  * The path may specify params after ? (but all params are passed to the view anyway)
  *  /todos/detail?id,date
- * 
+ *
  * Args and params may specify a type, in which case they are converted.
  * resolve gets called with (routeData, [this router]) and must return a promise, the return
  * value is passed as data to the view. routeData is {args, params, url}
@@ -244,7 +246,7 @@ var Route = /*#__PURE__*/function () {
     this.resources = config.resources;
     var paramStr,
         path = config.path;
-    this._vc = new _redrunner.ViewCache(config.cls, config.keyFn || defaultKeyFn);
+    this._vc = new _redrunner.KeyedCache(config.cls, config.keyFn || defaultKeyFn);
 
     var _path$split = path.split('?');
 
