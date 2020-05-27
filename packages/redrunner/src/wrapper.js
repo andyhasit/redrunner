@@ -154,6 +154,7 @@ export class Wrapper {
   }
 }
 
+const rtnSelf = x => x
 
 /**
  * A special wrapper for large lists. TODO: implement sharper sort algorithm.
@@ -164,16 +165,47 @@ export class CachedWrapper extends Wrapper {
     this.cache = cache
     this.config = config
     this._items = []
+    this.oldKeys = []
   }
   items(items) {
     const e = this.e
-    e.innerHTML = ''
-    this.cache.reset()
-    for (var i=0, il=items.length; i<il; i++) {
-      let view = this.cache.getOne(items[i])
+    const cache = this.cache
+    cache.reset()
+
+    const cmp = cache.keyFn || rtnSelf
+    const oldKeys = this.oldKeys
+    const newKeys = []
+    const itemsLength = items.length
+
+    for (let i=0, il=itemsLength; i<il; i++) {
+      let item = items[i]
+      let key = cmp(items[i]) // we'll change this
+      newKeys.push(key)
+      let view = this.cache.getOne(items[i]) // view is now updated
       view.seq = i
-      e.appendChild(view.e, this)
+
+      if (i > oldKeys.length - 1) {
+        // By the time we reach this, all new views
+        e.appendChild(view.e, this)
+      } else if (key !== oldKeys[i]) {
+        e.insertBefore(view.e, e.childNodes[i])
+
+        let removeKeyAt = oldKeys.indexOf(key)
+        if (removeKeyAt > -1) {
+          oldKeys.splice(removeKeyAt, 1)
+          oldKeys.splice(i, 0, key)
+        }
+      }
     }
+
+    let remaining = (oldKeys.length - itemsLength) + 1
+    if (remaining > 0) {
+      while(--remaining) {
+        e.removeChild(e.childNodes[itemsLength])
+      }
+    }
+
+    this.oldKeys = newKeys
     this._items = items
     return this
   }
