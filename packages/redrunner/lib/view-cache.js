@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ViewCache = void 0;
+exports.SequentialCache = exports.KeyedCache = exports.ViewCache = void 0;
 
 var _utils = require("./utils");
 
@@ -40,9 +40,7 @@ var ViewCache = /*#__PURE__*/function () {
 
     this.cls = cls;
     this.cache = {};
-    this.keyFn = (0, _helpers.isStr)(keyFn) ? function (props) {
-      return props[keyFn];
-    } : keyFn || defaultKeyFn;
+    this.keyFn = keyFn;
     this._seq = 0;
   }
 
@@ -96,3 +94,114 @@ var ViewCache = /*#__PURE__*/function () {
 }();
 
 exports.ViewCache = ViewCache;
+
+var KeyedCache = /*#__PURE__*/function () {
+  /**
+   * @param {class} cls The class of View to create
+   * @param {function} keyFn A function which obtains the key to cache by
+   */
+  function KeyedCache(cls, keyFn) {
+    _classCallCheck(this, KeyedCache);
+
+    this.cls = cls;
+    this.cache = {};
+    this.keyFn = keyFn;
+  }
+
+  _createClass(KeyedCache, [{
+    key: "getMany",
+    value: function getMany(items, parentView, reset) {
+      var _this2 = this;
+
+      if (reset) {
+        this.reset();
+      }
+
+      return items.map(function (props) {
+        return _this2.getOne(props, parentView);
+      });
+    }
+    /**
+     * Gets a view, potentially from cache
+     */
+
+  }, {
+    key: "getOne",
+    value: function getOne(props, parentView) {
+      var view,
+          key = this.keyFn(props);
+
+      if (this.cache.hasOwnProperty(key)) {
+        view = this.cache[key];
+
+        if (parentView !== view.parent) {
+          view.move(parentView);
+        }
+
+        view.update(props);
+      } else {
+        view = (0, _utils.createView)(this.cls, props, parentView, this._seq);
+        this.cache[key] = view;
+      }
+
+      return view;
+    }
+  }, {
+    key: "reset",
+    value: function reset() {}
+  }]);
+
+  return KeyedCache;
+}();
+
+exports.KeyedCache = KeyedCache;
+
+var SequentialCache = /*#__PURE__*/function () {
+  /**
+   * @param {class} cls The class of View to create
+   * @param {function} keyFn A function which obtains the key to cache by
+   */
+  function SequentialCache(cls) {
+    _classCallCheck(this, SequentialCache);
+
+    this.cls = cls;
+    this.cache = [];
+    this._seq = 0;
+  }
+  /**
+   * Gets a view, potentially from cache
+   */
+
+
+  _createClass(SequentialCache, [{
+    key: "getOne",
+    value: function getOne(props, parentView) {
+      var view;
+
+      if (this._seq < this.cache.length) {
+        view = this.cache[this._seq];
+
+        if (parentView !== view.parent) {
+          view.move(parentView);
+        }
+
+        view.update(props);
+      } else {
+        view = (0, _utils.createView)(this.cls, props, parentView, this._seq);
+        this.cache.push(view);
+      }
+
+      this._seq += 1;
+      return view;
+    }
+  }, {
+    key: "reset",
+    value: function reset() {
+      this._seq = 0;
+    }
+  }]);
+
+  return SequentialCache;
+}();
+
+exports.SequentialCache = SequentialCache;

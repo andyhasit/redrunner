@@ -25,7 +25,7 @@ var _wrapper = require("./wrapper");
 function mount(elementOrId, cls, props, parent, seq) {
   var view = createView(cls, props, parent, seq);
   var nodeToReplace = (0, _helpers.isStr)(elementOrId) ? _helpers.doc.getElementById(elementOrId.slice(1)) : elementOrId;
-  nodeToReplace.parentNode.replaceChild(view.root.e, nodeToReplace);
+  nodeToReplace.parentNode.replaceChild(view.e, nodeToReplace);
   return view;
 }
 /**

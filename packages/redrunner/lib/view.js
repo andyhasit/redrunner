@@ -35,6 +35,7 @@ var c = console;
 /*
  * Public members:
  *
+ *  e       -- the root element
  *  nest    -- create a nested view
  *  debug   -- prints out debug info
  *  dom     -- an object containing all the saved wrappers
@@ -43,7 +44,6 @@ var c = console;
  *  init    -- override to set initial state
  *  parent  -- the parent view
  *  props   -- the props passed to the view
- *  root    -- the root wrapper (should root even be a wrapper?)
  *  seq     -- the sequence
  *  update  -- method which gets called when a view is updated
  *
@@ -80,28 +80,31 @@ var View = /*#__PURE__*/function () {
     s.__ov = {}; // The old values for watches to compare against
     // These will be set during build
 
-    s.root = null; // the root wrapper
-
     s.e = null; // the element
 
     s.dom = null; // the named wrappers
   }
-  /* This field gets transformed by the babel plugin.
+  /**
+   * This field gets transformed by the babel plugin.
    * Providing a default here so that child classes get processed.
    */
 
 
   _createClass(View, [{
     key: "init",
-    value: function init() {// Gets called once
-    }
+
+    /**
+     * Gets called once immediately after building.
+     */
+    value: function init() {}
+    /**
+     *   The external call to update the view.
+     *   @props -- new props, else it keeps its old (which is fine)
+     */
+
   }, {
     key: "update",
     value: function update(props) {
-      /*
-       *   The external call to update the view.
-       *   @props -- new props, else it keeps its old (which is fine)
-       */
       if (!(0, _helpers.und)(props)) {
         this.props = props;
       }
@@ -110,6 +113,10 @@ var View = /*#__PURE__*/function () {
 
       this.__un();
     }
+    /**
+     * Prints debug information. Maybe think of a better way of displaying this.
+     */
+
   }, {
     key: "debug",
     value: function debug() {
@@ -146,19 +153,23 @@ var View = /*#__PURE__*/function () {
 
       this.parent = newParent;
     }
+    /**
+     * Builds a nested view of the specified class. Its up to you how you use it.
+     */
+
   }, {
     key: "nest",
     value: function nest(cls, props, seq) {
-      /*
-       * Builds a nested view of the specified class. Its up to you how you attach it.
-       * No caching is used. Use a cache object returned by this.cache() if you need caching.
-       */
       var child = (0, _utils.createView)(cls, props, this, seq);
 
       this.__nv.push(child);
 
       return child;
     }
+    /**
+     * Was intended as a way to bubble events up the tree. Not sure if needed.
+     */
+
   }, {
     key: "emit",
     value: function emit(name, args) {
@@ -174,44 +185,15 @@ var View = /*#__PURE__*/function () {
         target = target.parent;
       }
     }
+    /**
+     * Returns the old value of a watch. Must use shorthand notation e.g. "..items"
+     */
+
   }, {
     key: "old",
     value: function old(name) {
       return this.__ov[name];
     }
-  }, {
-    key: "watch",
-    value: function watch(path, callback) {
-      /*
-      Watch a property and call the callback during update if it has changed.
-       @path -- A dotted path to the value
-         e.g. 'user.id'
-       @callback -- a function to be called with (newValue, oldValue)
-         e.g. (n,o) => alert(`Value changed from ${o} to ${n}`)
-       */
-      if (!this.__wc.hasOwnProperty(path)) {
-        this.__wc[path] = [];
-      }
-
-      this.__wc[path].push(callback);
-
-      return this; // Keep this because people may use it like on the wrapper.
-    } // /**
-    //  * Build from clone. The __bv method will call this if the class was set to clone.
-    //  */
-    // __fc(view, prototype) {
-    //   if (!prototype.__cn) {
-    //     prototype.__cn = makeEl(prototype.__ht)
-    //   }
-    //   this.__sr(prototype.cloneNode(true))
-    // }
-    // /**
-    //  * Build from html. The __bv method will call this if the class was not set to clone.
-    //  */
-    // __fh(prototype) {
-    //   this.__sr((makeEl(prototype.__ht))
-    // }
-
     /**
      * Build the DOM. We pass prototype as local var for speed.
      */
@@ -223,22 +205,10 @@ var View = /*#__PURE__*/function () {
         prototype.__cn = (0, _helpers.makeEl)(prototype.__ht);
       }
 
-      var element = clone ? prototype.__cn.cloneNode(true) : (0, _helpers.makeEl)(prototype.__ht);
-
-      this.__sr(element);
+      this.e = clone ? prototype.__cn.cloneNode(true) : (0, _helpers.makeEl)(prototype.__ht);
     }
     /**
-     * Set root
-     */
-
-  }, {
-    key: "__sr",
-    value: function __sr(el) {
-      this.root = new _wrapper.Wrapper(el);
-      this.e = this.root.e;
-    }
-    /**
-     * Returns a wrapper around element at path, where path is an array of indices.
+     * Returns a refular wrapper around element at path, where path is an array of indices.
      * This is used by the babel plugin.
      */
 
@@ -246,6 +216,16 @@ var View = /*#__PURE__*/function () {
     key: "__gw",
     value: function __gw(path) {
       return new _wrapper.Wrapper(this.__lu(path));
+    }
+    /**
+     * Returns a cached wrapper around element at path, where path is an array of indices.
+     * This is used by the babel plugin.
+     */
+
+  }, {
+    key: "__cw",
+    value: function __cw(path, cache, config) {
+      return new _wrapper.CachedWrapper(this.__lu(path), cache, config);
     }
     /**
      * Returns an element at specified path, where path is an array of indices.
@@ -257,7 +237,7 @@ var View = /*#__PURE__*/function () {
     value: function __lu(path) {
       return path.reduce(function (acc, index) {
         return acc.childNodes[index];
-      }, this.root.e);
+      }, this.e);
     }
     /**
      * Is Attached.
@@ -275,12 +255,17 @@ var View = /*#__PURE__*/function () {
       //   element = element.parentNode;
       // }
 
-      return el.root.e.parentNode;
+      return el.e.parentNode;
     }
   }, {
-    key: "__nc",
-    value: function __nc(cls, keyFn) {
-      return new _viewCache.ViewCache(cls, keyFn);
+    key: "__kc",
+    value: function __kc(cls, keyFn) {
+      return new _viewCache.KeyedCache(cls, keyFn);
+    }
+  }, {
+    key: "__sc",
+    value: function __sc(cls) {
+      return new _viewCache.SequentialCache(cls);
     }
     /**
      * Update nested views.
@@ -328,24 +313,8 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "__rn",
     value: function __rn(path, view) {
-      this.__gw(path).replace(view.root.e);
+      this.__gw(path).replace(view.e);
     }
-    /* Currently unused, but we may use it in future strategy
-     */
-    // _cloneNode_() {
-    //   let ct = this._ct_
-    //   if (!ct._template_) {
-    //     let throwAway = document.createElement('template')
-    //     // let tidy = raw.replace(/\n/g, "")
-    //     //   .replace(/[\t ]+\</g, "<")
-    //     //   .replace(/\>[\t ]+\</g, "><")
-    //     //   .replace(/\>[\t ]+$/g, ">")
-    //     throwAway.innerHTML = ct.html.trim()
-    //     ct._template_ = throwAway.content.firstChild
-    //   }
-    //   return ct._template_.cloneNode(true)
-    // }
-
   }]);
 
   return View;

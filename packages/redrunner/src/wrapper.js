@@ -11,16 +11,10 @@ export class Wrapper {
     this._items = [] // For advanced manipulation.
   }
   /**
-   * Converts unknown item into an Element.
+   * Get element as 'e' form item, else return text node.
    */
-  __cu(item) {
-    let ct = item.constructor.name
-    if (ct == 'Wrapper') {
-      return item.e
-    } else if (ct == 'View') {
-      return item.e
-    }
-    return doc.createTextNode(item)
+  __ge(item) {
+    return item.e || doc.createTextNode(item)
   }
 
   /**
@@ -44,7 +38,7 @@ export class Wrapper {
   /* Every method below must return 'this' so it can be chained */
 
   append(item) {
-    this.e.appendChild(this.__cu(item))
+    this.e.appendChild(this.__ge(item))
     this._items.push(item)
     return this
   }
@@ -106,25 +100,29 @@ export class Wrapper {
     return this.att('id', value)
   }
   /*
-   * Add anything, including individual things.
+   * Set inner as individual or array. Not optimised.
    */
   inner(items) {
     if (!Array.isArray(items)) {
       items = [items]
     }
-    return this.items(items, item => this.__cu(item))
-  }
-  /**
-   * Set element's items.
-   *
-   * @param {array} items An array of items
-   * @param {getEl} items A function which extracts the element from the item
-   */
-  items(items, getEl) {
     const e = this.e
     e.innerHTML = ''
     for (var i=0, il=items.length; i<il; i++) {
-      e.appendChild(getEl(items[i]))
+      e.appendChild(this.__ge(items[i]))
+    }
+    return this
+  }
+  /**
+   * Set inner items.
+   *
+   * @param {array} items An array of wrappers or views
+   */
+  items(items) {
+    const e = this.e
+    e.innerHTML = ''
+    for (var i=0, il=items.length; i<il; i++) {
+      e.appendChild(items[i].e)
     }
     this._items = items
     return this
@@ -154,23 +152,11 @@ export class Wrapper {
   value(value) {
     return this.att('value', value)
   }
-  /*
-   * Set nested items as views
-   */
-  views(views) {
-    return this.items(views, view => view.e)
-  }
-  /*
-   * Set nested items as wrappers
-   */
-  wrappers(wrappers) {
-    return this.items(wrappers, wrapper => wrapper.e)
-  }
 }
 
 
 /**
- * A special wrapper for large lists.
+ * A special wrapper for large lists. TODO: implement sharper sort algorithm.
  */
 export class CachedWrapper extends Wrapper {
   constructor(element, cache, config) {
@@ -180,6 +166,15 @@ export class CachedWrapper extends Wrapper {
     this._items = []
   }
   items(items) {
-
+    const e = this.e
+    e.innerHTML = ''
+    this.cache.reset()
+    for (var i=0, il=items.length; i<il; i++) {
+      let view = this.cache.getOne(items[i])
+      view.seq = i
+      e.appendChild(view.e, this)
+    }
+    this._items = items
+    return this
   }
 }

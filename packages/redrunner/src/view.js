@@ -1,7 +1,7 @@
-import {ViewCache} from './view-cache'
+import {KeyedCache, SequentialCache} from './view-cache'
 import {createView} from  './utils'
 import {und, makeEl} from './helpers'
-import {Wrapper} from './wrapper'
+import {CachedWrapper, Wrapper} from './wrapper'
 
 const c = console;
 /*
@@ -50,25 +50,30 @@ export class View {
     s.dom = null            // the named wrappers
   }
 
-  /* This field gets transformed by the babel plugin.
+  /**
+   * This field gets transformed by the babel plugin.
    * Providing a default here so that child classes get processed.
    */
   __html__ = '<div/>'
-
+  /**
+   * Gets called once immediately after building.
+   */
   init() {
-    // Gets called once
   }
+  /**
+   *   The external call to update the view.
+   *   @props -- new props, else it keeps its old (which is fine)
+   */
   update(props) {
-    /*
-     *   The external call to update the view.
-     *   @props -- new props, else it keeps its old (which is fine)
-     */
     if (!und(props)) {
       this.props = props
     }
     this.__uw()
     this.__un()
   }
+  /**
+   * Prints debug information. Maybe think of a better way of displaying this.
+   */
   debug() {
     c.log(this.__bv.toString())
     let lines = []
@@ -91,15 +96,17 @@ export class View {
     }
     this.parent = newParent
   }
+  /**
+   * Builds a nested view of the specified class. Its up to you how you use it.
+   */
   nest(cls, props, seq) {
-    /*
-     * Builds a nested view of the specified class. Its up to you how you attach it.
-     * No caching is used. Use a cache object returned by this.cache() if you need caching.
-     */
     let child = createView(cls, props, this, seq)
     this.__nv.push(child)
     return child
   }
+  /**
+   * Was intended as a way to bubble events up the tree. Not sure if needed.
+   */
   emit(name, args) {
     let target = this
     while (!und(target)) {
@@ -110,44 +117,12 @@ export class View {
       target = target.parent
     }
   }
+  /**
+   * Returns the old value of a watch. Must use shorthand notation e.g. "..items"
+   */
   old(name) {
     return this.__ov[name]
   }
- /*
-  Watch a property and call the callback during update if it has changed.
-
-  @path -- A dotted path to the value
-
-    e.g. 'user.id'
-
-  @callback -- a function to be called with (newValue, oldValue)
-
-    e.g. (n,o) => alert(`Value changed from ${o} to ${n}`)
-
-  */
-  // watch(path, callback) {
-
-  //   if (!this.__wc.hasOwnProperty(path)) {
-  //     this.__wc[path] = []
-  //   }
-  //   this.__wc[path].push(callback)
-  //   return this // Keep this because people may use it like on the wrapper.
-  // }
-  // /**
-  //  * Build from clone. The __bv method will call this if the class was set to clone.
-  //  */
-  // __fc(view, prototype) {
-  //   if (!prototype.__cn) {
-  //     prototype.__cn = makeEl(prototype.__ht)
-  //   }
-  //   this.__sr(prototype.cloneNode(true))
-  // }
-  // /**
-  //  * Build from html. The __bv method will call this if the class was not set to clone.
-  //  */
-  // __fh(prototype) {
-  //   this.__sr((makeEl(prototype.__ht))
-  // }
   /**
    * Build the DOM. We pass prototype as local var for speed.
    */
@@ -233,21 +208,4 @@ export class View {
   __rn(path, view) {
     this.__gw(path).replace(view.e)
   }
-
-
-  /* Currently unused, but we may use it in future strategy
-   */
-  // _cloneNode_() {
-  //   let ct = this._ct_
-  //   if (!ct._template_) {
-  //     let throwAway = document.createElement('template')
-  //     // let tidy = raw.replace(/\n/g, "")
-  //     //   .replace(/[\t ]+\</g, "<")
-  //     //   .replace(/\>[\t ]+\</g, "><")
-  //     //   .replace(/\>[\t ]+$/g, ">")
-  //     throwAway.innerHTML = ct.html.trim()
-  //     ct._template_ = throwAway.content.firstChild
-  //   }
-  //   return ct._template_.cloneNode(true)
-  // }
 }

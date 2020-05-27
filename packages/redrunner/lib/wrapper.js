@@ -42,22 +42,14 @@ var Wrapper = /*#__PURE__*/function () {
     this._items = []; // For advanced manipulation.
   }
   /**
-   * Converts unknown item into an Element.
+   * Get element as 'e' form item, else return text node.
    */
 
 
   _createClass(Wrapper, [{
-    key: "__cu",
-    value: function __cu(item) {
-      var ct = item.constructor.name;
-
-      if (ct == 'Wrapper') {
-        return item.e;
-      } else if (ct == 'View') {
-        return item.root.e;
-      }
-
-      return _helpers.doc.createTextNode(item);
+    key: "__ge",
+    value: function __ge(item) {
+      return item.e || _helpers.doc.createTextNode(item);
     }
     /**
      * Gets the element's value. Cannot be chained.
@@ -91,7 +83,7 @@ var Wrapper = /*#__PURE__*/function () {
   }, {
     key: "append",
     value: function append(item) {
-      this.e.appendChild(this.__cu(item));
+      this.e.appendChild(this.__ge(item));
 
       this._items.push(item);
 
@@ -192,37 +184,39 @@ var Wrapper = /*#__PURE__*/function () {
       return this.att('id', value);
     }
     /*
-     * Add anything, including individual things.
+     * Set inner as individual or array. Not optimised.
      */
 
   }, {
     key: "inner",
     value: function inner(items) {
-      var _this4 = this;
-
       if (!Array.isArray(items)) {
         items = [items];
       }
 
-      return this.items(items, function (item) {
-        return _this4.__cu(item);
-      });
+      var e = this.e;
+      e.innerHTML = '';
+
+      for (var i = 0, il = items.length; i < il; i++) {
+        e.appendChild(this.__ge(items[i]));
+      }
+
+      return this;
     }
     /**
-     * Set element's items.
+     * Set inner items.
      *
-     * @param {array} items An array of items
-     * @param {getEl} items A function which extracts the element from the item
+     * @param {array} items An array of wrappers or views
      */
 
   }, {
     key: "items",
-    value: function items(_items, getEl) {
+    value: function items(_items) {
       var e = this.e;
       e.innerHTML = '';
 
       for (var i = 0, il = _items.length; i < il; i++) {
-        e.appendChild(getEl(_items[i]));
+        e.appendChild(_items[i].e);
       }
 
       this._items = _items;
@@ -231,10 +225,10 @@ var Wrapper = /*#__PURE__*/function () {
   }, {
     key: "on",
     value: function on(event, callback) {
-      var _this5 = this;
+      var _this4 = this;
 
       this.e.addEventListener(event, function (e) {
-        return callback(e, _this5);
+        return callback(e, _this4);
       });
       return this;
     }
@@ -271,34 +265,12 @@ var Wrapper = /*#__PURE__*/function () {
     value: function value(_value) {
       return this.att('value', _value);
     }
-    /*
-     * Set nested items as views
-     */
-
-  }, {
-    key: "views",
-    value: function views(_views) {
-      return this.items(_views, function (view) {
-        return view.root.e;
-      });
-    }
-    /*
-     * Set nested items as wrappers
-     */
-
-  }, {
-    key: "wrappers",
-    value: function wrappers(_wrappers) {
-      return this.items(_wrappers, function (wrapper) {
-        return wrapper.e;
-      });
-    }
   }]);
 
   return Wrapper;
 }();
 /**
- * A special wrapper for large lists.
+ * A special wrapper for large lists. TODO: implement sharper sort algorithm.
  */
 
 
@@ -310,20 +282,33 @@ var CachedWrapper = /*#__PURE__*/function (_Wrapper) {
   var _super = _createSuper(CachedWrapper);
 
   function CachedWrapper(element, cache, config) {
-    var _this6;
+    var _this5;
 
     _classCallCheck(this, CachedWrapper);
 
-    _this6 = _super.call(this, element);
-    _this6.cache = cache;
-    _this6.config = config;
-    _this6._items = [];
-    return _this6;
+    _this5 = _super.call(this, element);
+    _this5.cache = cache;
+    _this5.config = config;
+    _this5._items = [];
+    return _this5;
   }
 
   _createClass(CachedWrapper, [{
     key: "items",
-    value: function items(_items2) {}
+    value: function items(_items2) {
+      var e = this.e;
+      e.innerHTML = '';
+      this.cache.reset();
+
+      for (var i = 0, il = _items2.length; i < il; i++) {
+        var view = this.cache.getOne(_items2[i]);
+        view.seq = i;
+        e.appendChild(view.e, this);
+      }
+
+      this._items = _items2;
+      return this;
+    }
   }]);
 
   return CachedWrapper;

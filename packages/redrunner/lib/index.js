@@ -12,8 +12,9 @@ module.exports = {
   createView: _utils.createView,
   h: _utils.h,
   mount: _utils.mount,
+  KeyedCache: _viewCache.KeyedCache,
+  SequentialCache: _viewCache.SequentialCache,
   View: _view.View,
-  ViewCache: _viewCache.ViewCache,
   Wrapper: _wrapper.Wrapper,
-  wrap: _wrapper.wrap
+  wrap: _utils.wrap
 };

@@ -16,7 +16,7 @@ class PersonView extends View {
 }
 
 
-test('Nest without cache declaration adds wrappers', () => {
+test('Nest with class', () => {
   const div = load(TestView)
 
   expect(div).toShow(`
