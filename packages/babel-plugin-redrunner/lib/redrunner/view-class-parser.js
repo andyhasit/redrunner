@@ -1,7 +1,6 @@
 const {c, EOL, htmlparse} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
 const {watchArgs} = require('./constants')
-const {addPrototypeField, addPrototypeFunction, addPrototypeObject} = require('../utils/javascript')
 const {findRedRunnerAtts, removeRedRunnerCode} = require('./special-atts')
 const {expandShorthand, lookupArgs, getWrapperCall, parseTarget} = require('./views')
 const {extractInlineCallWatches} = require('./inline')
@@ -22,36 +21,10 @@ class ViewClassParser {
     this.randVarCount = 0
     this.dom = undefined
     this.currentNode = undefined
-
-    // The final statements, as strings:
-    this.statementFor__bv = undefined  // The build view method 
-    this.statementFor__cn = undefined  // The clonable node
-    this.statementFor__ht = undefined  // The HTML string
-    this.statementFor__wc = undefined  // The watcher callbacks
-    this.statementFor__wq = undefined  // The watcher queries
+    this.cleanHTML = undefined
   }
-  generateStatements() {
+  parse() {
     this.dom = htmlparse.parse(this.strippedHtml)
-    this.parseHtmlProperty()
-    //this.parseWatchProperty() ...?
-
-    // Assemble the statements
-    this.assembleStatementFor__bv()
-    this.assembleStatementFor__cn()
-    this.assembleStatementFor__ht()
-    this.assembleStatementFor__wc()
-    this.assembleStatementFor__wq()
-
-    // Return only statements which contain something...
-    return [
-      this.statementFor__bv,
-      this.statementFor__cn,
-      this.statementFor__ht,
-      this.statementFor__wc, 
-      this.statementFor__wq,
-    ].filter(s => s)
-  }
-  parseHtmlProperty() {
     // Recursively processes each node in the DOM
     const processNode = (node, i) => {
       this.currentNode = node
@@ -65,59 +38,15 @@ class ViewClassParser {
       node.childNodes.forEach(processNode)
       nodePath.pop()
     }
-    
+
     const nodePath = []    // The path of current node recursion
     processNode(this.dom)
-  }
-  assembleStatementFor__bv() {
-    const lines = []
-    lines.push(`view.__bd(prototype, ${this.cloneNode});`)
-    
-    // Add remaining lines (must come before dom!)
-    this.buildMethodLines.forEach(n => lines.push(n))
-
-    // Add this.dom definition
-    if (this.domObjectLines.length > 0) {
-      lines.push('view.dom = {')
-      this.domObjectLines.forEach(n => lines.push(n))
-      lines.push('};')
-    } else {
-      lines.push('view.dom = {};')
-    }
-    const body = lines.join(EOL)
-    this.statementFor__bv = addPrototypeFunction(this.className, '__bv', 'view, prototype', body)
-  }
-  assembleStatementFor__cn() {
-    if (this.cloneNode) {
-      this.statementFor__cn = addPrototypeField(this.className, '__cn', 'undefined')
-    }
-  }
-  assembleStatementFor__ht() {
-    // This only removes redrunner atts, the inlines we removed in place.
-    // Perhaps change this to make behaviour consistent.
-    const htmlString = removeRedRunnerCode(this.dom)
-    this.statementFor__ht = addPrototypeField(this.className, '__ht', `'${htmlString}'`)  
-  }
-  assembleStatementFor__wc() {
-    const lines = []
-    for (let [key, value] of Object.entries(this.watchCallbackItems)) {
-      lines.push(`'${key}': [`)
-      value.forEach(e => lines.push(e))
-      lines.push(`],`)
-    }
-    if (lines.length) {
-      const body = lines.join(EOL)
-      this.statementFor__wc = addPrototypeObject(this.className, '__wc', body)
-    }
-  }
-  assembleStatementFor__wq() {
-    const lines = []
-    for (let [key, value] of Object.entries(this.watchQueryItems)) {
-      lines.push(`'${key}': ${value},`)
-    }
-    if (lines.length) {
-      const body = lines.join(EOL)
-      this.statementFor__wq = addPrototypeObject(this.className, '__wq', body)
+    return {
+      cleanHTML: removeRedRunnerCode(this.dom),
+      buildMethodLines: this.buildMethodLines,
+      domObjectLines: this.domObjectLines,
+      watchCallbackItems: this.watchCallbackItems,
+      watchQueryItems: this.watchQueryItems
     }
   }
   processViewNode(nodePath, node, tagName) {
@@ -140,7 +69,7 @@ class ViewClassParser {
     const implicitSave = _ => saveAs = saveAs ?  saveAs : this.getUniqueVarName()
 
     const inlineCallsWatches = extractInlineCallWatches(node)
-    
+
     if (inlineCallsWatches.length > 0) {
       implicitSave()
       inlineCallsWatches.forEach(w => this.addNodeWatch(w, saveAs))
@@ -212,7 +141,7 @@ class ViewClassParser {
    * Adds a watch, creating both the callback and the query functions.
    *
    * @param {object} watch An object of shape {name, convert, target}
-   * @param {string} saveAs The name to which the wrapper is to be saved. 
+   * @param {string} saveAs The name to which the wrapper is to be saved.
    *
    */
   addNodeWatch(watch, saveAs) {
@@ -235,7 +164,7 @@ class ViewClassParser {
         callbackBody = `${watch.convert}`
       } else {
         callbackBody = `${watch.convert}${watchArgs.slice(0, -1)}, ${wrapper})`
-      } 
+      }
     }
     this.saveWatch(watch.name, watch.property, callbackBody)
   }
@@ -269,6 +198,5 @@ class ViewClassParser {
     new Error(message)
   }
 }
-
 
 module.exports = {ViewClassParser}

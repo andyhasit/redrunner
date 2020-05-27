@@ -3,12 +3,12 @@ A babel plugin for RedRunner.
 
 Note that this requires "@babel/plugin-syntax-class-properties" to be used too.
 
-Do not confuse with "@babel/plugin-proposal-class-properties" which does the 
+Do not confuse with "@babel/plugin-proposal-class-properties" which does the
 actual transformation, which you can apply after this plugin.
 
 CODE NOTES
 
-Transforming 
+Transforming
 
 class A() {
   __html__ = '<div></div>'
@@ -33,7 +33,7 @@ A.prototype.build = function () {...}
 
 const babel = require('@babel/core');
 const {getNodeHtmlString, removeProperty} = require('./utils/babel');
-const {ViewClassParser} = require('./redrunner/view-class-parser');
+const {generateStatements} = require('./redrunner/statement-builder');
 
 
 module.exports = () => {
@@ -43,7 +43,7 @@ module.exports = () => {
         if (path.type == 'ClassDeclaration') {
           let requiresGeneratedStatements = false
           let viewData = {className: path.node.id.name}
-          
+
           // Iterate over classe's nodes to find ones we care about
           for (node of path.node.body.body) {
             let propName = node.key.name
@@ -52,7 +52,7 @@ module.exports = () => {
               requiresGeneratedStatements = true
               viewData.htmlString = getNodeHtmlString(node)
               removeProperty(path)
-            } 
+            }
             // TODO: decide if this is required
             // else if (propName == '__watch__') {
             //   requiresGeneratedStatements = true
@@ -61,11 +61,19 @@ module.exports = () => {
           }
 
           if (requiresGeneratedStatements) {
-            const viewClassParser = new ViewClassParser(viewData)
+            const statements = generateStatements(viewData)
             // Note that babel does its own adjustments with spaces, commas etc...
-            viewClassParser.generateStatements().forEach(statement => 
+            statements.forEach(statement =>
               path.insertAfter(babel.template.ast(statement))
             )
+            // viewClassParser.generateStatements().forEach(statement =>
+            //   path.insertAfter(babel.template.ast(statement))
+            // )
+            // const viewClassParser = new ViewClassParser(viewData)
+            // // Note that babel does its own adjustments with spaces, commas etc...
+            // viewClassParser.generateStatements().forEach(statement =>
+            //   path.insertAfter(babel.template.ast(statement))
+            // )
           }
         }
       }
