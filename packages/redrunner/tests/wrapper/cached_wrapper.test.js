@@ -2,7 +2,7 @@ import {c, load, View, Wrapper} from '../utils'
 import {KeyedCache, SequentialCache} from '../../src/index'
 
 class Container extends View {
-  __html__ = '<div :nest="|.props|Child"></div>'
+  __html__ = '<div :nest="*|.props|Child"></div>'
 }
 
 class Child extends View {

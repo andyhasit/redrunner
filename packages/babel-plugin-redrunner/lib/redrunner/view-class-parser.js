@@ -179,7 +179,13 @@ class ViewClassParser {
   saveWatch(name, property, callbackBody) {
     const callbackStatement = ['function(n, o) {', callbackBody, '},'].join(EOL)
     this.getWatchCallbackItems(name).push(callbackStatement)
-    this.watchQueryItems[name] = `function() {return ${property}}`
+    if (property !== '*') {
+      if (property === '' || property === undefined) {
+        this.watchQueryItems[name] = `function() {return null}`
+      } else {
+        this.watchQueryItems[name] = `function() {return ${property}}`
+      }
+    }
   }
   /**
    * Returns the Array of callback for a watch, creating is necessary.

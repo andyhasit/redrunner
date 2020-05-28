@@ -1,7 +1,7 @@
 class MyView extends View {
   __html__ = `
     <div>
-      <span :watch="||"/>
+      <span :watch="*||"/>
     </div>
   `
 }
@@ -10,14 +10,9 @@ class MyView extends View {
 
 class MyView extends View {}
 
-MyView.prototype.__wq = {
-  '': function () {
-    return true;
-  }
-};
 
 MyView.prototype.__wc = {
-  '': [function (n, o) {
+  '*': [function (n, o) {
     this.dom.__1.text(n);
   }]
 };

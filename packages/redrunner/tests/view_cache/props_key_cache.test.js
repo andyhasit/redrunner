@@ -9,7 +9,7 @@ import {c, load, View} from '../utils'
 
 class TestView extends View {
   __html__ = `
-    <div :nest="|..fruit|NestedView:id"/>
+    <div :nest="*|..fruit|NestedView:id"/>
   `
 }
 

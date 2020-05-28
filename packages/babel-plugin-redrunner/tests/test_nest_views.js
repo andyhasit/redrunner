@@ -1,12 +1,12 @@
 class MyView extends View {
   __html__ = `
     <div>
-      <div :nest="|.items?|TodoView"/>
-      <div :nest="|.items?|TodoView:name"/>
-      <div :nest="|.items?|TodoView:id"/>
-      <div :nest="|.items?|@..myCache"/>
-      <div :nest="|.items?|@..myCache|.myConfig"/>
-      <div :nest="|.items?|TodoView:.getKey?"/>
+      <div :nest="*|.items?|TodoView"/>
+      <div :nest="*|.items?|TodoView:name"/>
+      <div :nest="*|.items?|TodoView:id"/>
+      <div :nest="*|.items?|@..myCache"/>
+      <div :nest="*|.items?|@..myCache|.myConfig"/>
+      <div :nest="*|.items?|TodoView:.getKey?"/>
     </div>
   `
 }
@@ -15,14 +15,9 @@ class MyView extends View {
 
 class MyView extends View {}
 
-MyView.prototype.__wq = {
-  '': function () {
-    return true;
-  }
-};
 
 MyView.prototype.__wc = {
-  '': [function (n, o) {
+  '*': [function (n, o) {
     this.dom.__1.items(this.items(n, o));
   }, function (n, o) {
     this.dom.__2.items(this.items(n, o));

@@ -21,15 +21,8 @@ function lookupArgs(nodePath) {
  *   field    >  this.props.field
  *   .field   >  this.field
  *   ..field  >  field
- *
- *   And a special exception, which does not belong here!
- *
- *   ''       >  true
  */
 function expandShorthand(field) {
-  if (field == '') {
-    return true
-  }
   if (field.startsWith('..')) {
     return field.substr(2)
   } else if (field.startsWith('.')) {
@@ -72,6 +65,12 @@ function expandConverter(convert) {
  *
  */
 function expandProperty(property) {
+  if (property == '*') {
+    return '*'
+  }
+  if (property === '' || property === undefined) {
+    return undefined
+  }
   const expanded = expandShorthand(property)
   return property.endsWith('?') ? expanded.slice(0, -1) + '()' : expanded
 }

@@ -7,7 +7,7 @@ function getNext(n) {
 }
 
 class TestView extends View {
-  __html__ = '<span :watch="..0|..getNext?|"></span>'
+  __html__ = '<span :watch="|..getNext?|"></span>'
 }
 
 

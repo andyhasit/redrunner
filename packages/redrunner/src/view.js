@@ -179,7 +179,7 @@ export class View {
    */
   __un() {
     const items = this.__nv
-    for (var i=0, il=items.length; i<il; i++) {
+    for (let i=0, il=items.length; i<il; i++) {
       let child = items[i]
       if (child.__ia()) {
         child.update()
@@ -193,12 +193,15 @@ export class View {
    */
   __uw() {
     let path, newValue, oldValue, callbacks
-    for (path in this.__wc) {
+    const changed = _ => {
       newValue = this.__wq[path].apply(this)
       oldValue = this.__ov[path]
-      if (path === '' || oldValue !== newValue) {
+      return newValue !== oldValue
+    }
+    for (path in this.__wc) {
+      if (path === '*' || changed()) {
         callbacks = this.__wc[path]
-        for (var i=0, il=callbacks.length; i<il; i++) {
+        for (let i=0, il=callbacks.length; i<il; i++) {
           callbacks[i].apply(this, [newValue, oldValue])
         }
       }
