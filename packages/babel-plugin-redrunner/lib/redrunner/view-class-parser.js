@@ -1,6 +1,6 @@
 const {c, EOL, htmlparse} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
-const {watchArgs} = require('./constants')
+const {RedRunnerSyntaxError, watchArgs} = require('./constants')
 const {findRedRunnerAtts, removeRedRunnerCode} = require('./special-atts')
 const {expandShorthand, lookupArgs, parseTarget} = require('./views')
 const {extractInlineCallWatches} = require('./inline')
@@ -10,9 +10,11 @@ const {extractInlineCallWatches} = require('./inline')
  */
 class ViewClassParser {
   constructor(viewData) {
-    let {className, htmlString} = viewData
+    let {className, htmlString, path, node} = viewData
     this.cloneNode = viewData.cloneNode
     this.className = className
+    this.node = node
+    this.path = path
     this.strippedHtml = stripHtml(htmlString)
     this.buildMethodLines = []    // The method lines, as code
     this.domObjectLines = []      // The lines for this.dom = {}
@@ -24,7 +26,7 @@ class ViewClassParser {
     this.cleanHTML = undefined
   }
   parse() {
-    this.dom = htmlparse.parse(this.strippedHtml)
+
     // Recursively processes each node in the DOM
     const processNode = (node, i) => {
       this.currentNode = node
@@ -39,8 +41,19 @@ class ViewClassParser {
       nodePath.pop()
     }
 
+    this.dom = htmlparse.parse(this.strippedHtml)
     const nodePath = []    // The path of current node recursion
-    processNode(this.dom)
+
+    try {
+      processNode(this.dom)
+    } catch (err) {
+      if (err instanceof RedRunnerSyntaxError) {
+        throw this.path.hub.buildError(this.node, err.message, RedRunnerSyntaxError)
+      } else {
+        throw err; // unknown error, rethrow it (**)
+      }
+    }
+
     return {
       cleanHTML: removeRedRunnerCode(this.dom),
       buildMethodLines: this.buildMethodLines,
@@ -202,8 +215,7 @@ class ViewClassParser {
    * TODO: flesh this out to print more useful info.
    */
   error(message) {
-    c.log(this.currentNode)
-    new Error(message)
+    throw this.path.hub.buildError(this.node, '\nfaaaaaaaaaaail', SyntaxError)
   }
 }
 

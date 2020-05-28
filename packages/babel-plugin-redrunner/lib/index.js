@@ -53,6 +53,8 @@ module.exports = () => {
             if (propName == '__html__' || propName == '__clone__') {
               requiresGeneratedStatements = true
               viewData.cloneNode = propName == '__clone__'
+              viewData.path = path
+              viewData.node = node
               viewData.htmlString = getNodeHtmlString(node)
               removeProperty(path)
             }
@@ -83,7 +85,6 @@ module.exports = () => {
               }
               let fileName = path.hub.file.opts.filename
               path.insertAfter(babel.template.ast(addViewInfo(viewData, fileName)))
-              //throw path.buildCodeFrameError("Error message here");
             }
           }
         }

@@ -7,7 +7,7 @@
  */
 
 const {c, EOL} = require('../utils/constants')
-const {specialAttributes, splitter} = require('./constants')
+const {RedRunnerSyntaxError, specialAttributes, splitter} = require('./constants')
 const {adjustName, expandConverter, expandProperty, expandShorthand} = require('./views')
 const {getAttVal, getAttDefinition} = require('../utils/dom')
 
@@ -15,6 +15,7 @@ const {getAttVal, getAttDefinition} = require('../utils/dom')
  * Parses the "watch" special attribute.
  */
 function parseWATCH(attString) {
+  //throw new RedRunnerSyntaxError('gggggggg')
   if (attString) {
     const chunks = attString.split(splitter)
     const values = {
