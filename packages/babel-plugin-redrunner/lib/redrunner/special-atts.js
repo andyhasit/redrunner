@@ -15,8 +15,8 @@ const {getAttVal, getAttDefinition} = require('../utils/dom')
  * Parses the "watch" special attribute.
  */
 function parseWATCH(attString) {
-  throw new RedRunnerSyntaxError('gggggggg')
   if (attString) {
+    throw new RedRunnerSyntaxError('gggggggg')
     const chunks = attString.split(splitter)
     const values = {
       name: adjustName(chunks[0].trim()),

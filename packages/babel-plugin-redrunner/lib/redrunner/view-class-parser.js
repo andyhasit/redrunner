@@ -48,10 +48,9 @@ class ViewClassParser {
       processNode(this.dom)
     } catch (err) {
       if (err instanceof RedRunnerSyntaxError) {
-        let message =
-          '\nError parsing node:',
-          `${this.currentNode}`,
-          err.message
+        let message = [
+          `\n\n${err.message}`,
+          `\n${this.currentNode}\n`,
         ].join(EOL)
         throw this.path.hub.buildError(this.node, message, RedRunnerSyntaxError)
       } else {
