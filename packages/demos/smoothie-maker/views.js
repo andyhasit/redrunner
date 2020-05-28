@@ -28,7 +28,7 @@ export class Fruit extends View {
 export class SmoothieList extends View {
   __html__ = `
     <div>
-      <div class="smoothie-list" :nest="|..smoothies.items|SmoothieItem"></div>
+      <div class="smoothie-list" :nest="*|..smoothies.items|SmoothieItem"></div>
     </div>
   `
 }

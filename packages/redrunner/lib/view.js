@@ -293,13 +293,18 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "__uw",
     value: function __uw() {
+      var _this = this;
+
       var path, newValue, oldValue, callbacks;
 
-      for (path in this.__wc) {
-        newValue = this.__wq[path].apply(this);
-        oldValue = this.__ov[path];
+      var changed = function changed(_) {
+        newValue = _this.__wq[path].apply(_this);
+        oldValue = _this.__ov[path];
+        return newValue !== oldValue;
+      };
 
-        if (path === '' || oldValue !== newValue) {
+      for (path in this.__wc) {
+        if (path === '*' || changed()) {
           callbacks = this.__wc[path];
 
           for (var i = 0, il = callbacks.length; i < il; i++) {

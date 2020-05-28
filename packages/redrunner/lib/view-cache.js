@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.SequentialCache = exports.KeyedCache = exports.ViewCache = void 0;
+exports.SequentialCache = exports.KeyedCache = void 0;
 
 var _utils = require("./utils");
 
@@ -28,72 +28,46 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 */
 var defaultKeyFn = function defaultKeyFn(props, seq) {
   return seq;
-};
+}; // export class ViewCache {
+//   /**
+//    * @param {class} cls The class of View to create
+//    * @param {function} keyFn A function which obtains the key to cache by
+//    */
+//   constructor(cls, keyFn) {
+//     this.cls = cls
+//     this.cache = {}
+//     this.keyFn = keyFn
+//     this._seq = 0
+//   }
+//   getMany(items, parentView, reset) {
+//     if (reset) {
+//       this.reset()
+//     }
+//     return items.map(props => this.getOne(props, parentView))
+//   }
+//   getOne(props, parentView) {
+//     Gets a view, potentially from cache
+//     let view, key = this.keyFn(props, this._seq)
+//     // TODO: can I detect whether we use seq?
+//     if (this.cache.hasOwnProperty(key)) {
+//       view = this.cache[key]
+//       if (parentView !== view.parent) {
+//         view.move(parentView)
+//       }
+//       view.update(props)
+//     } else {
+//       // Don't use nest
+//       view = createView(this.cls, props, parentView, this._seq)
+//       this.cache[key] = view
+//     }
+//     this._seq += 1
+//     return view
+//   }
+//   reset() {
+//     this._seq = 0
+//   }
+// }
 
-var ViewCache = /*#__PURE__*/function () {
-  /**
-   * @param {class} cls The class of View to create
-   * @param {function} keyFn A function which obtains the key to cache by
-   */
-  function ViewCache(cls, keyFn) {
-    _classCallCheck(this, ViewCache);
-
-    this.cls = cls;
-    this.cache = {};
-    this.keyFn = keyFn;
-    this._seq = 0;
-  }
-
-  _createClass(ViewCache, [{
-    key: "getMany",
-    value: function getMany(items, parentView, reset) {
-      var _this = this;
-
-      if (reset) {
-        this.reset();
-      }
-
-      return items.map(function (props) {
-        return _this.getOne(props, parentView);
-      });
-    }
-  }, {
-    key: "getOne",
-    value: function getOne(props, parentView) {
-      /*
-      Gets a view, potentially from cache
-      */
-      var view,
-          key = this.keyFn(props, this._seq); // TODO: can I detect whether we use seq?
-
-      if (this.cache.hasOwnProperty(key)) {
-        view = this.cache[key];
-
-        if (parentView !== view.parent) {
-          view.move(parentView);
-        }
-
-        view.update(props);
-      } else {
-        // Don't use nest
-        view = (0, _utils.createView)(this.cls, props, parentView, this._seq);
-        this.cache[key] = view;
-      }
-
-      this._seq += 1;
-      return view;
-    }
-  }, {
-    key: "reset",
-    value: function reset() {
-      this._seq = 0;
-    }
-  }]);
-
-  return ViewCache;
-}();
-
-exports.ViewCache = ViewCache;
 
 var KeyedCache = /*#__PURE__*/function () {
   /**
@@ -106,19 +80,20 @@ var KeyedCache = /*#__PURE__*/function () {
     this.cls = cls;
     this.cache = {};
     this.keyFn = keyFn;
+    this._seq = 0;
   }
 
   _createClass(KeyedCache, [{
     key: "getMany",
     value: function getMany(items, parentView, reset) {
-      var _this2 = this;
+      var _this = this;
 
       if (reset) {
         this.reset();
       }
 
       return items.map(function (props) {
-        return _this2.getOne(props, parentView);
+        return _this.getOne(props, parentView);
       });
     }
     /**
@@ -144,11 +119,14 @@ var KeyedCache = /*#__PURE__*/function () {
         this.cache[key] = view;
       }
 
+      this._seq += 1;
       return view;
     }
   }, {
     key: "reset",
-    value: function reset() {}
+    value: function reset() {
+      this._seq = 0;
+    }
   }]);
 
   return KeyedCache;

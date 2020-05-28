@@ -4,8 +4,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.makeEl = makeEl;
-exports.isStr = exports.und = exports.doc = void 0;
+exports.isStr = exports.und = exports.doc = exports.c = void 0;
 var c = console;
+exports.c = c;
 var doc = document;
 exports.doc = doc;
 var throwAway = doc.createElement('template');

@@ -302,51 +302,51 @@ var CachedWrapper = /*#__PURE__*/function (_Wrapper) {
     key: "items",
     value: function items(_items2) {
       var e = this.e;
+      var childNodes = e.childNodes;
       var cache = this.cache;
-      cache.reset();
       var cmp = cache.keyFn || rtnSelf;
       var oldKeys = this.oldKeys;
       var newKeys = [];
       var itemsLength = _items2.length;
+      var canAddNow = oldKeys.length - 1;
+      var offset = 0;
+      cache.reset();
+      /*
+       * We loop over the newKeys and pull Elements forward.
+       * oldKeys will be edited in place to look like newKeys, but may have trailing
+       * keys which represent the items to be removed.
+       */
 
-      for (var i = 0, il = itemsLength; i < il; i++) {
+      for (var i = 0; i < itemsLength; i++) {
         var item = _items2[i];
         var key = cmp(_items2[i]); // TODO change to get from cache with key
 
-        newKeys.push(key); // TODO remove this (test first)
-
         var view = this.cache.getOne(_items2[i]); // view is now updated
 
-        view.seq = i;
+        newKeys.push(key);
 
-        if (i > oldKeys.length - 1) {
+        if (i > canAddNow) {
           e.appendChild(view.e, this);
-          oldKeys.push(key);
-        } else if (key !== oldKeys[i]) {
-          // This will tear the element out from where it was before
-          // Which is OK because it can only be further down
-          // (assuming cache isn't shared)
-          e.insertBefore(view.e, e.childNodes[i]); // Update the oldKeys to match
-
-          var removeKeyAt = oldKeys.indexOf(key);
-
-          if (removeKeyAt > -1) {
-            oldKeys.splice(removeKeyAt, 1);
-            oldKeys.splice(i, 0, key);
-          }
+        } else if (key !== oldKeys[i + offset]) {
+          /*
+           * Note: insertBefore removes the element from the DOM if attached
+           * elsewhere, which should either only be further down in the
+           * childNodes, or in case of a shared cache, somewhere we don't
+           * care about removing it from, so its OK.
+           */
+          e.insertBefore(view.e, childNodes[i]);
+          offset++;
         }
       }
 
-      var remaining = oldKeys.length - itemsLength + 1;
+      var lastIndex = childNodes.length - 1;
+      var keepIndex = itemsLength - 1;
 
-      if (remaining > 0) {
-        while (--remaining) {
-          e.removeChild(e.childNodes[itemsLength]);
-        }
+      for (var _i = lastIndex; _i > keepIndex; _i--) {
+        e.removeChild(childNodes[_i]);
       }
 
-      this.oldKeys = newKeys; // TODO remove this (test first)
-
+      this.oldKeys = newKeys;
       this._items = _items2;
       return this;
     }
