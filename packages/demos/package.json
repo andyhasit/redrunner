@@ -5,6 +5,7 @@
   "description": "A set of demos for RedRunner",
   "scripts": {
     "build": "babel src -d lib",
+    "clear": "cd ../redrunner && npm run build && cd - && cd ../redrunner-router && npm run build && cd - && rm -rf .cache",
     "test": "echo 'No tests'"
   },
   "author": "Andrew Buchan",
