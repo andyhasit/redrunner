@@ -5,7 +5,7 @@ const names = ['joe', 'bob', 'alice']
 
 class TestView extends View {
   __html__ = `
-  	<div :watch="|.items?|items">
+  	<div :watch="|.items?|inner">
     </div>
   `
   items() {
