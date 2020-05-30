@@ -62,6 +62,41 @@ class ViewClassParser {
     }
   }
   processNormalNode(nodePath, node, tagName) {
+
+
+
+    let {nest, on, saveAs, watch, wrapperClass} = parseDirectives(node)
+    let wrapperCall, chainedCalls = ''
+
+    /* Generates a unique variable name if saveAs has not been defined */
+    const implicitSave = _ => saveAs = saveAs ?  saveAs : this.getUniqueVarName()
+
+    const inlineCallsWatches = extractInlineCallWatches(node)
+
+    if (inlineCallsWatches.length > 0) {
+      implicitSave()
+      inlineCallsWatches.forEach(w => this.addNodeWatch(w, saveAs))
+    }
+    if (watch) {
+      implicitSave()
+      this.addNodeWatch(watch, saveAs)
+    }
+    if (nest) {
+      implicitSave()
+      this.addNestWatch(nest, saveAs)
+      wrapperCall = this.getCachedWrapperCall(nest, nodePath, wrapperClass)
+    }
+    if (on) {
+      implicitSave()
+      // We can use a chained call on the wrapper because it returns "this"
+      chainedCalls = `.on('${on.event}', ${on.callback})`
+    }
+    if (saveAs) {
+      wrapperCall = wrapperCall || this.getRegularWrapperCall(nodePath, wrapperClass)
+      this.domObjectLines.push(`${saveAs}: ${wrapperCall}${chainedCalls},`)
+    }
+  }
+  processNormalNodeOld(nodePath, node, tagName) {
     let {nest, on, saveAs, watch, wrapperClass} = findRedRunnerAtts(node)
     let wrapperCall, chainedCalls = ''
 
