@@ -192,20 +192,50 @@ export class View {
    *
    */
   __uw() {
-    let path, newValue, oldValue, callbacks
-    const changed = _ => {
-      newValue = this.__wq[path].apply(this)
-      oldValue = this.__ov[path]
-      return newValue !== oldValue
-    }
-    for (path in this.__wc) {
-      if (path === '*' || changed()) {
-        callbacks = this.__wc[path]
-        for (let i=0, il=callbacks.length; i<il; i++) {
-          callbacks[i].apply(this, [newValue, oldValue])
+    // let path, newValue, oldValue, callbacks
+    // const changed = _ => {
+    //   newValue = this.__wq[path].apply(this)
+    //   oldValue = this.__ov[path]
+    //   return newValue !== oldValue
+    // }
+    // for (path in this.__wc) {
+    //   if (path === '*' || changed()) {
+    //     callbacks = this.__wc[path]
+    //     for (let i=0, il=callbacks.length; i<il; i++) {
+    //       callbacks[i].apply(this, [newValue, oldValue])
+    //     }
+    //   }
+    //   this.__ov[path] = newValue
+    // }
+
+    let i = 0, newValue, oldValue, hasChanged, wrapper, shield, callbacks
+    const watchCallbacks = this.__wc
+    const il = watchCallbacks.length
+    const queries = {}
+
+    while (i < il) {
+      [wrapper, shield, callbacks] = watchCallbacks[i]
+      for (let key in wrapper.callbacks) {
+        if (key === '*') {
+          callbacks[key].apply(this)
+        } else {
+          if (key in queries) {
+            [newValue, oldValue, hasChanged] = queries[key]
+          } else {
+            oldValue = this.__ov[path]
+            newValue = this.__wq[path].apply(this)
+            hasChanged = newValue !== oldValue
+            queries[key] = [newValue, oldValue, hasChanged]
+          }
+          if (hasChanged) {
+            callbacks[key].apply(this, [newValue, oldValue])
+          }
         }
       }
-      this.__ov[path] = newValue
+      // if (wrapper.shield && !wrapper.isVisible()) {
+      //   i += wrapper.shield
+      // }
+      i ++
     }
   }
   __rn(path, view) {
