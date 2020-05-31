@@ -143,7 +143,7 @@ class ViewClassParser {
   addNestWatch(nest, saveAs) {
     const wrapper = `this.dom.${saveAs}`
     const callbackBody = `${wrapper}.items(${nest.convert})`
-    this.saveWatch(nest.name, nest.property, callbackBody)
+    this.saveWatch(saveAs, nest.name, nest.property, callbackBody)
   }
   /**
    * Adds a watch, creating both the callback and the query functions.
@@ -174,11 +174,15 @@ class ViewClassParser {
         callbackBody = `${watch.convert}${watchArgs.slice(0, -1)}, ${wrapper})`
       }
     }
-    this.saveWatch(watch.name, watch.property, callbackBody)
+    this.saveWatch(saveAs, watch.name, watch.property, callbackBody)
   }
-  saveWatch(name, property, callbackBody) {
+  saveWatch(saveAs, name, property, callbackBody) {
     const callbackStatement = ['function(n, o) {', callbackBody, '},'].join(EOL)
-    this.getWatchCallbackItems(name).push(callbackStatement)
+    //this.getWatchCallbackItems(name).push(callbackStatement)
+    // TODO: Only saves one callback. Just try for testing.
+    this.watchCallbackItems.push({
+      wrapper:saveAs, shield: 0, callbacks: {name: callbackStatement}
+    })
     if (property !== '*') {
       if (property === '' || property === undefined) {
         this.watchQueryItems[name] = `function() {return null}`
