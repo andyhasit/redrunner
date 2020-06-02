@@ -187,55 +187,40 @@ export class View {
     }
   }
   /**
-   * UpdateWatches. Iterates through watches. If the value has changed, or it is
-   * an empty watch ('') call callback.
+   * UpdateWatches.
    *
+   * Calls update on all watches if watched value has changed, skipping shielded watches.
    */
   __uw() {
-    // let path, newValue, oldValue, callbacks
-    // const changed = _ => {
-    //   newValue = this.__wq[path].apply(this)
-    //   oldValue = this.__ov[path]
-    //   return newValue !== oldValue
-    // }
-    // for (path in this.__wc) {
-    //   if (path === '*' || changed()) {
-    //     callbacks = this.__wc[path]
-    //     for (let i=0, il=callbacks.length; i<il; i++) {
-    //       callbacks[i].apply(this, [newValue, oldValue])
-    //     }
-    //   }
-    //   this.__ov[path] = newValue
-    // }
-
     let i = 0, newValue, oldValue, hasChanged, wrapper, shield, callbacks
     const watchCallbacks = this.__wc
+    if (!watchCallbacks) {
+      return
+    }
     const il = watchCallbacks.length
-    const queries = {}
+    const queries = {}  // The saved results of queries. Should we optimize this?
 
     while (i < il) {
-      [wrapper, shield, callbacks] = watchCallbacks[i]
-      for (let key in wrapper.callbacks) {
+      let {wrapper, shield, callbacks} = watchCallbacks[i]
+      for (let [key, callback] of Object.entries(callbacks)) {
         if (key === '*') {
-          callbacks[key].apply(this)
+          callback.apply(this)
         } else {
           if (key in queries) {
             [newValue, oldValue, hasChanged] = queries[key]
           } else {
-            oldValue = this.__ov[path]
-            newValue = this.__wq[path].apply(this)
+            oldValue = this.__ov[key]
+            newValue = this.__wq[key].apply(this)
             hasChanged = newValue !== oldValue
+            this.__ov[key] = newValue
             queries[key] = [newValue, oldValue, hasChanged]
           }
           if (hasChanged) {
-            callbacks[key].apply(this, [newValue, oldValue])
+            callback.apply(this, [newValue, oldValue])
           }
         }
       }
-      // if (wrapper.shield && !wrapper.isVisible()) {
-      //   i += wrapper.shield
-      // }
-      i ++
+      i = (shield && wrapper.__shield) ? i + shield + 1 : i + 1
     }
   }
   __rn(path, view) {

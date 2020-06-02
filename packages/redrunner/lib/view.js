@@ -11,7 +11,7 @@ var _utils = require("./utils");
 
 var _helpers = require("./helpers");
 
-var _wrapper = require("./wrapper");
+var _wrapper2 = require("./wrapper");
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -215,7 +215,7 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "__gw",
     value: function __gw(path) {
-      return new _wrapper.Wrapper(this.__lu(path));
+      return new _wrapper2.Wrapper(this.__lu(path));
     }
     /**
      * Returns a cached wrapper around element at path, where path is an array of indices.
@@ -225,7 +225,7 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "__cw",
     value: function __cw(path, cache, config) {
-      return new _wrapper.CachedWrapper(this.__lu(path), cache, config);
+      return new _wrapper2.CachedWrapper(this.__lu(path), cache, config);
     }
     /**
      * Returns an element at specified path, where path is an array of indices.
@@ -285,34 +285,65 @@ var View = /*#__PURE__*/function () {
       }
     }
     /**
-     * UpdateWatches. Iterates through watches. If the value has changed, or it is
-     * an empty watch ('') call callback.
+     * UpdateWatches.
      *
+     * Calls update on all watches if watched value has changed, skipping shielded watches.
      */
 
   }, {
     key: "__uw",
     value: function __uw() {
-      var _this = this;
+      var i = 0,
+          newValue,
+          oldValue,
+          hasChanged,
+          wrapper,
+          shield,
+          callbacks;
+      var watchCallbacks = this.__wc;
 
-      var path, newValue, oldValue, callbacks;
+      if (!watchCallbacks) {
+        return;
+      }
 
-      var changed = function changed(_) {
-        newValue = _this.__wq[path].apply(_this);
-        oldValue = _this.__ov[path];
-        return newValue !== oldValue;
-      };
+      var il = watchCallbacks.length;
+      var queries = {}; // The saved results of queries. Should we optimize this?
 
-      for (path in this.__wc) {
-        if (path === '*' || changed()) {
-          callbacks = this.__wc[path];
+      while (i < il) {
+        var _watchCallbacks$i = watchCallbacks[i],
+            _wrapper = _watchCallbacks$i.wrapper,
+            _shield = _watchCallbacks$i.shield,
+            _callbacks = _watchCallbacks$i.callbacks;
 
-          for (var i = 0, il = callbacks.length; i < il; i++) {
-            callbacks[i].apply(this, [newValue, oldValue]);
+        for (var _i2 = 0, _Object$entries2 = Object.entries(_callbacks); _i2 < _Object$entries2.length; _i2++) {
+          var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+              key = _Object$entries2$_i[0],
+              callback = _Object$entries2$_i[1];
+
+          if (key === '*') {
+            callback.apply(this);
+          } else {
+            if (key in queries) {
+              var _queries$key = _slicedToArray(queries[key], 3);
+
+              newValue = _queries$key[0];
+              oldValue = _queries$key[1];
+              hasChanged = _queries$key[2];
+            } else {
+              oldValue = this.__ov[key];
+              newValue = this.__wq[key].apply(this);
+              hasChanged = newValue !== oldValue;
+              this.__ov[key] = newValue;
+              queries[key] = [newValue, oldValue, hasChanged];
+            }
+
+            if (hasChanged) {
+              callback.apply(this, [newValue, oldValue]);
+            }
           }
         }
 
-        this.__ov[path] = newValue;
+        i = _shield && _wrapper.__shield ? i + _shield + 1 : i + 1;
       }
     }
   }, {
@@ -326,6 +357,7 @@ var View = /*#__PURE__*/function () {
 }();
 
 exports.View = View;
+View.prototype.__wc = [];
 View.prototype.__ht = '<div></div>';
 
 View.prototype.__bv = function (view, prototype) {

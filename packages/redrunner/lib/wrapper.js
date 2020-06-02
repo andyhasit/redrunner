@@ -39,6 +39,7 @@ var Wrapper = /*#__PURE__*/function () {
     _classCallCheck(this, Wrapper);
 
     this.e = element;
+    this.__shield = false;
     this._items = []; // For advanced manipulation.
   }
   /**
@@ -258,6 +259,7 @@ var Wrapper = /*#__PURE__*/function () {
   }, {
     key: "visible",
     value: function visible(_visible) {
+      this.__shield = !_visible;
       return this.style('visibility', _visible ? 'visible' : 'hidden');
     }
   }, {
