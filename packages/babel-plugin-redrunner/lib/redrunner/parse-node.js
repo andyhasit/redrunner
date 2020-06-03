@@ -1,6 +1,7 @@
-const {c} = require('../utils/constants')
-const {isFunc} = require('../utils/javascript')
+const {c, EOL} = require('../utils/constants')
+const {isFunc, isUnd, splitTrim} = require('../utils/javascript')
 const {getAttVal} = require('../utils/dom')
+const {extractInlineWatches} = require('./inline')
 
 
 class NodeData {
@@ -9,9 +10,27 @@ class NodeData {
 		this.saveAs = undefined
 		this.wrapperClass = undefined
 		this.chainedCalls = []
-		this.watchCallbacks = []
+		this.watches = []
 		this.beforeSave = []
 		this.afterSave = []
+	}
+	addWatch(property, converter, target) {
+		this.watches.push({property, converter, target})
+  }
+	/**
+	 * Expands a field's shorthand notation as follows:
+	 *
+	 *   field    >  this.props.field
+	 *   .field   >  this.field
+	 *   ..field  >  field
+	 */
+	expandShorthand(field) {
+	  if (field.startsWith('..')) {
+	    return field.substr(2)
+	  } else if (field.startsWith('.')) {
+	    return 'this.' + field.substr(1)
+	  }
+	  return 'this.props.' + field
 	}
 	wrapperInit(nodePath) {
     const path = this.getLookupArgs(nodePath)
@@ -21,11 +40,11 @@ class NodeData {
 		return `[${nodePath.slice(2)}]`
 	}
 	addEventListener(event, callbackStr) {
-    const callbackCode = buildEventCallbackCode(callbackStr)
+    const callbackCode = this.buildEventCallbackCode(callbackStr)
 		this.chainedCalls.push(`on('${event}', ${callbackCode})`)
   }
-  buildEventCallbackCode(arg) {
-  	let text = expandShorthand(arg.trim())
+  buildEventCallbackCode(statement) {
+  	let text = this.expandShorthand(statement.trim())
     const extra = text.endsWith(')') ? '' : '(e, w)'
     // Cater for '?' ending
     text = text.endsWith('?') ? text.slice(0, -1) : text
@@ -36,49 +55,64 @@ class NodeData {
     return ['function(e, w) {', body, '}'].join(EOL)
   }
 	processDirective(directiveName, directive, attVal) {
-		if (isFunc(directive)) {
-	    directive.apply(this, [attVal])
+		if (!isFunc(directive.handle)) {
+			throw new Error('handle must be a function')
+		}
+		let args = attVal
+		if (directive.hasOwnProperty('params')) {
+			let params = splitTrim(directive.params, ',')
+			args = this.parseArgs(params, attVal)
+	  	directive.handle.apply(this, args)
 		} else {
-			let args
-			if (directive.hasOwnProperty('args')) {
-				args = isFunc(directive.args) ? directive.args(attVal) : this.parseArgs(directive.args, attVal)
-			} else {
-				args = attVal
-			}
-
+	  	directive.handle.apply(this, [args])
 		}
 	}
+	/**
+	 * Return array of args based on definitions
+	 *
+	 * @param {Array} params The parameters as strings
+	 * @param {String} attVal The raw attribute value.
+	 */
 	parseArgs(params, attVal) {
 		const args = []
-		const chunks = attVal.split('|')
+		const chunks = splitTrim(attVal, '|')
 	  for (let i=0, il=params.length; i<il; i++) {
 	  	let param = params[i]
 	  	let raw = chunks[i]
-	  	let value = isFunc(param) ? param(value, i) : this.parseArgValue(param, raw, i)
+	  	let value = this.parseArgValue(param, raw, i)
 	  	args.push(value)
 	  }
 	  return args
 	}
 	parseArgValue(param, raw, i) {
-		if (param.endsWith('?')) {
-			if (isUnd(raw)) {
-				throw new
-			}
-			param = param.substr(0, -1)
+		if ((!param.endsWith('?')) && (isUnd(raw))) {
+			throw new Error(`Argument ${param} is required`)
 		}
-		if (this.argParsers.hasOwnProperty(param)) {
-
-		} else {
-
-		}
+		return raw
+	}
+	expandProperty(arg) {
+		if (arg == '*') {
+    	return '*'
+	  }
+	  if (arg === '' || arg === undefined) {
+	    return undefined
+	  }
+	  const expanded = expandShorthand(arg)
+	  return arg.endsWith('?') ? expanded.slice(0, -1) + '()' : expanded
 	}
 }
 
 
-function parseNode(node, config) {
+function extractNodeData(node, config) {
 	const nodeAtts = node.rawAttrs
 	const nodeData = new NodeData(node)
-	let hasData = false
+
+	// Check inline calls
+  const inlines = extractInlineWatches(node, config)
+	let hasData = inlines.length > 0
+  inlines.forEach(w => nodeData.watches.push(w))
+
+	// Check attributes for directives
 	if (nodeAtts && nodeAtts !== '') {
 		for (let [directiveName, directive] of Object.entries(config.directives)) {
 	  	let attVal = getAttVal(nodeAtts, directiveName)
@@ -92,4 +126,4 @@ function parseNode(node, config) {
 }
 
 
-module.exports = {parseNode}
+module.exports = {extractNodeData}

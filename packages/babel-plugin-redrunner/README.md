@@ -53,9 +53,17 @@ Currently under 0.1.0 so its wild wild west, thereafter you **must** match the m
 
 Run with:
 
-`$ npm test`
+`npm test`
 
 There is a very simple built in test runner which checks expected output, see **tests/index.js** for more details.
+
+Update snapshots with:
+
+```
+jest -u
+```
+
+
 
 ## Extendable API
 

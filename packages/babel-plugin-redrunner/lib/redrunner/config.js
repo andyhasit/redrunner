@@ -1,9 +1,7 @@
+const {c} = require('../utils/constants')
+const {capitalize} = require('../utils/javascript')
 
 const config = {
-  // argParsers: {
-  //   'property',
-  //   'converter'
-  // },
   directives: {
     ':as': {
       handle: function(arg) {
@@ -11,31 +9,30 @@ const config = {
       }
     },
     ':on': {
-      args: ['string', 'eventHandler'],
-      handle: function(args) {
-        this.addEventListener(...args)
+      params: 'event, callbackStr',
+      handle: function(event, callbackStr) {
+        this.addEventListener(event, callbackStr)
       }
     },
     ':watch': {
-      args: ['property', 'converter', 'target?'],
-      handle: [],
+      params: 'property, converter, target?',
+      handle: function(property, converter, target) {
+        this.addWatch(property, converter, target)
+      }
     }
-    // ':visible': {
-    //   args: ['property', 'converter'],
-    //   actions: {
-    //     watch: {
-    //       method: 'visible',
-    //       args: 'n',
-    //       },
-    //     shield: true // Shields nested wrappers from being updated
-    //   }
-    // },
-
-
   }
 }
 
 
+const events = ['click', 'keyUp', 'keyDown']
+events.forEach(event => {
+  config.directives[':on' + capitalize(event)] = {
+    params: 'callbackStr',
+    handle: function(callbackStr) {
+      this.addEventListener(event, callbackStr)
+    }
+  }
+})
 
 
 module.exports = {config}

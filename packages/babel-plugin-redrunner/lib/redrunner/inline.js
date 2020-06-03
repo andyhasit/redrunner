@@ -8,8 +8,8 @@
 
 const {c} = require('../utils/constants')
 const {extractAtts, getAttDefinition, isLeafNode} = require('../utils/dom')
-const {specialAttributes, splitter} = require('./constants')
-const {adjustName, expandConverter, expandProperty} = require('./views')
+const {splitter} = require('./constants')
+const {expandConverter} = require('./views')
 
 /**
  * Returns undefined if string is only whitespace, else the original string.
@@ -22,8 +22,8 @@ function clearIfEmpty(str) {
 
 /**
  * If an {{inline}} is found, returns an object with its details, else undefined.
- * 
- * @return {object} As {name, convert, before, after} 
+ *
+ * @return {object} As {name, convert, before, after}
  *
  * convert, before and after may be undefined. Before and after will be partially
  *     trimmed.
@@ -45,8 +45,8 @@ function splitInlineText(rawStr) {
 			const inline = rawStr.substring(start + 2, end)
 			let before = clearIfEmpty(rawStr.substr(0, start).trimStart())
 			let after = clearIfEmpty(rawStr.substr(end + 2).trimEnd())
-			const [name, convert] = inline.split(splitter).map(s => s.trim())
-			return {name, convert, before, after}
+			const [property, convert] = inline.split(splitter).map(s => s.trim())
+			return {property, convert, before, after}
 		}
 	}
 }
@@ -55,7 +55,8 @@ function splitInlineText(rawStr) {
  * Builds the watch object.
  */
 function buildInlineWatch(target, inlineCallDetails) {
-	let {name, convert, before, after} = inlineCallDetails
+	let raw
+	let {property, convert, before, after} = inlineCallDetails
 	convert = convert ? expandConverter(convert) : 'n'
 	if (before && after) {
 		raw = `"${before}" + ${convert} + "${after}"`
@@ -66,22 +67,7 @@ function buildInlineWatch(target, inlineCallDetails) {
 	} else {
 		raw = convert
 	}
-	return {name: adjustName(name), property: expandProperty(name), raw: raw, target:target}
-
-	// switch(inlineCall.type) {
-	//   case 'middle':
-	//     // code block
-	//     break;
-	//   case 'full':
-	//     // code block
-	//     break;
-	//   case 'start':
-	//     // code block
-	//     break;
-	//   case 'end':
-	//     // code block
-	//     break;
-	// }
+	return {property, raw, target}
 }
 
 /**
@@ -99,10 +85,10 @@ function buildInlineWatch(target, inlineCallDetails) {
  *
  * @return {number} An array of watch objects as [{name, convert, target}...]
  */
-function extractInlineCallWatches(node) {
+function extractInlineWatches(node, config) {
 	const watches = []
   const atts = extractAtts(node)
-  const restrictedAtts = Object.values(specialAttributes)
+  const restrictedAtts = Object.values(config.directives)
 
   /**
    * Adds a watch if it detects an inline call. Returns true if one was found,
@@ -138,4 +124,4 @@ function extractInlineCallWatches(node) {
 }
 
 
-module.exports = {extractInlineCallWatches}
+module.exports = {extractInlineWatches}

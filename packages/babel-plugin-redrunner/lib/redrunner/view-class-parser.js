@@ -1,10 +1,9 @@
 const {c, EOL, htmlparse} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
-const {watchArgs} = require('./constants')
 const {findRedRunnerAtts, removeRedRunnerCode} = require('./special-atts')
-const {expandShorthand, lookupArgs, parseTarget} = require('./views')
-const {parseDirectives} = require('./directives')
-const {extractInlineCallWatches} = require('./inline')
+const {buidlCallbackStatement, expandShorthand, lookupArgs} = require('./views')
+const {extractNodeData} = require('./parse-node')
+const {config} = require('./config')
 
 /**
  * A class for generating all the statements to be added to a RedRunner view.
@@ -24,9 +23,14 @@ class ViewClassParser {
     this.currentNode = undefined
     this.cleanHTML = undefined
   }
+  /**
+   * The entry call.
+   */
   parse() {
+    this.dom = htmlparse.parse(this.strippedHtml)
+    const nodePath = []    // The path of current node recursion
 
-    /*
+    /**
      * Called recursively to process each node in the DOM
      */
     const processNode = (node, i) => {
@@ -42,8 +46,6 @@ class ViewClassParser {
       nodePath.pop()
     }
 
-    this.dom = htmlparse.parse(this.strippedHtml)
-    const nodePath = []    // The path of current node recursion
     processNode(this.dom)
     return {
       buildMethodLines: this.buildMethodLines,
@@ -67,208 +69,49 @@ class ViewClassParser {
       lines.push(`view.__rn(${lookupArgs(nodePath)}, ${constructorStr});`)
     }
   }
-  addWatchQuery(shorthand, property) {
-    if (property !== '*') {
-      if (property === '' || property === undefined) {
-        this.watchQueryItems[shorthand] = `function() {return null}`
-      } else {
-        this.watchQueryItems[shorthand] = `function() {return ${property}}`
-      }
-    }
-  }
-  processNormalNodeNew(nodePath, node, tagName) {
-    const directives = parseDirectives(node)
-    const inlines = parseInlines(node)
-
-    if (directives || inlines) {
-      let {chainedCalls, saveAs, watches} = directives
-      saveAs = saveAs ?  saveAs : this.getUniqueVarName()
-      watches.forEach(w => {
-        this.addWatchQuery()
-
-      })
-      this.domObjectLines.push(`${saveAs}: ${wrapperCall}${chainedCalls},`)
-    }
-
-
-      this.watchCallbackItems.push({
-        wrapper:saveAs, shield: 0, callbacks: callbacks
-      })
-
-    /*
-
-      saveWatch(saveAs, name, property, callbackBody) {
-    const callbackStatement = ['function(n, o) {', callbackBody, '},'].join(EOL)
-    //this.getWatchCallbackItems(name).push(callbackStatement)
-    // TODO: Only saves one callback. Just try for testing.
-    const callbacks = {}
-    callbacks[name] = callbackStatement
-    this.watchCallbackItems.push({
-      wrapper:saveAs, shield: 0, callbacks: callbacks
-    })
-
-
-
-    const inlineCallsWatches = extractInlineCallWatches(node)
-
-    if (inlineCallsWatches.length > 0) {
-      implicitSave()
-      inlineCallsWatches.forEach(w => this.addNodeWatch(w, saveAs))
-    }
-    if (watch) {
-      implicitSave()
-      this.addNodeWatch(watch, saveAs)
-    }
-    if (nest) {
-      implicitSave()
-      this.addNestWatch(nest, saveAs)
-      wrapperCall = this.getCachedWrapperCall(nest, nodePath, wrapperClass)
-    }
-    if (on) {
-      implicitSave()
-      // We can use a chained call on the wrapper because it returns "this"
-      chainedCalls = `.on('${on.event}', ${on.callback})`
-    }
-    if (saveAs) {
-      wrapperCall = wrapperCall || this.getRegularWrapperCall(nodePath, wrapperClass)
-      this.domObjectLines.push(`${saveAs}: ${wrapperCall}${chainedCalls},`)
-    }
-    */
-  }
   processNormalNode(nodePath, node, tagName) {
-    let {nest, on, saveAs, watch, wrapperClass} = findRedRunnerAtts(node)
-    let wrapperCall, chainedCalls = ''
-
-    /* Generates a unique variable name if saveAs has not been defined */
-    const implicitSave = _ => saveAs = saveAs ?  saveAs : this.getUniqueVarName()
-
-    const inlineCallsWatches = extractInlineCallWatches(node)
-
-    if (inlineCallsWatches.length > 0) {
-      implicitSave()
-      inlineCallsWatches.forEach(w => this.addNodeWatch(w, saveAs))
-    }
-    if (watch) {
-      implicitSave()
-      this.addNodeWatch(watch, saveAs)
-    }
-    if (nest) {
-      implicitSave()
-      this.addNestWatch(nest, saveAs)
-      wrapperCall = this.getCachedWrapperCall(nest, nodePath, wrapperClass)
-    }
-    if (on) {
-      implicitSave()
-      // We can use a chained call on the wrapper because it returns "this"
-      chainedCalls = `.on('${on.event}', ${on.callback})`
-    }
-    if (saveAs) {
-      wrapperCall = wrapperCall || this.getRegularWrapperCall(nodePath, wrapperClass)
-      this.domObjectLines.push(`${saveAs}: ${wrapperCall}${chainedCalls},`)
-    }
-  }
-  /**
-   * Returns the call for creating a new wrapper based on nodePath.
-   *
-   * If wrapperClass is provided, it is initiated with new, and the class better
-   * be in scope. That is why we do it with new here rather than passing the class
-   * to __gw or so.
-   * Similarly, that is why we use __gw, because we know "Wrapper" will be in scope
-   * there, but it isn't guaranteed to be where the view is defined.
-   *
-   * I'm a bit uneasy having 'view' - should probably be a constant.
-   */
-  getRegularWrapperCall(nodePath, wrapperClass) {
-    const path = lookupArgs(nodePath)
-    return wrapperClass ? `new ${wrapperClass}(view.__lu(${path}))` : `view.__gw(${path})`
-  }
-  getCachedWrapperCall(nest, nodePath, wrapperClass) {
-    const path = lookupArgs(nodePath)
-    const config = nest.config? expandShorthand(nest.config) : '{}'
-    let cache
-
-    const getCacheKeyFunction = key => {
-      if (key.endsWith('?')) {
-        return expandShorthand(key.slice(0, -1))
-      }
-      return `function(props) {return props.${key}}`
-    }
-    // Build cache call
-    if (nest.cache.startsWith('@')) {
-      cache = expandShorthand(nest.cache.substr(1))
-    } else {
-      const [viewCacheClass, viewCacheKey] = nest.cache.split(':')
-      if (viewCacheKey) {
-        const keyFn = getCacheKeyFunction(viewCacheKey)
-        cache = `view.__kc(${viewCacheClass}, ${keyFn})`
-      } else {
-        cache = `view.__sc(${viewCacheClass})`
-      }
-    }
-
-    if (wrapperClass) {
-      return `new ${wrapperClass}(view.__lu(${path}), ${cache}, ${config})`
-    }
-    return `view.__cw(${path}, ${cache}, ${config})`
-  }
-  /**
-   * Adds a watch for the nest attribute.
-   */
-  addNestWatch(nest, saveAs) {
-    const wrapper = `this.dom.${saveAs}`
-    const callbackBody = `${wrapper}.items(${nest.convert})`
-    this.saveWatch(saveAs, nest.name, nest.property, callbackBody)
-  }
-  /**
-   * Adds a watch, creating both the callback and the query functions.
-   *
-   * @param {object} watch An object of shape {name, convert, target}
-   * @param {string} saveAs The name to which the wrapper is to be saved.
-   *
-   */
-  addNodeWatch(watch, saveAs) {
-    let callbackBody, wrapper = `this.dom.${saveAs}`
-    if (watch.target) {
-      const targetString = parseTarget(watch.target)
-      if (watch.raw) {
-        callbackBody = `${wrapper}.${targetString}${watch.raw})`
-      } else if (watch.convert) {
-        callbackBody = `${wrapper}.${targetString}${watch.convert})`
-      } else {
-        callbackBody = `${wrapper}.${targetString}n)`
-      }
-    } else {
-      // No watch target. Assume convert is provided.
-      // But it needs messy adjusting...
-      if (watch.convert.endsWith(watchArgs)) {
-        callbackBody = `${watch.convert.slice(0, -1)}, ${wrapper})`
-      } else if (watch.convert.endsWith(')')) {
-        callbackBody = `${watch.convert}`
-      } else {
-        callbackBody = `${watch.convert}${watchArgs.slice(0, -1)}, ${wrapper})`
-      }
-    }
-    this.saveWatch(saveAs, watch.name, watch.property, callbackBody)
-  }
-  saveWatch(saveAs, name, property, callbackBody) {
-    const callbackStatement = ['function(n, o) {', callbackBody, '},'].join(EOL)
-    //this.getWatchCallbackItems(name).push(callbackStatement)
-    // TODO: Only saves one callback. Just try for testing.
+    const nodeData = extractNodeData(node, config)
     const callbacks = {}
-    callbacks[name] = callbackStatement
-    this.watchCallbackItems.push({
-      wrapper:saveAs, shield: 0, callbacks: callbacks
-    })
+    if (nodeData) {
+      let {afterSave, beforeSave, saveAs, watches} = nodeData
+      saveAs = saveAs ?  saveAs : this.getUniqueVarName()
+      watches.forEach(watch => {
+        let {property, converter, target, raw} = watch
+        // Add watch query (idempotent)
+        this.addWatchQuery(property)
+
+        // Squash statements for all callbacks into one function.
+        let statement = buidlCallbackStatement(saveAs, converter, target, raw)
+        if (!callbacks.hasOwnProperty(property)) {
+          callbacks[property] = []
+        }
+        callbacks[property].push(statement)
+      })
+      this.watchCallbackItems.push({wrapper:saveAs, shield: 0, callbacks: callbacks})
+      this.addSave(nodePath, saveAs, nodeData)
+    }
+  }
+  addWatchQuery(property) {
     if (property !== '*') {
       if (property === '' || property === undefined) {
-        this.watchQueryItems[name] = `function() {return null}`
+        this.watchQueryItems[property] = `function() {return null}`
       } else {
-        this.watchQueryItems[name] = `function() {return ${property}}`
+        this.watchQueryItems[property] = `function() {return ${expandShorthand(property)}}`
       }
     }
   }
   /**
-   * Returns the Array of callback for a watch, creating is necessary.
+   * Builds a single line of the callback statement.
+   */
+  addSave(nodePath, saveAs, nodeData) {
+    let {chainedCalls} = nodeData
+    // TODO: build chainedCallStatement, also maybe not build whole thing up here?
+    const wrapperInit = nodeData.wrapperCall(nodePath)
+    const chainedCallStatement = chainedCalls.join('.')
+    this.domObjectLines.push(`${saveAs}: ${wrapperInit}${chainedCallStatement},`)
+  }
+  /**
+   * Returns the Array of callback for a watch, creating if necessary.
    */
   getWatchCallbackItems(name) {
     if (!this.watchCallbackItems.hasOwnProperty(name)) {

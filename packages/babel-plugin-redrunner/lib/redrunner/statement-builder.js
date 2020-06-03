@@ -68,8 +68,8 @@ class StatementBuilder {
   }
   build__wq() {
     const lines = []
-    for (let [key, value] of Object.entries(this.parsedData.watchQueryItems)) {
-      lines.push(`'${key}': ${value},`)
+    for (let [key, callback] of Object.entries(this.parsedData.watchQueryItems)) {
+      lines.push(`'${key}': ${callback},`)
     }
     if (lines.length) {
       const body = lines.join(EOL)

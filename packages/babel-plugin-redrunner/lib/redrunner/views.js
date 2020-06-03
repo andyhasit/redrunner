@@ -93,8 +93,35 @@ function parseTarget(target) {
   return target + '('
 }
 
+function buidlCallbackStatement(saveAs, convert, target, raw) {
+  let callbackBody, wrapper = `this.dom.${saveAs}`
+  if (target) {
+    const targetString = parseTarget(target)
+    if (raw) {
+      callbackBody = `${wrapper}.${targetString}${raw})`
+    } else if (convert) {
+      callbackBody = `${wrapper}.${targetString}${convert})`
+    } else {
+      callbackBody = `${wrapper}.${targetString}n)`
+    }
+  } else {
+    // No watch target. Assume convert is provided.
+    // But it needs messy adjusting...
+    if (convert.endsWith(watchArgs)) {
+      callbackBody = `${convert.slice(0, -1)}, ${wrapper})`
+    } else if (convert.endsWith(')')) {
+      callbackBody = `${convert}`
+    } else {
+      callbackBody = `${convert}${watchArgs.slice(0, -1)}, ${wrapper})`
+    }
+  }
+  return callbackBody
+}
+
+
 module.exports = {
   adjustName,
+  buidlCallbackStatement,
   expandConverter,
   expandProperty,
   expandShorthand,

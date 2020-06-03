@@ -46,7 +46,7 @@ module.exports = () => {
           let viewData = {className: path.node.id.name}
 
           // Iterate over class nodes to find ones we care about
-          for (node of path.node.body.body) {
+          for (let node of path.node.body.body) {
             let propName = node.key.name
             if (propName == '__html__' || propName == '__clone__') {
               viewData.cloneNode = propName == '__clone__'
