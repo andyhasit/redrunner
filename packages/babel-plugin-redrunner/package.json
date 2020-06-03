@@ -6,8 +6,13 @@
   "directories": {
     "lib": "lib"
   },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ]
+  },
   "scripts": {
-    "test": "node tests/internal.js && node tests/integration.js"
+    "test": "jest"
   },
   "files": [
     "lib"
@@ -26,6 +31,8 @@
     "@babel/core": "^7.8.7",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/plugin-syntax-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.10.2",
+    "jest": "^26.0.1",
     "print-diff": "^1.0.0"
   }
 }
