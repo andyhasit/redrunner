@@ -3,6 +3,7 @@ const {stripHtml} = require('../utils/dom')
 const {watchArgs} = require('./constants')
 const {findRedRunnerAtts, removeRedRunnerCode} = require('./special-atts')
 const {expandShorthand, lookupArgs, parseTarget} = require('./views')
+const {parseDirectives} = require('./directives')
 const {extractInlineCallWatches} = require('./inline')
 
 /**
@@ -16,7 +17,7 @@ class ViewClassParser {
     this.strippedHtml = stripHtml(htmlString)
     this.buildMethodLines = []    // The method lines, as code
     this.domObjectLines = []      // The lines for this.dom = {}
-    this.watchCallbackItems = {}  // Entries for the __wc object
+    this.watchCallbackItems = []  // Entries for the __wc object
     this.watchQueryItems = {}     // Entries for the __wq object
     this.randVarCount = 0
     this.dom = undefined
@@ -24,8 +25,10 @@ class ViewClassParser {
     this.cleanHTML = undefined
   }
   parse() {
-    this.dom = htmlparse.parse(this.strippedHtml)
-    // Recursively processes each node in the DOM
+
+    /*
+     * Called recursively to process each node in the DOM
+     */
     const processNode = (node, i) => {
       this.currentNode = node
       nodePath.push(i)
@@ -39,14 +42,17 @@ class ViewClassParser {
       nodePath.pop()
     }
 
+    this.dom = htmlparse.parse(this.strippedHtml)
     const nodePath = []    // The path of current node recursion
     processNode(this.dom)
     return {
-      cleanHTML: removeRedRunnerCode(this.dom),
       buildMethodLines: this.buildMethodLines,
       domObjectLines: this.domObjectLines,
       watchCallbackItems: this.watchCallbackItems,
-      watchQueryItems: this.watchQueryItems
+      watchQueryItems: this.watchQueryItems,
+      // This only removes redrunner atts, the inlines we removed in place.
+      // Perhaps change this to make behaviour consistent.
+      cleanHTML: removeRedRunnerCode(this.dom)
     }
   }
   processViewNode(nodePath, node, tagName) {
@@ -61,15 +67,47 @@ class ViewClassParser {
       lines.push(`view.__rn(${lookupArgs(nodePath)}, ${constructorStr});`)
     }
   }
-  processNormalNode(nodePath, node, tagName) {
+  addWatchQuery(shorthand, property) {
+    if (property !== '*') {
+      if (property === '' || property === undefined) {
+        this.watchQueryItems[shorthand] = `function() {return null}`
+      } else {
+        this.watchQueryItems[shorthand] = `function() {return ${property}}`
+      }
+    }
+  }
+  processNormalNodeNew(nodePath, node, tagName) {
+    const directives = parseDirectives(node)
+    const inlines = parseInlines(node)
+
+    if (directives || inlines) {
+      let {chainedCalls, saveAs, watches} = directives
+      saveAs = saveAs ?  saveAs : this.getUniqueVarName()
+      watches.forEach(w => {
+        this.addWatchQuery()
+
+      })
+      this.domObjectLines.push(`${saveAs}: ${wrapperCall}${chainedCalls},`)
+    }
 
 
+      this.watchCallbackItems.push({
+        wrapper:saveAs, shield: 0, callbacks: callbacks
+      })
 
-    let {nest, on, saveAs, watch, wrapperClass} = parseDirectives(node)
-    let wrapperCall, chainedCalls = ''
+    /*
 
-    /* Generates a unique variable name if saveAs has not been defined */
-    const implicitSave = _ => saveAs = saveAs ?  saveAs : this.getUniqueVarName()
+      saveWatch(saveAs, name, property, callbackBody) {
+    const callbackStatement = ['function(n, o) {', callbackBody, '},'].join(EOL)
+    //this.getWatchCallbackItems(name).push(callbackStatement)
+    // TODO: Only saves one callback. Just try for testing.
+    const callbacks = {}
+    callbacks[name] = callbackStatement
+    this.watchCallbackItems.push({
+      wrapper:saveAs, shield: 0, callbacks: callbacks
+    })
+
+
 
     const inlineCallsWatches = extractInlineCallWatches(node)
 
@@ -95,8 +133,9 @@ class ViewClassParser {
       wrapperCall = wrapperCall || this.getRegularWrapperCall(nodePath, wrapperClass)
       this.domObjectLines.push(`${saveAs}: ${wrapperCall}${chainedCalls},`)
     }
+    */
   }
-  processNormalNodeOld(nodePath, node, tagName) {
+  processNormalNode(nodePath, node, tagName) {
     let {nest, on, saveAs, watch, wrapperClass} = findRedRunnerAtts(node)
     let wrapperCall, chainedCalls = ''
 
@@ -215,8 +254,10 @@ class ViewClassParser {
     const callbackStatement = ['function(n, o) {', callbackBody, '},'].join(EOL)
     //this.getWatchCallbackItems(name).push(callbackStatement)
     // TODO: Only saves one callback. Just try for testing.
+    const callbacks = {}
+    callbacks[name] = callbackStatement
     this.watchCallbackItems.push({
-      wrapper:saveAs, shield: 0, callbacks: {name: callbackStatement}
+      wrapper:saveAs, shield: 0, callbacks: callbacks
     })
     if (property !== '*') {
       if (property === '' || property === undefined) {

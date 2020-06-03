@@ -2,29 +2,6 @@
 const {getAttVal} = require('../utils/dom')
 
 
-config = {
-	argParsers: {
-		'property',
-		'converter'
-	},
-	directives: {
-	  ':visible': {
-	    args: ['property', 'converter'],
-	    actions: {
-	      watch: {
-	      	method: 'visible',
-	      	args: 'n',
-		  	},
-	   	  shield: true // Shields nested wrappers from being updated
-	   	}
-	  },
-	  ':watch': {
-	  	args: ['property', 'converter', 'target'],
-	  	callbacks: [],
-	  }
-
-	}
-}
 
 /*
 
@@ -82,9 +59,7 @@ function parseArgValue(param, raw, i) {
 	}
 }
 
-function isFunc(def) {
-	return typeof def === 'function'
-}
+
 
 /*
 
@@ -98,39 +73,4 @@ function standardCallback(property, converter, target) {
 }
 
 
-/**
- * Adds data from the directive.
- */
-function addDirectiveData(directiveName, conf, data, attVal, node) {
-	let args
-	if (typeof conf === 'function') {
-    conf(data, attVal, node)
-	} else {
-		if (conf.hasOwnProperty('args')) {
-			args = isFunc(conf.args) ? conf.args(attVal) : parseArgs(conf.args, attVal)
-		} else {
-			args = attVal
-		}
 
-	}
-}
-
-/**
- * Parses the directives in a node, returning an object or undefined.
- */
-function parseDirectives(node) {
-	const nodeAtts = node.rawAttrs
-	if (nodeAtts && nodeAtts !== '') {
-		const data = {}
-		for (let [directiveName, directive] of Object.entries(config.directives)) {
-	  	let attVal = getAttVal(nodeAtts, directiveName)
-	  	if (attVal) {
-	  		addDirectiveData(directiveName, directive, data, attVal, node)
-	  	}
-		}
-		return data
-	}
-}
-
-
-module.exports = {parseDirectives}

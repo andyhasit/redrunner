@@ -35,6 +35,7 @@ const babel = require('@babel/core');
 const {getNodeHtmlString, removeProperty} = require('./utils/babel');
 const {generateStatements} = require('./redrunner/statement-builder');
 
+let viewCount = 0
 
 module.exports = () => {
   return {
@@ -44,7 +45,7 @@ module.exports = () => {
           let requiresGeneratedStatements = false
           let viewData = {className: path.node.id.name}
 
-          // Iterate over classe's nodes to find ones we care about
+          // Iterate over class nodes to find ones we care about
           for (node of path.node.body.body) {
             let propName = node.key.name
             if (propName == '__html__' || propName == '__clone__') {
@@ -61,6 +62,7 @@ module.exports = () => {
           }
 
           if (requiresGeneratedStatements) {
+            viewCount ++
             const statements = generateStatements(viewData)
             // Note that babel does its own adjustments with spaces, commas etc...
             statements.forEach(statement =>
@@ -77,6 +79,9 @@ module.exports = () => {
           }
         }
       }
+    },
+    post(state) {
+      //console.log(viewCount);
     }
   }
 }

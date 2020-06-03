@@ -1,9 +1,14 @@
 const {c, EOL} = require('../utils/constants')
-const {addPrototypeField, addPrototypeFunction, addPrototypeObject} = require('../utils/javascript')
+const {
+  addPrototypeArray,
+  addPrototypeField,
+  addPrototypeFunction,
+  addPrototypeObject
+} = require('../utils/javascript')
 const {ViewClassParser} = require('./view-class-parser')
 
 /**
- * A class for generating all the statements to be added to a RedRunner view.
+ * Generates the statements.
  */
 class StatementBuilder {
   constructor(viewData, parsedData) {
@@ -45,21 +50,21 @@ class StatementBuilder {
     }
   }
   build__ht() {
-    // This only removes redrunner atts, the inlines we removed in place.
-    // Perhaps change this to make behaviour consistent.
     return addPrototypeField(this.className, '__ht', `'${this.parsedData.cleanHTML}'`)
   }
   build__wc() {
     const lines = []
-    for (let [key, value] of Object.entries(this.parsedData.watchCallbackItems)) {
-      lines.push(`'${key}': [`)
-      value.forEach(e => lines.push(e))
-      lines.push(`],`)
-    }
-    if (lines.length) {
-      const body = lines.join(EOL)
-      return addPrototypeObject(this.className, '__wc', body)
-    }
+    this.parsedData.watchCallbackItems.forEach(entry => {
+      let {wrapper, shield, callbacks} = entry
+      let callbackLines = ['{']
+      for (let [key, value] of Object.entries(callbacks)) {
+        callbackLines.push(`'${key}': ${value}`)
+      }
+      callbackLines.push(`}`)
+      lines.push(`{wrapper: '${wrapper}', shield: ${shield}, callbacks: ${callbackLines.join(EOL)}},`)
+    })
+    const body = lines.join(EOL)
+    return addPrototypeArray(this.className, '__wc', body)
   }
   build__wq() {
     const lines = []
