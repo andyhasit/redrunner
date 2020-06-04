@@ -41,6 +41,16 @@ function stripBlankLines(text) {
 }
 
 
+/**
+ * Builds a string defining a view class, to help with quasi quotes in snapshots.
+ */
+function view(html) {
+  return `
+    class MyView extends View {
+      __html__ = \`${html}\`
+    }
+  `
+}
 
 
 const transformOptions = {plugins: [
@@ -56,4 +66,4 @@ function transform(src) {
 }
 
 
-module.exports = {c, EOL, getNode, transform, stripBlankLines}
+module.exports = {c, EOL, getNode, transform, stripBlankLines, view}

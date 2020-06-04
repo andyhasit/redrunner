@@ -10,10 +10,9 @@ const {config} = require('./config')
  */
 class ViewClassParser {
   constructor(viewData) {
-    let {className, htmlString} = viewData
-    this.cloneNode = viewData.cloneNode
+    let {className, html} = viewData
     this.className = className
-    this.strippedHtml = stripHtml(htmlString)
+    this.strippedHtml = stripHtml(html)
     this.buildMethodLines = []    // The method lines, as code
     this.domObjectLines = []      // The lines for this.dom = {}
     this.watchCallbackItems = []  // Entries for the __wc object
@@ -21,7 +20,6 @@ class ViewClassParser {
     this.randVarCount = 0
     this.dom = undefined
     this.currentNode = undefined
-    this.cleanHTML = undefined
   }
   /**
    * The entry call.
@@ -106,7 +104,7 @@ class ViewClassParser {
   addSave(nodePath, saveAs, nodeData) {
     let {chainedCalls} = nodeData
     // TODO: build chainedCallStatement, also maybe not build whole thing up here?
-    const wrapperInit = nodeData.wrapperCall(nodePath)
+    const wrapperInit = nodeData.wrapperInit(nodePath)
     const chainedCallStatement = chainedCalls.join('.')
     this.domObjectLines.push(`${saveAs}: ${wrapperInit}${chainedCallStatement},`)
   }

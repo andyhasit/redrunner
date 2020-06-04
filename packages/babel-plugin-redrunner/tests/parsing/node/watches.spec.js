@@ -1,6 +1,6 @@
-import {c, getNode} from '../utils'
-import {extractNodeData} from '../../lib/redrunner/parse-node'
-import {config} from '../../lib/redrunner/config'
+import {c, getNode} from '../../utils'
+import {extractNodeData} from '../../../lib/redrunner/parse-node'
+import {config} from '../../../lib/redrunner/config'
 
 const directives = {
   ':watch': {

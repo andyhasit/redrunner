@@ -49,9 +49,9 @@ module.exports = () => {
           for (let node of path.node.body.body) {
             let propName = node.key.name
             if (propName == '__html__' || propName == '__clone__') {
-              viewData.cloneNode = propName == '__clone__'
+              viewData.cloneNode = (propName == '__clone__')
               requiresGeneratedStatements = true
-              viewData.htmlString = getNodeHtmlString(node)
+              viewData.html = getNodeHtmlString(node)
               removeProperty(path)
             }
             // TODO: decide if this is required

@@ -1,13 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`works 1`] = `
+exports[`__clone__ instead of __html__ 1`] = `
 "class MyView extends View {}
 
 MyView.prototype.__wc = [];
 MyView.prototype.__ht = '<div></div>';
+MyView.prototype.__cn = undefined;
 
 MyView.prototype.__bv = function (view, prototype) {
-  view.__bd(prototype, false);
+  view.__bd(prototype, true);
 
   view.dom = {};
 };"
