@@ -95,6 +95,7 @@ function parseTarget(target) {
 
 function buidlCallbackStatement(saveAs, convert, target, raw) {
   let callbackBody, wrapper = `this.dom.${saveAs}`
+  convert = convert ? expandConverter(convert) : undefined
   if (target) {
     const targetString = parseTarget(target)
     if (raw) {

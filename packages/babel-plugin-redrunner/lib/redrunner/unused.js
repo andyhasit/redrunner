@@ -1,5 +1,106 @@
 
 
+/**
+ * Returns a statment adding an array to a prototype.
+ */
+function addPrototypeArray(className, name, body) {
+  return [`${className}.prototype.${name} = [`, body, '];'].join(EOL)
+}
+
+/**
+ * Returns a statment adding a field to a prototype.
+ */
+function addPrototypeField(className, name, statment) {
+  return [`${className}.prototype.${name} = `, statment, ';'].join(EOL)
+}
+
+/**
+ * Returns a statment adding a function to a prototype.
+ */
+function addPrototypeFunction(className, name, signature, body) {
+  return [`${className}.prototype.${name} = function(${signature}){`, body, '};'].join(EOL)
+}
+
+/**
+ * Returns a statment adding an object to a prototype.
+ */
+function addPrototypeObject(className, name, body) {
+  return [`${className}.prototype.${name} = {`, body, '};'].join(EOL)
+}
+
+
+
+/**
+ * Generates the statements.
+ */
+class StatementBuilder {
+  constructor(viewData, parsedData) {
+    this.cloneNode = viewData.cloneNode
+    this.className = viewData.className
+    this.parsedData = parsedData
+  }
+  generateStatements() {
+    // Return only statements which contain something...
+    return [
+      this.build__bv(),
+      this.build__cn(),
+      this.build__ht(),
+      this.build__wc(),
+      this.build__wq()
+    ].filter(s => s)
+  }
+  build__bv() {
+    const lines = []
+    lines.push(`view.__bd(prototype, ${this.cloneNode});`)
+
+    // Add remaining lines (must come before dom!)
+    this.parsedData.buildMethodLines.forEach(n => lines.push(n))
+
+    // Add this.dom definition
+    if (this.parsedData.domObjectLines.length > 0) {
+      lines.push('view.dom = {')
+      this.parsedData.domObjectLines.forEach(n => lines.push(n))
+      lines.push('};')
+    } else {
+      lines.push('view.dom = {};')
+    }
+    const body = lines.join(EOL)
+    return addPrototypeFunction(this.className, '__bv', 'view, prototype', body)
+  }
+  build__cn() {
+    if (this.cloneNode) {
+      return addPrototypeField(this.className, '__cn', 'undefined')
+    }
+  }
+  build__ht() {
+    return addPrototypeField(this.className, '__ht', `'${this.parsedData.cleanHTML}'`)
+  }
+  build__wc() {
+    const lines = []
+    this.parsedData.watchCallbackItems.forEach(entry => {
+      let {wrapper, shield, callbacks} = entry
+      let callbackLines = ['{']
+      for (let [key, value] of Object.entries(callbacks)) {
+        callbackLines.push(`'${key}': ${value}`)
+      }
+      callbackLines.push(`}`)
+      lines.push(`{wrapper: '${wrapper}', shield: ${shield}, callbacks: ${callbackLines.join(EOL)}},`)
+    })
+    const body = lines.join(EOL)
+    return addPrototypeArray(this.className, '__wc', body)
+  }
+  build__wq() {
+    const lines = []
+    for (let [key, callback] of Object.entries(this.parsedData.watchQueryItems)) {
+      lines.push(`'${key}': ${callback},`)
+    }
+    if (lines.length) {
+      const body = lines.join(EOL)
+      return addPrototypeObject(this.className, '__wq', body)
+    }
+  }
+}
+
 
 
    /*
@@ -47,21 +148,8 @@
       this.domObjectLines.push(`${saveAs}: ${wrapperCall}${chainedCalls},`)
     }
   }
-  /**
-   * Returns the call for creating a new wrapper based on nodePath.
-   *
-   * If wrapperClass is provided, it is initiated with new, and the class better
-   * be in scope. That is why we do it with new here rather than passing the class
-   * to __gw or so.
-   * Similarly, that is why we use __gw, because we know "Wrapper" will be in scope
-   * there, but it isn't guaranteed to be where the view is defined.
-   *
-   * I'm a bit uneasy having 'view' - should probably be a constant.
-   */
-  getRegularWrapperCall(nodePath, wrapperClass) {
-    const path = lookupArgs(nodePath)
-    return wrapperClass ? `new ${wrapperClass}(view.__lu(${path}))` : `view.__gw(${path})`
-  }
+
+
   getCachedWrapperCall(nest, nodePath, wrapperClass) {
     const path = lookupArgs(nodePath)
     const config = nest.config? expandShorthand(nest.config) : '{}'
@@ -98,52 +186,4 @@
     const wrapper = `this.dom.${saveAs}`
     const callbackBody = `${wrapper}.items(${nest.convert})`
     this.saveWatch(saveAs, nest.name, nest.property, callbackBody)
-  }
-  /**
-   * Adds a watch, creating both the callback and the query functions.
-   *
-   * @param {object} watch An object of shape {name, convert, target}
-   * @param {string} saveAs The name to which the wrapper is to be saved.
-   *
-   */
-  addNodeWatch(watch, saveAs) {
-    let callbackBody, wrapper = `this.dom.${saveAs}`
-    if (watch.target) {
-      const targetString = parseTarget(watch.target)
-      if (watch.raw) {
-        callbackBody = `${wrapper}.${targetString}${watch.raw})`
-      } else if (watch.convert) {
-        callbackBody = `${wrapper}.${targetString}${watch.convert})`
-      } else {
-        callbackBody = `${wrapper}.${targetString}n)`
-      }
-    } else {
-      // No watch target. Assume convert is provided.
-      // But it needs messy adjusting...
-      if (watch.convert.endsWith(watchArgs)) {
-        callbackBody = `${watch.convert.slice(0, -1)}, ${wrapper})`
-      } else if (watch.convert.endsWith(')')) {
-        callbackBody = `${watch.convert}`
-      } else {
-        callbackBody = `${watch.convert}${watchArgs.slice(0, -1)}, ${wrapper})`
-      }
-    }
-    this.saveWatch(saveAs, watch.name, watch.property, callbackBody)
-  }
-  saveWatch(saveAs, name, property, callbackBody) {
-    const callbackStatement = ['function(n, o) {', callbackBody, '},'].join(EOL)
-    //this.getWatchCallbackItems(name).push(callbackStatement)
-    // TODO: Only saves one callback. Just try for testing.
-    const callbacks = {}
-    callbacks[name] = callbackStatement
-    this.watchCallbackItems.push({
-      wrapper:saveAs, shield: 0, callbacks: callbacks
-    })
-    if (property !== '*') {
-      if (property === '' || property === undefined) {
-        this.watchQueryItems[name] = `function() {return null}`
-      } else {
-        this.watchQueryItems[name] = `function() {return ${property}}`
-      }
-    }
   }

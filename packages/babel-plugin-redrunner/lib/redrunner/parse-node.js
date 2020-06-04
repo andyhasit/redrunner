@@ -32,6 +32,17 @@ class NodeData {
 	  }
 	  return 'this.props.' + field
 	}
+	  /**
+   * Returns the call for creating a new wrapper based on nodePath.
+   *
+   * If wrapperClass is provided, it is initiated with new, and the class better
+   * be in scope. That is why we do it with new here rather than passing the class
+   * to __gw or so.
+   * Similarly, that is why we use __gw, because we know "Wrapper" will be in scope
+   * there, but it isn't guaranteed to be where the view is defined.
+   *
+   * I'm a bit uneasy having 'view' - should probably be a constant.
+   */
 	wrapperInit(nodePath) {
     const path = this.getLookupArgs(nodePath)
     return this.wrapperClass ? `new ${this.wrapperClass}(view.__lu(${path}))` : `view.__gw(${path})`

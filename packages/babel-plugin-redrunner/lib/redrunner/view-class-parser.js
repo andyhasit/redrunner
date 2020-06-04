@@ -85,6 +85,13 @@ class ViewClassParser {
         }
         callbacks[property].push(statement)
       })
+
+      for (let [property, statements] of Object.entries(callbacks)) {
+        let functionLines = statements.join(EOL)
+        let functionString = ['function(n, o) {', functionLines, '},'].join(EOL)
+        callbacks[property] = functionString
+      }
+
       this.watchCallbackItems.push({wrapper:saveAs, shield: 0, callbacks: callbacks})
       this.addSave(nodePath, saveAs, nodeData)
     }
@@ -107,15 +114,6 @@ class ViewClassParser {
     const wrapperInit = nodeData.wrapperInit(nodePath)
     const chainedCallStatement = chainedCalls.join('.')
     this.domObjectLines.push(`${saveAs}: ${wrapperInit}${chainedCallStatement},`)
-  }
-  /**
-   * Returns the Array of callback for a watch, creating if necessary.
-   */
-  getWatchCallbackItems(name) {
-    if (!this.watchCallbackItems.hasOwnProperty(name)) {
-      this.watchCallbackItems[name] = []
-    }
-    return this.watchCallbackItems[name]
   }
   /**
    * Returns a short variable name guaranteed to be unique within the view.

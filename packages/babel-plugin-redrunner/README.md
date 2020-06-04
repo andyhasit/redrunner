@@ -1,6 +1,6 @@
 #babel-plugin-redrunner
 
-A babel plugin for RedRunner.
+The babel plugin for RedRunner.
 
 ## Overview
 
@@ -12,7 +12,7 @@ class MyView extends View {
 }
 ```
 
-The `__html__` property is removed and in its place we define fields on the prototype (we can't replace ES6 with more ES6) which interact with core library code (View & Wrapper).
+The `__html__` property is removed and in its place we define fields on the prototype which interact with core library code (View & Wrapper).
 
 These fields include:
 
