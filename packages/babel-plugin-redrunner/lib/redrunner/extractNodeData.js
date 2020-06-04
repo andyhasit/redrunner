@@ -1,6 +1,6 @@
 const {c, EOL} = require('../utils/constants')
 const {isFunc, isUnd, splitTrim} = require('../utils/javascript')
-const {getAttVal} = require('../utils/dom')
+const {getAttVal, removeAtt} = require('../utils/dom')
 const {extractInlineWatches} = require('./inline')
 
 
@@ -130,6 +130,7 @@ function extractNodeData(node, config) {
 	  	if (attVal) {
 	  		hasData = true
 	  		nodeData.processDirective(directiveName, directive, attVal)
+	  		removeAtt(node, directiveName)
 	  	}
 		}
 	}

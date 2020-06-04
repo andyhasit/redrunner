@@ -1,4 +1,5 @@
 const {c, htmlparse} = require('../utils/constants')
+const {stripHtml} = require('../utils/dom')
 
 /**
  * Handles the task of parsing a RedRunner view, including:
@@ -8,7 +9,9 @@ const {c, htmlparse} = require('../utils/constants')
  */
 class DOMWalker {
   constructor(html, processNode) {
-    this.html = html
+    //TODO The lookups go wrong if we don't strip the HTML.
+    // but then we also lose the line position for showing errors.
+    this.html = stripHtml(html)
     this.processNode = processNode
     this.dom = undefined
     this.currentNode = undefined

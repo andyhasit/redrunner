@@ -6,7 +6,7 @@ const {c, EOL} = require('./constants')
 const {JSDOM} = require("jsdom")
 const document = new JSDOM('<!doctype html><html><body></body></html>').window.document
 
-/** Extracts the args string from rawAttrs e.g. 
+/** Extracts the args string from rawAttrs e.g.
  *
  *   as=m            >   "m"
  *   args="a, 'b'"   >   "a, 'b'"
@@ -54,7 +54,7 @@ function extractAtts(node) {
   return obj
 }
 
-/** 
+/**
  * Extracts the whole attribute (e.g. "as=me" from rawAttrs
  * Note that it does not allow spaces around the = sign!
  */
@@ -77,9 +77,16 @@ function getAttDefinition(attStr, attName) {
   }
 }
 
-/** 
- * Returns the position of the next closing tag, or whitespace, whichever comes 
- *    first.
+/**
+ * Removes an attribute (in-place)
+ */
+function removeAtt(node, att) {
+  const wholeAtt = getAttDefinition(node.rawAttrs, att)
+  node.rawAttrs = node.rawAttrs.replace(wholeAtt, '')
+}
+
+/**
+ * Returns the position of the next closing tag, or whitespace, whichever comes first.
  *
  * Note: the character at position "start" must not be a with whitespace.
  */
@@ -128,5 +135,6 @@ module.exports = {
   getAttVal,
   getAttDefinition,
   isLeafNode,
+  removeAtt,
   stripHtml
 }

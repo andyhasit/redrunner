@@ -20,9 +20,9 @@ class BaseStatement {
 
 
 class ArrayStatement extends BaseStatement {
-  constructor() {
+  constructor(items) {
     super()
-    this.items = []
+    this.items = items || []
   }
   add(value) {
     this.items.push(value)
@@ -59,9 +59,9 @@ class FunctionStatement extends BaseStatement {
 
 
 class ObjectStatement extends BaseStatement {
-  constructor() {
+  constructor(entries) {
     super()
-    this.entries = {}
+    this.entries = entries || {}
   }
   add(key, value) {
     this.entries[key] = value
@@ -78,9 +78,9 @@ class ObjectStatement extends BaseStatement {
 
 
 class ValueStatement extends BaseStatement {
-  constructor() {
+  constructor(value) {
     super()
-    this.value = 'undefined'
+    this.value = value || 'undefined'
   }
   set(value) {
     this.value = value

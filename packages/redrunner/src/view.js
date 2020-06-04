@@ -130,10 +130,10 @@ export class View {
     if (clone && !prototype.__cn) {
       prototype.__cn = makeEl(prototype.__ht)
     }
-    this. e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht)
+    this.e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht)
   }
   /**
-   * Returns a refular wrapper around element at path, where path is an array of indices.
+   * Returns a regular wrapper around element at path, where path is an array of indices.
    * This is used by the babel plugin.
    */
   __gw(path) {
@@ -201,7 +201,7 @@ export class View {
     const queries = {}  // The saved results of queries. Should we optimize this?
 
     while (i < il) {
-      let {wrapper, shield, callbacks} = watchCallbacks[i]
+      let {el, shield, callbacks} = watchCallbacks[i]
       for (let [key, callback] of Object.entries(callbacks)) {
         if (key === '*') {
           callback.apply(this)
@@ -209,8 +209,6 @@ export class View {
           if (key in queries) {
             [newValue, oldValue, hasChanged] = queries[key]
           } else {
-            c.log(key)
-            c.log(this.__wq)
             oldValue = this.__ov[key]
             newValue = this.__wq[key].apply(this)
             hasChanged = newValue !== oldValue
@@ -222,7 +220,7 @@ export class View {
           }
         }
       }
-      //i = (shield && wrapper.__shield) ? i + shield + 1 : i + 1
+      //i = (shield && el.__shield) ? i + shield + 1 : i + 1
       i ++
     }
   }

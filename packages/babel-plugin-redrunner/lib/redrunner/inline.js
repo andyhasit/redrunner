@@ -7,7 +7,7 @@
  */
 
 const {c} = require('../utils/constants')
-const {extractAtts, getAttDefinition, isLeafNode} = require('../utils/dom')
+const {extractAtts, isLeafNode, removeAtt} = require('../utils/dom')
 const {expandConverter, splitter} = require('./syntax')
 
 /**
@@ -114,13 +114,11 @@ function extractInlineWatches(node, config) {
   for (let [key, value] of Object.entries(atts)) {
   	if (value && !restrictedAtts.includes(key)) {
   		if (addInlineWatches(value, `@${key}`)) {
-  			let wholeAtt = getAttDefinition(node.rawAttrs, key)
-      	node.rawAttrs = node.rawAttrs.replace(wholeAtt, '')
+  			removeAtt(node, key)
   		}
   	}
 	}
   return watches
 }
-
 
 module.exports = {extractInlineWatches}

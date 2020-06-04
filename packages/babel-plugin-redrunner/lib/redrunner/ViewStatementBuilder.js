@@ -1,5 +1,6 @@
 const c = console
 const {EOL} = require('../utils/constants')
+const {stripHtml} = require('../utils/dom')
 const {groupArray} = require('../utils/javascript')
 const {DOMWalker} = require('./DOMWalker.js')
 const {extractNodeData} = require('./extractNodeData')
@@ -16,10 +17,9 @@ const {
  */
 class ViewStatementBuilder {
   constructor(viewData) {
-    this.walker = new DOMWalker(viewData.html,
-    	(nodePath, node, tagName) => this.processNode(nodePath, node, tagName)
-    )
+    this.walker = new DOMWalker(viewData.html, nodeInfo => this.processNode(nodeInfo))
     this.className = viewData.className
+    this.clone = viewData.clone
     this.config = viewData.config
     this.randVarCount = 0
 
@@ -29,6 +29,7 @@ class ViewStatementBuilder {
     this.afterSave = []
 
     // These objects build the statements.
+    this.htmlString = new ValueStatement()
     this.buildMethod = new FunctionStatement('view, prototype')
     this.watchCallbacks = new ArrayStatement()
     this.watchQuery = new ObjectStatement()
@@ -37,22 +38,30 @@ class ViewStatementBuilder {
    * Initiates parsing and returns all the generated statements.
    */
   buildStatements() {
-  	this.walker.parse()expandProperty
-  	this.consolidate()
+  	this.walker.parse()
+  	this.postParsing()
   	const prefix = `${this.className}.prototype.`
-		return [
+		const statements = [
+			this.htmlString.buildAssign(`${prefix}__ht`),
 			this.watchCallbacks.buildAssign(`${prefix}__wc`),
 			this.watchQuery.buildAssign(`${prefix}__wq`),
 			this.buildMethod.buildAssign(`${prefix}__bv`),
 		]
+		if (this.clone) {
+			statements.push(new ValueStatement('undefined').buildAssign(`${prefix}__cn`))
+		}
+		return statements
 	}
 	/**
-	 * Consolidate any work after parsing
+	 * Consolidates various bits after parsing.
 	 */
-	consolidate() {
+	postParsing() {
+		this.buildMethod.add(`view.__bd(prototype, ${this.clone})`)
 		this.beforeSave.forEach(i => this.buildMethod.add(i))
-		this.buildMethod.add = this.domObject.buildAssign('view.dom')
+		this.buildMethod.add(this.domObject.buildAssign('view.dom'))
 		this.afterSave.forEach(i => this.buildMethod.add(i))
+		// We do this at the end as the dom has been changed
+		this.htmlString.set(`'${stripHtml(this.walker.dom.toString())}'`)
 	}
   /**
    * Gets passed to the DOMWalker, who calls this at every node.
@@ -97,10 +106,11 @@ class ViewStatementBuilder {
       	statements.forEach(s => callback.add(s))
         callbacks.add(property, callback)
       }
-      let watchCallback = new ObjectStatement()
-      //watchCallback.add('wrapper', saveAs)
-      watchCallback.add('shield', 0)
-      watchCallback.add('callbacks', callbacks)
+      let watchCallback = new ObjectStatement({
+      	el: `'${saveAs}'`,
+      	shield: 0,
+      	callbacks: callbacks
+      })
       this.watchCallbacks.add(watchCallback)
     }
   }
@@ -119,7 +129,7 @@ class ViewStatementBuilder {
   saveDOM(nodePath, saveAs, nodeData) {
     let {chainedCalls} = nodeData
     const wrapperInit = nodeData.wrapperInit(nodePath)
-    const chainedCallStatement = chainedCalls.join('.')
+    const chainedCallStatement = chainedCalls.length ? '.' + chainedCalls.join('.') : ''
     this.domObject.add(saveAs, `${wrapperInit}${chainedCallStatement}`)
   }
   getUniqueVarName() {
