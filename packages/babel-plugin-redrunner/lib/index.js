@@ -28,7 +28,7 @@ module.exports = () => {
             viewCount ++
             const statements = generateStatements(viewData)
             statements.forEach(statement =>
-              path.insertAfter(statement)
+              path.insertAfter(babel.template.ast(statement))
             )
           }
         }

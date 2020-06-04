@@ -1,11 +1,15 @@
+const c = console
+const {EOL} = require('../utils/constants')
+const {groupArray} = require('../utils/javascript')
 const {DOMWalker} = require('./DOMWalker.js')
-const {extractNodeData} = require('./parse-node')
+const {extractNodeData} = require('./extractNodeData')
+const {buidlCallbackStatement, expandProperty} = require('./syntax')
 const {
   ArrayStatement,
   FunctionStatement,
   ObjectStatement,
   ValueStatement
-} = require('./statement-builders')
+} = require('./StatementBuilders')
 
 /**
  * Builds all the generated statements for a RedRunner View.
@@ -19,9 +23,13 @@ class ViewStatementBuilder {
     this.config = viewData.config
     this.randVarCount = 0
 
+    // These are used in the buildMethod
+    this.domObject = new ObjectStatement()
+    this.beforeSave = []
+    this.afterSave = []
+
     // These objects build the statements.
     this.buildMethod = new FunctionStatement('view, prototype')
-    this.domObject = new ObjectStatement()
     this.watchCallbacks = new ArrayStatement()
     this.watchQuery = new ObjectStatement()
   }
@@ -29,13 +37,13 @@ class ViewStatementBuilder {
    * Initiates parsing and returns all the generated statements.
    */
   buildStatements() {
-  	this.walker.parse()
+  	this.walker.parse()expandProperty
   	this.consolidate()
   	const prefix = `${this.className}.prototype.`
 		return [
 			this.watchCallbacks.buildAssign(`${prefix}__wc`),
 			this.watchQuery.buildAssign(`${prefix}__wq`),
-			this.buildMethod.buildAssign(`${prefix}__bd`),
+			this.buildMethod.buildAssign(`${prefix}__bv`),
 		]
 	}
 	/**
@@ -71,30 +79,29 @@ class ViewStatementBuilder {
   processNormalNode(nodeInfo) {
   	const {nodePath, node, tagName} = nodeInfo
     const nodeData = extractNodeData(node, this.config, this.walker)
-    const callbacks = {}
     if (nodeData) {
       let {afterSave, beforeSave, saveAs, watches} = nodeData
       saveAs = saveAs ?  saveAs : this.getUniqueVarName()
-      watches.forEach(watch => {
-        let {property, converter, target, raw} = watch
-        // Add watch query (idempotent)
-        this.addWatchQuery(property)
+      this.saveDOM(nodePath, saveAs, nodeData)
 
-        // Squash statements for all callbacks into one function.
-        let statement = buidlCallbackStatement(saveAs, converter, target, raw)
-        if (!callbacks.hasOwnProperty(property)) {
-          callbacks[property] = []
-        }
-        callbacks[property].push(statement)
+      // Squash array to object
+      watches = groupArray(watches, 'property', watch => {
+      	let {converter, target, raw} = watch
+      	return buidlCallbackStatement(saveAs, converter, target, raw) // TODO: extract this
       })
 
-      for (let [property, statements] of Object.entries(callbacks)) {
-        let functionLines = statements.join(EOL)
-        let functionString = ['function(n, o) {', functionLines, '},'].join(EOL)
-        callbacks[property] = functionString
+      let callbacks = new ObjectStatement()
+      for (let [property, statements] of Object.entries(watches)) {
+      	this.addWatchQuery(property)
+      	let callback = new FunctionStatement('n, o')
+      	statements.forEach(s => callback.add(s))
+        callbacks.add(property, callback)
       }
-      this.watchCallbacks.add({wrapper:saveAs, shield: 0, callbacks: callbacks})
-      this.saveDOM(nodePath, saveAs, nodeData)
+      let watchCallback = new ObjectStatement()
+      //watchCallback.add('wrapper', saveAs)
+      watchCallback.add('shield', 0)
+      watchCallback.add('callbacks', callbacks)
+      this.watchCallbacks.add(watchCallback)
     }
   }
   addWatchQuery(property) {
@@ -102,7 +109,7 @@ class ViewStatementBuilder {
     if (property !== '*') {
       let callback = (property === '' || property === undefined) ?
       	'function() {return null}' :
-      	`function() {return ${expandShorthand(property)}}`
+      	`function() {return ${expandProperty(property)}}`
       this.watchQuery.add(property, callback)
     }
   }

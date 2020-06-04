@@ -1,5 +1,11 @@
-const babel = require('@babel/core')
 const {c, EOL} = require('../utils/constants')
+
+function expand(value) {
+  if (value instanceof BaseStatement) {
+    return value.buildValue()
+  }
+  return value
+}
 
 
 class BaseStatement {
@@ -8,14 +14,14 @@ class BaseStatement {
    * Note that babel does its own adjustments with spaces, commas etc...
    */
   buildAssign(name) {
-    let statement = `${name} = ${this.buildValue()};`
-    return babel.template.ast(statement)
+    return `${name} = ${this.buildValue()};`
   }
 }
 
 
 class ArrayStatement extends BaseStatement {
   constructor() {
+    super()
     this.items = []
   }
   add(value) {
@@ -23,8 +29,8 @@ class ArrayStatement extends BaseStatement {
   }
   buildValue() {
     const lines = ['[']
-    this.items.forEach(i => {
-      lines.push(`${value},`)
+    this.items.forEach(value => {
+      lines.push(`${expand(value)},`)
     })
     lines.push(']')
     return lines.join(EOL)
@@ -34,6 +40,7 @@ class ArrayStatement extends BaseStatement {
 
 class FunctionStatement extends BaseStatement {
   constructor(argString) {
+    super()
     this.argString = argString
     this.items = []
   }
@@ -41,9 +48,9 @@ class FunctionStatement extends BaseStatement {
     this.items.push(value)
   }
   buildValue() {
-    const lines = [`function (${argString}) {`]
-    this.items.forEach(i => {
-      lines.push(`${value},`)
+    const lines = [`function (${this.argString}) {`]
+    this.items.forEach(value => {
+      lines.push(`${expand(value)}${EOL}`)
     })
     lines.push('}')
     return lines.join(EOL)
@@ -53,6 +60,7 @@ class FunctionStatement extends BaseStatement {
 
 class ObjectStatement extends BaseStatement {
   constructor() {
+    super()
     this.entries = {}
   }
   add(key, value) {
@@ -61,7 +69,7 @@ class ObjectStatement extends BaseStatement {
   buildValue() {
     const lines = ['{']
     for (let [key, value] of Object.entries(this.entries)) {
-      lines.push(`'${key}': ${value},`)
+      lines.push(`'${key}': ${expand(value)},`)
     }
     lines.push('}')
     return lines.join(EOL)
@@ -71,13 +79,14 @@ class ObjectStatement extends BaseStatement {
 
 class ValueStatement extends BaseStatement {
   constructor() {
+    super()
     this.value = 'undefined'
   }
   set(value) {
     this.value = value
   }
   buildValue() {
-    return this.value
+    return expand(this.value)
   }
 }
 

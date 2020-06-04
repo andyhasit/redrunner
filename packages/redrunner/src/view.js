@@ -209,6 +209,8 @@ export class View {
           if (key in queries) {
             [newValue, oldValue, hasChanged] = queries[key]
           } else {
+            c.log(key)
+            c.log(this.__wq)
             oldValue = this.__ov[key]
             newValue = this.__wq[key].apply(this)
             hasChanged = newValue !== oldValue
@@ -220,7 +222,8 @@ export class View {
           }
         }
       }
-      i = (shield && wrapper.__shield) ? i + shield + 1 : i + 1
+      //i = (shield && wrapper.__shield) ? i + shield + 1 : i + 1
+      i ++
     }
   }
   __rn(path, view) {

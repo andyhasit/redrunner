@@ -1,5 +1,3 @@
-const {watchArgs} = require('./constants')
-
 /**
  * Functionality relating to RedRunner Views
  */
@@ -95,7 +93,7 @@ function parseTarget(target) {
 
 function buidlCallbackStatement(saveAs, convert, target, raw) {
   let callbackBody, wrapper = `this.dom.${saveAs}`
-  convert = convert ? expandConverter(convert) : undefined
+  convert = convert ? expandConverter(convert) : ''
   if (target) {
     const targetString = parseTarget(target)
     if (raw) {
@@ -119,6 +117,16 @@ function buidlCallbackStatement(saveAs, convert, target, raw) {
   return callbackBody
 }
 
+/**
+ * The character on which to split attributes and inlines
+ */
+const splitter = '|'
+
+/**
+ * The args string for watch callbacks.
+ */
+const watchArgs = '(n, o)'
+
 
 module.exports = {
   adjustName,
@@ -127,5 +135,7 @@ module.exports = {
   expandProperty,
   expandShorthand,
   lookupArgs,
-  parseTarget
+  parseTarget,
+  splitter,
+  watchArgs
 }

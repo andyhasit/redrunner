@@ -8,8 +8,7 @@
 
 const {c} = require('../utils/constants')
 const {extractAtts, getAttDefinition, isLeafNode} = require('../utils/dom')
-const {splitter} = require('./constants')
-const {expandConverter} = require('./views')
+const {expandConverter, splitter} = require('./syntax')
 
 /**
  * Returns undefined if string is only whitespace, else the original string.

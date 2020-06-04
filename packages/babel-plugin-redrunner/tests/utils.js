@@ -30,6 +30,20 @@ expect.extend({
     const message = pass ? passMessage : failMessage
     return {actual: received, message, pass}
   },
+  toMatchCode(received, expected) {
+    received = babel.transform(received).code //babel.template.ast(received)
+    expected = babel.transform(expected).code
+    const pass = received === expected
+    const passMessage = () => 'OK'
+    const failMessage = () => {
+        const diffString = diff(expected, received, {
+          expand: this.expand,
+        });
+        return this.utils.matcherHint('.toBe') + (diffString ? `\n\nDifference:\n\n${diffString}` : '')
+      }
+    const message = pass ? passMessage : failMessage
+    return {actual: received, message, pass}
+  }
 });
 
 
