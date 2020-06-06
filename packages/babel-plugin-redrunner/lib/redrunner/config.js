@@ -8,12 +8,12 @@ const config = {
         this.saveAs = arg
       }
     },
-    // ':hide': {
-    //   params: 'property',
-    //   handle: function(property) {
-    //     this.addWatch(property, function(n) {return !n}, 'visible')
-    //   }
-    // },
+    ':hide': {
+      params: 'property',
+      handle: function(property) {
+        this.shieldQuery = property
+      }
+    },
     ':nest': {
       params: 'event, callbackStr',
       handle: function(event, callbackStr) {
@@ -32,12 +32,12 @@ const config = {
         this.props = expandShorthand(args)
       }
     },
-    ':show': {
-      params: 'property',
-      handle: function(property) {
-        this.shieldQuery = property
-      }
-    },
+    // ':show': {
+    //   params: 'property',
+    //   handle: function(property) {
+    //     this.shieldQuery = property
+    //   }
+    // },
     ':watch': {
       params: 'property, converter, target?',
       handle: function(property, converter, target) {

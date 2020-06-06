@@ -12,8 +12,7 @@ import {c, h, load, View} from '../utils'
 class TestView extends View {
   __html__ = `
     <div>
-      <div :show="show">
-        <div :watch="*|.getContents?|inner"></div>
+      <div :hide="hide" :watch="*|.getContents?|inner">
       </div>
     </div>
   `
@@ -23,64 +22,56 @@ class TestView extends View {
 }
 
 const props = {
-  show: true,
+  hide: false,
   items: [1, 2, 3]
 }
 
 
-test("Inner contents update", () => {
+test("Hide masks", () => {
   const div = load(TestView, props)
   expect(div).toShow(`
   	<div>
       <div style="visibility: visible;">
-        <div>
-    	    <div>1</div>
-          <div>2</div>
-          <div>3</div>
-        </div>
+        <div>1</div>
+        <div>2</div>
+        <div>3</div>
       </div>
     </div>
   `)
-  // props.show = false
-  // div.update()
-  // expect(div).toShow(`
-  //   <div>
-  //     <div style="visibility: hidden;">
-  //       <div>
-  //         <div>1</div>
-  //         <div>2</div>
-  //         <div>3</div>
-  //       </div>
-  //     </div>
-  //   </div>
-  // `)
-  // props.items = [4, 5]
-  // div.update()
+  props.hide = true
+  div.update()
+  expect(div).toShow(`
+    <div>
+      <div style="visibility: hidden;">
+        <div>1</div>
+        <div>2</div>
+        <div>3</div>
+      </div>
+    </div>
+  `)
+  props.items = [4, 5]
+  div.update()
 
-  // // Nothing should change
-  // expect(div).toShow(`
-  //   <div>
-  //     <div style="visibility: hidden;">
-  //       <div>
-  //         <div>1</div>
-  //         <div>2</div>
-  //         <div>3</div>
-  //       </div>
-  //     </div>
-  //   </div>
-  // `)
+  // Nothing should change
+  expect(div).toShow(`
+    <div>
+      <div style="visibility: hidden;">
+        <div>1</div>
+        <div>2</div>
+        <div>3</div>
+      </div>
+    </div>
+  `)
 
-  // props.show = true
-  // div.update()
-  // //
-  // expect(div).toShow(`
-  //   <div>
-  //     <div style="visibility: visible;">
-  //       <div>
-  //         <div>4</div>
-  //         <div>5</div>
-  //       </div>
-  //     </div>
-  //   </div>
-  // `)
+  props.hide = false
+  div.update()
+  //
+  expect(div).toShow(`
+    <div>
+      <div style="visibility: visible;">
+        <div>4</div>
+        <div>5</div>
+      </div>
+    </div>
+  `)
 })

@@ -205,9 +205,9 @@ export class View {
 
     while (i < il) {
       watch = watches[i]
-      shield = watch.shieldFor(this, queryCache)
+      shield = watch.shieldFor(this, watch, queryCache)
       if (shield) {
-        i = shield + i
+        i += shield
         continue
       }
       watch.appyCallbacks(this, queryCache)
