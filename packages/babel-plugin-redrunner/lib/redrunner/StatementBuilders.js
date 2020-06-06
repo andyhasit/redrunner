@@ -37,18 +37,35 @@ class ArrayStatement extends BaseStatement {
   }
 }
 
-
-class FunctionStatement extends BaseStatement {
-  constructor(argString) {
+/**
+ * Creates a call statement, where parameters are expanded.
+ */
+class CallStatement extends BaseStatement {
+  constructor(start, items) {
     super()
-    this.argString = argString
-    this.items = []
+    this.start = start
+    this.items = items || []
   }
   add(value) {
     this.items.push(value)
   }
   buildValue() {
-    const lines = [`function (${this.argString}) {`]
+    const callArgs = this.items.map(i => expand(i)).join(', ')
+    return this.start + '(' + callArgs + ')'
+  }
+}
+
+class FunctionStatement extends BaseStatement {
+  constructor(argString, items) {
+    super()
+    this.argString = argString
+    this.items = items || []
+  }
+  add(value) {
+    this.items.push(value)
+  }
+  buildValue() {
+    const lines = [`function(${this.argString}) {`]
     this.items.forEach(value => {
       lines.push(`${expand(value)}${EOL}`)
     })
@@ -92,6 +109,7 @@ class ValueStatement extends BaseStatement {
 
 module.exports = {
   ArrayStatement,
+  CallStatement,
   FunctionStatement,
   ObjectStatement,
   ValueStatement

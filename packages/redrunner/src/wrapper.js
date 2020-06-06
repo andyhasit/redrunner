@@ -8,7 +8,6 @@ import {c, doc} from './helpers'
 export class Wrapper {
   constructor(element) {
     this.e = element
-    this.__shield = false
     this._items = [] // For advanced manipulation.
   }
   /**
@@ -148,7 +147,6 @@ export class Wrapper {
     return this
   }
   visible(visible) {
-    this.__shield = !visible
     return this.style('visibility', visible? 'visible' : 'hidden')
   }
   value(value) {

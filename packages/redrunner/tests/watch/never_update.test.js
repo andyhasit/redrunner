@@ -7,11 +7,11 @@ function getNext(n) {
 }
 
 class TestView extends View {
-  __html__ = '<span :watch="|..getNext?|"></span>'
+  __html__ = '<span :watch="|..getNext?|text"></span>'
 }
 
 
-test('Empty property notation always updates', () => {
+test('Empty property notation only updates once', () => {
   const div = load(TestView)
   expect(div).toShow('<span>1</span>')
   div.update()

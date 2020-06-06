@@ -1,6 +1,10 @@
+/*
+Note: in some cases you HAVE to test using an assignment.
+*/
 import {c, getNode} from '../utils'
 import {
   ArrayStatement,
+  CallStatement,
   FunctionStatement,
   ObjectStatement,
   ValueStatement
@@ -12,6 +16,13 @@ test('ArrayStatement', () => {
   s.add('"yo"')
   s.add('2')
   expect(s.buildValue()).toMatchCode('["yo", 2]')
+})
+
+test('CallStatement', () => {
+  const s = new CallStatement('new Wrapper')
+  s.add('"yo"')
+  s.add('2')
+  expect(s.buildValue()).toMatchCode('new Wrapper("yo", 2)')
 })
 
 test('FunctionStatement', () => {
@@ -33,7 +44,7 @@ test('ValueStatement', () => {
   expect(s.buildAssign('a')).toMatchCode('a = "yo"')
 })
 
-test('Nested statements', () => {
+test('Function nested in ArrayStatement', () => {
   const s = new ArrayStatement()
   const f = new FunctionStatement('foo, bar')
   f.add('return "yo"')
@@ -41,4 +52,12 @@ test('Nested statements', () => {
   s.add(f)
   s.add('2')
   expect(s.buildValue()).toMatchCode('[1, function(foo, bar) {return "yo"}, 2]')
+})
+
+test('Function nested in ObjectStatement', () => {
+  const s = new ObjectStatement()
+  const f = new FunctionStatement('foo, bar')
+  f.add('return 0')
+  s.add('x', f)
+  expect(s.buildAssign('a')).toMatchCode("a = {'x': function(foo, bar) {return 0}}")
 })

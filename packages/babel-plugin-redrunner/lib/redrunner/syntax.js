@@ -9,7 +9,7 @@
  * @param {array} nodePath The path to the node as array of indices in the dom
  *    tree e.g. [1, 0]
  */
-function lookupArgs(nodePath) {
+function getLookupArgs(nodePath) {
   return `[${nodePath.slice(2)}]`
 }
 
@@ -117,6 +117,48 @@ function buidlCallbackStatement(saveAs, convert, target, raw) {
   return callbackBody
 }
 
+
+function getCachedWrapperCall(nest, nodePath, wrapperClass) {
+  const path = getLookupArgs(nodePath)
+  const config = nest.config ? expandShorthand(nest.config) : '{}'
+  let cache
+
+  const getCacheKeyFunction = key => {
+    if (key.endsWith('?')) {
+      return expandShorthand(key.slice(0, -1))
+    }
+    return `function(props) {return props.${key}}`
+  }
+  // Build cache call
+  if (nest.cache.startsWith('@')) {
+    cache = expandShorthand(nest.cache.substr(1))
+  } else {
+    const [viewCacheClass, viewCacheKey] = nest.cache.split(':')
+    if (viewCacheKey) {
+      const keyFn = getCacheKeyFunction(viewCacheKey)
+      cache = `view.__kc(${viewCacheClass}, ${keyFn})`
+    } else {
+      cache = `view.__sc(${viewCacheClass})`
+    }
+  }
+
+  if (wrapperClass) {
+    return `new ${wrapperClass}(view.__lu(${path}), ${cache}, ${config})`
+  }
+  return `view.__cw(${path}, ${cache}, ${config})`
+}
+
+/**
+ * Returns the callback for the watch query, or undefined.
+ */
+function getWatchQueryCallBack(property) {
+  if (property !== '*') {
+    return (property === '' || property === undefined) ?
+      'function() {return null}' :
+      `function() {return ${expandProperty(property)}}`
+  }
+}
+
 /**
  * The character on which to split attributes and inlines
  */
@@ -128,13 +170,16 @@ const splitter = '|'
 const watchArgs = '(n, o)'
 
 
+
+
 module.exports = {
   adjustName,
   buidlCallbackStatement,
   expandConverter,
   expandProperty,
   expandShorthand,
-  lookupArgs,
+  getWatchQueryCallBack,
+  getLookupArgs,
   parseTarget,
   splitter,
   watchArgs

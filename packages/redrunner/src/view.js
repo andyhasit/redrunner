@@ -2,6 +2,8 @@ import {KeyedCache, SequentialCache} from './view-cache'
 import {createView} from  './utils'
 import {und, makeEl} from './helpers'
 import {CachedWrapper, Wrapper} from './wrapper'
+import {buildUtils} from './build-utils'
+
 
 const c = console;
 /*
@@ -54,7 +56,7 @@ export class View {
    * This field gets transformed by the babel plugin.
    * Providing a default here so that child classes get processed.
    */
-  __html__ = '<div/>'
+  //__html__ = '<div/>'
   /**
    * Gets called once immediately after building.
    */
@@ -192,16 +194,35 @@ export class View {
    * Calls update on all watches if watched value has changed, skipping shielded watches.
    */
   __uw() {
-    let i = 0, newValue, oldValue, hasChanged, wrapper, shield, callbacks
-    const watchCallbacks = this.__wc
-    if (!watchCallbacks) {
+    let i = 0, watch, shield
+    const watches = this.__wc
+    if (!watches) {
       return
     }
-    const il = watchCallbacks.length
-    const queries = {}  // The saved results of queries. Should we optimize this?
+    const il = watches.length
+    const queryCache = this.queryCache
+    queryCache.reset()
 
     while (i < il) {
-      let {el, shield, callbacks} = watchCallbacks[i]
+      watch = watches[i]
+      shield = watch.shieldFor(this, queryCache)
+      if (shield) {
+        i = shield + i
+        continue
+      }
+      watch.appyCallbacks(this, queryCache)
+      i ++
+    }
+
+
+    /*
+    TODO: need a different algorithm, whereby the first thing we check is whether that
+    element shows.
+
+
+
+    while (i < il) {
+      let {el, shield, callbacks} = watches[i]
       for (let [key, callback] of Object.entries(callbacks)) {
         if (key === '*') {
           callback.apply(this)
@@ -220,11 +241,23 @@ export class View {
           }
         }
       }
-      //i = (shield && el.__shield) ? i + shield + 1 : i + 1
-      i ++
+      i = (shield && el._shield) ? i + shield + 1 : i + 1
+      //i ++
     }
+    */
   }
   __rn(path, view) {
     this.__gw(path).replace(view.e)
   }
 }
+
+/**
+ * This just creates a default.
+ */
+View.prototype.__ht = '<div></div>'
+
+
+/**
+ * This is used by the generated code.
+ */
+View.prototype.buildUtils = buildUtils
