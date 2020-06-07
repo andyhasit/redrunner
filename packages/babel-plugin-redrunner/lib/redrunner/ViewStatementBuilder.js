@@ -104,7 +104,7 @@ class ViewStatementBuilder {
   	const {nodePath, node, tagName} = nodeInfo
     const nodeData = extractNodeData(node, this.config, this.walker)
     if (nodeData) {
-      let {afterSave, beforeSave, saveAs, shieldQuery, watches} = nodeData
+      let {afterSave, beforeSave, saveAs, shieldQuery, reverseShield, watches} = nodeData
 
       // Use the saveAs supplied, or get a sequential one
       saveAs = saveAs ? saveAs : this.getNextElementRef()
@@ -136,6 +136,7 @@ class ViewStatementBuilder {
       let watchCall = new CallStatement(`${this.buildUtils}.getWatch` , [
       	`'${saveAs}'`,
       	shieldQuery,
+        reverseShield.toString(),
       	allCallbacks
       ])
       this.watches.add(watchCall)

@@ -41,12 +41,13 @@ const config = {
         this.props = expandShorthand(args)
       }
     },
-    // ':show': {
-    //   params: 'property',
-    //   handle: function(property) {
-    //     this.shieldQuery = property
-    //   }
-    // },
+    ':show': {
+      params: 'property',
+      handle: function(property) {
+        this.shieldQuery = property
+        this.reverseShield = true
+      }
+    },
     ':watch': {
       params: 'property, converter, target?',
       handle: function(property, converter, target) {
@@ -54,9 +55,10 @@ const config = {
       }
     },
     ':wrapper': {
-      params: 'wrapperClass',
-      handle: function(wrapperClass) {
-        this.wrapperClass = wrapperClass
+      params: 'cls, args?',
+      handle: function(cls, args) {
+        this.customWrapperClass = cls
+        this.customWrapperArgs = args
       }
     }
   }

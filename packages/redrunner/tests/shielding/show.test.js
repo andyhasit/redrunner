@@ -1,18 +1,9 @@
-/*
-
-These test are breaking as I explore a new way of making it work.
-Make this a hide & show. Use cached objects too.
-Also reverse, and same element.
-
-*/
-
-
 import {c, h, load, View} from '../utils'
 
 class TestView extends View {
   __html__ = `
     <div>
-      <div :hide="hide" :watch="*|.getContents?|inner">
+      <div :show="show" :watch="*|.getContents?|inner">
       </div>
     </div>
   `
@@ -22,7 +13,7 @@ class TestView extends View {
 }
 
 const props = {
-  hide: false,
+  show: true,
   items: [1, 2, 3]
 }
 
@@ -38,7 +29,7 @@ test("Hide masks", () => {
       </div>
     </div>
   `)
-  props.hide = true
+  props.show = false
   div.update()
   expect(div).toShow(`
     <div>
@@ -63,7 +54,7 @@ test("Hide masks", () => {
     </div>
   `)
 
-  props.hide = false
+  props.show = true
   div.update()
   //
   expect(div).toShow(`

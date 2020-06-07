@@ -42,19 +42,19 @@ class QueryCache {
  * Represents a watch on an element.
  */
 class Watch {
-  constructor(el, shieldQuery, callbacks) {
-    this.el = el                     // The name of the saved element.
-    this.shieldQuery = shieldQuery   // The shield query key -
-    this.callbacks = callbacks       // Callbacks - object
+  constructor(el, shieldQuery, reverseShield, callbacks) {
+    this.el = el                         // The name of the saved element.
+    this.shieldQuery = shieldQuery       // The shield query key -
+    this.reverseShield = reverseShield   // whether shieldQuery should be flipped
+    this.callbacks = callbacks           // Callbacks - object
     this.blockCount = 1
-    this.reverse = false             // whether shieldQuery should be flipped
   }
   shieldFor(view, watch, queryCache) {
     if (this.shieldQuery) {
       const {n} = queryCache.get(view, this.shieldQuery)
-      const hide = this.reverse? ! n : n
-      view.dom[watch.el].visible(!hide)
-      return hide ? this.blockCount : 0
+      const visible = this.reverseShield? n : !n
+      view.dom[watch.el].visible(visible)
+      return visible ? 0: this.blockCount
     }
     return 0
   }
@@ -75,8 +75,8 @@ class Watch {
 
 
 export const buildUtils = {
-  getWatch: function(el, shieldQuery, callbacks) {
-    return new Watch(el, shieldQuery, callbacks)
+  getWatch: function(el, shieldQuery, reverseShield, callbacks) {
+    return new Watch(el, shieldQuery, reverseShield, callbacks)
   },
   getQueryCache: function(callbacks) {
     return new QueryCache(callbacks)

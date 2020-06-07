@@ -13,9 +13,11 @@ class NodeData {
   constructor(node) {
     this.node = node
     this.saveAs = undefined
-    this.wrapperClass = undefined
-    this.shieldQuery = undefined
+    this.customWrapperClass = undefined
+    this.customWrapperArgs = undefined
     this.props = undefined
+    this.shieldQuery = undefined
+    this.reverseShield = false
     this.chainedCalls = []
     this.watches = []
     this.beforeSave = []
@@ -27,20 +29,20 @@ class NodeData {
   /**
    * Returns the call for creating a new wrapper based on nodePath.
    *
-   * If wrapperClass is provided, it is initiated with new, and the class better
+   * If customWrapperClass is provided, it is initiated with new, and the class better
    * be in scope. That is why we do it with new here rather than passing the class
    * to __gw or so.
    * Similarly, that is why we use __gw, because we know "Wrapper" will be in scope
    * there, but it isn't guaranteed to be where the view is defined.
    *
-   * I'm a bit uneasy having 'view' - should probably be a constant.
    */
   wrapperInit(nodePath) {
     const path = this.getLookupArgs(nodePath)
     if (this.wrapperOverride) {
       return this.wrapperOverride
-    } else if (this.wrapperClass) {
-      return `new ${this.wrapperClass}(view.__lu(${path}))`
+    } else if (this.customWrapperClass) {
+      const args = customWrapperArgs ? ',' + customWrapperArgs : ''
+      return `new ${this.customWrapperClass}(view.__lu(${path})${args})`
     }
     return `view.__gw(${path})`
   }
