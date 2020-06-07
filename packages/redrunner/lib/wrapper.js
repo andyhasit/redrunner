@@ -13,16 +13,11 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var rtnSelf = function rtnSelf(x) {
-  return x;
-};
 /**
  * A wrapper around a DOM element.
  * All transformative methods return this (except transitions as they return promises)
  * This means those methods can be chained.
  */
-
-
 var Wrapper = /*#__PURE__*/function () {
   function Wrapper(element) {
     _classCallCheck(this, Wrapper);
@@ -207,13 +202,12 @@ var Wrapper = /*#__PURE__*/function () {
       var e = this.e;
       var childNodes = e.childNodes;
       var cache = this._cache;
-      var cmp = cache.keyFn || rtnSelf;
       var oldKeys = this._keys;
       var newKeys = [];
       var itemsLength = _items.length;
       var canAddNow = oldKeys.length - 1;
-      var offset = 0;
       cache.reset();
+      var start = performance.now();
       /*
        * We loop over the newKeys and pull Elements forward.
        * oldKeys will be edited in place to look like newKeys, but may have trailing
@@ -222,16 +216,16 @@ var Wrapper = /*#__PURE__*/function () {
 
       for (var i = 0; i < itemsLength; i++) {
         var item = _items[i];
-        var key = cmp(_items[i]); // TODO change to get from cache with key
 
-        var view = this._cache.getOne(_items[i]); // view is now updated
-
+        var _this$_cache$getOne = this._cache.getOne(item),
+            view = _this$_cache$getOne.view,
+            key = _this$_cache$getOne.key;
 
         newKeys.push(key);
 
         if (i > canAddNow) {
           e.appendChild(view.e, this);
-        } else if (key !== oldKeys[i + offset]) {
+        } else if (key !== oldKeys[i]) {
           /*
            * Note: insertBefore removes the element from the DOM if attached
            * elsewhere, which should either only be further down in the
@@ -239,7 +233,6 @@ var Wrapper = /*#__PURE__*/function () {
            * care about removing it from, so its OK.
            */
           e.insertBefore(view.e, childNodes[i]);
-          offset++;
         }
       }
 

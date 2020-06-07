@@ -3,22 +3,27 @@
 exports[`__clone__ instead of __html__ 1`] = `
 "class MyView extends View {}
 
-MyView.prototype.__wc = [];
+var __buildUtils__ = MyView.prototype.buildUtils;
 MyView.prototype.__ht = '<div></div>';
-MyView.prototype.__cn = undefined;
+MyView.prototype.__wc = [];
+MyView.prototype.queryCollection = __buildUtils__.getQueryCollection({});
 
 MyView.prototype.__bv = function (view, prototype) {
   view.__bd(prototype, true);
 
   view.dom = {};
-};"
+};
+
+MyView.prototype.__cn = undefined;"
 `;
 
 exports[`Empty div created correct HTML 1`] = `
 "class MyView extends View {}
 
-MyView.prototype.__wc = [];
+var __buildUtils__ = MyView.prototype.buildUtils;
 MyView.prototype.__ht = '<div></div>';
+MyView.prototype.__wc = [];
+MyView.prototype.queryCollection = __buildUtils__.getQueryCollection({});
 
 MyView.prototype.__bv = function (view, prototype) {
   view.__bd(prototype, false);

@@ -41,6 +41,7 @@ params vs vars
 
 
 export class Router extends View {
+  __html__ = '<div/>'
   init() {
     let {routes, resources} = this.props
     this._routes = routes.map(config => new Route(config))

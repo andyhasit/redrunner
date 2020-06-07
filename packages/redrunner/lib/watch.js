@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.buildUtils = void 0;
+exports.Watch = void 0;
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -25,75 +25,21 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 /**
  * Used internally.
- * An object which caches the results of queries.
- * Intended to be shared between instances of a view.
- * Must call reset() on every update.
- */
-var QueryCache = /*#__PURE__*/function () {
-  function QueryCache(queryCallbacks) {
-    _classCallCheck(this, QueryCache);
-
-    this.qc = queryCallbacks;
-    this.run = {};
-
-    for (var key in queryCallbacks) {
-      this.run[key] = undefined;
-    }
-  }
-
-  _createClass(QueryCache, [{
-    key: "reset",
-    value: function reset() {
-      var run = this.run;
-
-      for (var key in run) {
-        run[key] = undefined;
-      }
-    }
-  }, {
-    key: "get",
-    value: function get(view, key) {
-      var run = this.run;
-
-      if (run[key] === undefined) {
-        // Verbose but efficient way as it avoids lookups?
-        var o = view.__ov[key];
-        var n = this.qc[key].apply(view);
-        var c = n !== o;
-        view.__ov[key] = n;
-        var rtn = {
-          n: n,
-          o: o,
-          c: c
-        };
-        run[key] = rtn;
-        return rtn;
-      } else {
-        return run[key];
-      }
-    }
-  }]);
-
-  return QueryCache;
-}();
-/**
- * Used internally.
  * Represents a watch on an element.
  */
-
-
 var Watch = /*#__PURE__*/function () {
-  function Watch(el, shieldQuery, callbacks) {
+  function Watch(el, shieldQuery, reverseShield, callbacks) {
     _classCallCheck(this, Watch);
 
     this.el = el; // The name of the saved element.
 
     this.shieldQuery = shieldQuery; // The shield query key -
 
+    this.reverseShield = reverseShield; // whether shieldQuery should be flipped
+
     this.callbacks = callbacks; // Callbacks - object
 
     this.blockCount = 1;
-    this.reverse = false; // whether shieldQuery should be flipped
   }
 
   _createClass(Watch, [{
@@ -103,9 +49,9 @@ var Watch = /*#__PURE__*/function () {
         var _queryCache$get = queryCache.get(view, this.shieldQuery),
             n = _queryCache$get.n;
 
-        var hide = this.reverse ? !n : n;
-        view.dom[watch.el].visible(!hide);
-        return hide ? this.blockCount : 0;
+        var visible = this.reverseShield ? n : !n;
+        view.dom[watch.el].visible(visible);
+        return visible ? 0 : this.blockCount;
       }
 
       return 0;
@@ -138,12 +84,4 @@ var Watch = /*#__PURE__*/function () {
   return Watch;
 }();
 
-var buildUtils = {
-  getWatch: function getWatch(el, shieldQuery, callbacks) {
-    return new Watch(el, shieldQuery, callbacks);
-  },
-  getQueryCache: function getQueryCache(callbacks) {
-    return new QueryCache(callbacks);
-  }
-};
-exports.buildUtils = buildUtils;
+exports.Watch = Watch;

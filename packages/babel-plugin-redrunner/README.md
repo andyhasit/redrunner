@@ -74,7 +74,9 @@ module.exports = {
 }
 ```
 
-#### Args
+#### Directive syntax
+
+##### Params
 
 This specifies the expected arguments, which are separated by the `|` symbol:
 
@@ -82,114 +84,15 @@ This specifies the expected arguments, which are separated by the `|` symbol:
 <div :foo="arg1|arg2"/>
 ```
 
-##### Function
+##### Handle
 
-A function which receives the string and context, and should return an array or string (or whatever type your action function(s) expect).
-
-```javascript
-':foo': {
-  args: function (str, ctx) { 
-    const parts = s.split('|')
-    return [ctx.parseProperty(parts[0]), parts[1]]
-  }
-}
-```
-
-Use this for complex situations e.g. where you allow a variable number of arguments.
-
-##### Array
-
-An array of functions and strings:
-
-```javascript
-':foo': {
-  args: ['property', foo]
-}
-```
-
-The functions should process a single argument and return a value. A string indicates a registered argParser (see ArgParsers below).
-
-##### Undefined
-
-If undefined, args will be extracted as a string.
-
-#### Actions
-
-This defines what actions to take when the directive is encountered.
-
-You can provide:
-
-1. A function
-2. An object
-
-##### Function
-
-A function which receives the extracted args plus the context, and returns an object with the actions:
-
-```javascript
-':foo': {
-  actions: function (args, ctx) {
-    return {saveAs: args}
-  }
-}
-```
-
-##### Object
-
-An object with a key value pair for each action, where the value can be a function or an object:
-
-```javascript
-':foo': {
-  actions: {
-    watch: {...},
-	saveAs: {...},
-  }
-}
-```
 There are several actions
 
-| Action | Effect                              | Fields        |
-| ------ | ----------------------------------- | ------------- |
-| watch  | saves a value watch with a callback | createWrapper |
-| chain  | adds a chain call                   |               |
-| saveAs |                                     |               |
+| Action          | Effect                              |
+| --------------- | ----------------------------------- |
+| this.addWatch() | saves a value watch with a callback |
+| chain           | adds a chain call                   |
+| saveAs          |                                     |
 
 
 
-
-
-d
-
-
-```javascript
-nodeInstructions = {
-    saveAs: undefined,
-    
-}
-
-
-
-config = {
-	argParsers: {
-		'property',
-		'converter'
-	},
-	directives: {
-	  ':visible': {
-	    args: ['property', 'converter'],
-	    actions: {
-	      watch: {
-	      	method: 'visible',
-	      	args: 'n',
-		  	},
-	   	  shield: true // Shields nested wrappers from being updated
-	   	}
-	  },
-	  ':watch': {
-	  	args: ['property', 'converter', 'target'],
-	  	callbacks: [],
-	  }
-
-	}
-}build
-```

@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.View = void 0;
 
-var _viewCache = require("./view-cache");
+var _viewcache = require("./viewcache");
 
 var _utils = require("./utils");
 
@@ -13,19 +13,9 @@ var _helpers = require("./helpers");
 
 var _wrapper = require("./wrapper");
 
-var _buildUtils = require("./build-utils");
+var _watch = require("./watch");
 
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+var _querycollection = require("./querycollection");
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -87,12 +77,6 @@ var View = /*#__PURE__*/function () {
     s.dom = null; // the named wrappers
   }
   /**
-   * This field gets transformed by the babel plugin.
-   * Providing a default here so that child classes get processed.
-   */
-  //__html__ = '<div/>'
-
-  /**
    * Gets called once immediately after building.
    */
 
@@ -115,32 +99,6 @@ var View = /*#__PURE__*/function () {
       this.__uw();
 
       this.__un();
-    }
-    /**
-     * Prints debug information. Maybe think of a better way of displaying this.
-     */
-
-  }, {
-    key: "debug",
-    value: function debug() {
-      c.log(this.__bv.toString());
-      var lines = [];
-      lines.push('__wc: {');
-
-      for (var _i = 0, _Object$entries = Object.entries(this.__wc); _i < _Object$entries.length; _i++) {
-        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-            name = _Object$entries$_i[0],
-            callbacks = _Object$entries$_i[1];
-
-        lines.push("  \"".concat(name, "\": ["));
-        callbacks.forEach(function (e) {
-          return lines.push('  ' + e.toString());
-        });
-        lines.push('  ]');
-      }
-
-      lines.push('}');
-      c.log(lines.join('\n'));
     }
     /**
      * Move the view to new parent.
@@ -253,12 +211,12 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "__kc",
     value: function __kc(cls, keyFn) {
-      return new _viewCache.KeyedCache(cls, keyFn);
+      return new _viewcache.KeyedCache(cls, keyFn);
     }
   }, {
     key: "__sc",
     value: function __sc(cls) {
-      return new _viewCache.SequentialCache(cls);
+      return new _viewcache.SequentialCache(cls);
     }
     /**
      * Update nested views.
@@ -296,50 +254,26 @@ var View = /*#__PURE__*/function () {
       }
 
       var il = watches.length;
-      var queryCache = this.queryCache;
-      queryCache.reset();
+      var queryCollection = this.queryCollection;
+      queryCollection.reset();
 
       while (i < il) {
         watch = watches[i];
-        shield = watch.shieldFor(this, watch, queryCache);
+        shield = watch.shieldFor(this, watch, queryCollection);
 
         if (shield) {
           i += shield;
           continue;
         }
 
-        watch.appyCallbacks(this, queryCache);
+        watch.appyCallbacks(this, queryCollection);
         i++;
       }
-      /*
-      TODO: need a different algorithm, whereby the first thing we check is whether that
-      element shows.
-         while (i < il) {
-        let {el, shield, callbacks} = watches[i]
-        for (let [key, callback] of Object.entries(callbacks)) {
-          if (key === '*') {
-            callback.apply(this)
-          } else {
-            if (key in queries) {
-              [newValue, oldValue, hasChanged] = queries[key]
-            } else {
-              oldValue = this.__ov[key]
-              newValue = this.__wq[key].apply(this)
-              hasChanged = newValue !== oldValue
-              this.__ov[key] = newValue
-              queries[key] = [newValue, oldValue, hasChanged]
-            }
-            if (hasChanged) {
-              callback.apply(this, [newValue, oldValue])
-            }
-          }
-        }
-        i = (shield && el._shield) ? i + shield + 1 : i + 1
-        //i ++
-      }
-      */
-
     }
+    /**
+     * Replace node at path.
+     */
+
   }, {
     key: "__rn",
     value: function __rn(path, view) {
@@ -350,14 +284,16 @@ var View = /*#__PURE__*/function () {
   return View;
 }();
 /**
- * This just creates a default.
+ * This is used by the generated code.
  */
 
 
 exports.View = View;
-View.prototype.__ht = '<div></div>';
-/**
- * This is used by the generated code.
- */
-
-View.prototype.buildUtils = _buildUtils.buildUtils;
+View.prototype.buildUtils = {
+  getWatch: function getWatch(el, shieldQuery, reverseShield, callbacks) {
+    return new _watch.Watch(el, shieldQuery, reverseShield, callbacks);
+  },
+  getQueryCollection: function getQueryCollection(callbacks) {
+    return new _querycollection.QueryCollection(callbacks);
+  }
+};

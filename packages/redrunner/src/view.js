@@ -1,8 +1,9 @@
-import {KeyedCache, SequentialCache} from './view-cache'
+import {KeyedCache, SequentialCache} from './viewcache'
 import {createView} from  './utils'
 import {und, makeEl} from './helpers'
 import {Wrapper} from './wrapper'
-import {buildUtils} from './build-utils'
+import {Watch} from './watch'
+import {QueryCollection} from './querycollection'
 
 
 const c = console;
@@ -51,12 +52,6 @@ export class View {
     s.e = null              // the element
     s.dom = null            // the named wrappers
   }
-
-  /**
-   * This field gets transformed by the babel plugin.
-   * Providing a default here so that child classes get processed.
-   */
-  //__html__ = '<div/>'
   /**
    * Gets called once immediately after building.
    */
@@ -72,21 +67,6 @@ export class View {
     }
     this.__uw()
     this.__un()
-  }
-  /**
-   * Prints debug information. Maybe think of a better way of displaying this.
-   */
-  debug() {
-    c.log(this.__bv.toString())
-    let lines = []
-    lines.push('__wc: {')
-    for (let [name, callbacks] of Object.entries(this.__wc)) {
-      lines.push(`  "${name}": [`)
-      callbacks.forEach(e => lines.push('  ' + e.toString()))
-      lines.push('  ]')
-    }
-    lines.push('}')
-    c.log(lines.join('\n'))
   }
   /**
    * Move the view to new parent.
@@ -193,17 +173,17 @@ export class View {
       return
     }
     const il = watches.length
-    const queryCache = this.queryCache
-    queryCache.reset()
+    const queryCollection = this.queryCollection
+    queryCollection.reset()
 
     while (i < il) {
       watch = watches[i]
-      shield = watch.shieldFor(this, watch, queryCache)
+      shield = watch.shieldFor(this, watch, queryCollection)
       if (shield) {
         i += shield
         continue
       }
-      watch.appyCallbacks(this, queryCache)
+      watch.appyCallbacks(this, queryCollection)
       i ++
     }
   }
@@ -216,12 +196,13 @@ export class View {
 }
 
 /**
- * This just creates a default.
- */
-View.prototype.__ht = '<div></div>'
-
-
-/**
  * This is used by the generated code.
  */
-View.prototype.buildUtils = buildUtils
+View.prototype.buildUtils = {
+  getWatch: function(el, shieldQuery, reverseShield, callbacks) {
+    return new Watch(el, shieldQuery, reverseShield, callbacks)
+  },
+  getQueryCollection: function(callbacks) {
+    return new QueryCollection(callbacks)
+  }
+}

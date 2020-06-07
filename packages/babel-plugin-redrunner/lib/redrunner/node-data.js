@@ -41,7 +41,7 @@ class NodeData {
     if (this.wrapperOverride) {
       return this.wrapperOverride
     } else if (this.customWrapperClass) {
-      const args = customWrapperArgs ? ',' + customWrapperArgs : ''
+      const args = this.customWrapperArgs ? ',' + this.customWrapperArgs : ''
       return `new ${this.customWrapperClass}(view.__lu(${path})${args})`
     }
     return `view.__gw(${path})`

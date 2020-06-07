@@ -92,7 +92,7 @@ export class KeyedCache {
       this.cache[key] = view
     }
     this._seq += 1
-    return view
+    return {view, key}
   }
   reset() {
     this._seq = 0
@@ -126,7 +126,7 @@ export class SequentialCache {
       this.cache.push(view)
     }
     this._seq += 1
-    return view
+    return {view: view, key: this._seq}
   }
   reset() {
     this._seq = 0

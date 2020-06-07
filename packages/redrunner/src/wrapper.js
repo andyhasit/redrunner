@@ -1,10 +1,6 @@
 import {c, doc} from './helpers'
 
 
-
-const rtnSelf = x => x
-
-
 /**
  * A wrapper around a DOM element.
  * All transformative methods return this (except transitions as they return promises)
@@ -130,14 +126,12 @@ export class Wrapper {
     const e = this.e
     const childNodes = e.childNodes
     const cache = this._cache
-    const cmp = cache.keyFn || rtnSelf
     const oldKeys = this._keys
     const newKeys = []
     const itemsLength = items.length
     let canAddNow = oldKeys.length - 1
-    let offset = 0
     cache.reset()
-
+    const start = performance.now()
     /*
      * We loop over the newKeys and pull Elements forward.
      * oldKeys will be edited in place to look like newKeys, but may have trailing
@@ -145,13 +139,11 @@ export class Wrapper {
      */
     for (let i=0; i<itemsLength; i++) {
       let item = items[i]
-      let key = cmp(items[i]) // TODO change to get from cache with key
-      let view = this._cache.getOne(items[i]) // view is now updated
+      let {view, key} = this._cache.getOne(item)
       newKeys.push(key)
-
       if (i > canAddNow) {
         e.appendChild(view.e, this)
-      } else if (key !== oldKeys[i + offset]) {
+      } else if (key !== oldKeys[i]) {
         /*
          * Note: insertBefore removes the element from the DOM if attached
          * elsewhere, which should either only be further down in the
@@ -159,10 +151,8 @@ export class Wrapper {
          * care about removing it from, so its OK.
          */
         e.insertBefore(view.e, childNodes[i])
-        offset ++
       }
     }
-
     let lastIndex = childNodes.length - 1
     let keepIndex = itemsLength - 1
     for (let i=lastIndex; i>keepIndex; i--) {

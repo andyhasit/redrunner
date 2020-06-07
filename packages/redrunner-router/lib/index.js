@@ -238,6 +238,16 @@ var Router = /*#__PURE__*/function (_View) {
 
 
 exports.Router = Router;
+var __buildUtils__ = Router.prototype.buildUtils;
+Router.prototype.__ht = '<div></div>';
+Router.prototype.__wc = [];
+Router.prototype.queryCache = __buildUtils__.getQueryCollection({});
+
+Router.prototype.__bv = function (view, prototype) {
+  view.__bd(prototype, false);
+
+  view.dom = {};
+};
 
 var Route = /*#__PURE__*/function () {
   function Route(config) {

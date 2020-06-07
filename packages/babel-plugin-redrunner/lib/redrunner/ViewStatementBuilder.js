@@ -4,7 +4,7 @@ const {stripHtml} = require('../utils/dom')
 const {groupArray} = require('../utils/javascript')
 const {DOMWalker} = require('./DOMWalker.js')
 const {extractNodeData} = require('./extractNodeData')
-const {buidlCallbackStatement, getWatchQueryCallBack} = require('./syntax')
+const {buidlWatchCallbackLine, getLookupArgs, getWatchQueryCallBack} = require('./syntax')
 const {
   ArrayStatement,
   CallStatement,
@@ -46,8 +46,8 @@ class ViewStatementBuilder {
     this.buildMethod = new FunctionStatement('view, prototype')
     this.watches = new ArrayStatement()
     this.queryCallbacks = new ObjectStatement()
-    this.queryCache = new CallStatement(`${this.buildUtils}.getQueryCache`)
-    this.queryCache.add(this.queryCallbacks)
+    this.queryCollection = new CallStatement(`${this.buildUtils}.getQueryCollection`)
+    this.queryCollection.add(this.queryCallbacks)
   }
   /**
    * Initiates parsing and returns all the generated statements.
@@ -60,7 +60,7 @@ class ViewStatementBuilder {
       `var ${this.buildUtils} = ${prefix}.buildUtils;`,
 			this.htmlString.buildAssign(`${prefix}.__ht`),
 			this.watches.buildAssign(`${prefix}.__wc`),
-			this.queryCache.buildAssign(`${prefix}.queryCache`),
+			this.queryCollection.buildAssign(`${prefix}.queryCollection`),
 			this.buildMethod.buildAssign(`${prefix}.__bv`),
 		]
 		if (this.clone) {
@@ -89,15 +89,19 @@ class ViewStatementBuilder {
     processFunction.apply(this, [nodeInfo])
   }
   processViewNode(nodeInfo) {
+    let props, saveAs
   	const {nodePath, node, tagName} = nodeInfo
-    let {props, saveAs} = extractNodeData(node, this.config, this.walker)
-    const constructorStr = props? `view.nest(${tagName}, ${props})` : `view.nest(${tagName})`;
+    const extractedData = extractNodeData(node, this.config, this.walker)
+    if (extractedData) {
+      let {props, saveAs} = extractedData
+    }
+    const constructorStr = props ? `view.nest(${tagName}, ${props})` : `view.nest(${tagName})`;
 	  if (saveAs) {
 	    this.beforeSave.push(`let ${saveAs} = ${constructorStr};`)
-	    this.beforeSave.push(`view.__rn(${lookupArgs(nodePath)}, ${saveAs});`)
+	    this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, ${saveAs});`)
 	    this.saveElement(saveAs, saveAs)
 	  } else {
-	    this.beforeSave.push(`view.__rn(${lookupArgs(nodePath)}, ${constructorStr});`)
+	    this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, ${constructorStr});`)
 	  }
   }
   processNormalNode(nodeInfo) {
@@ -122,7 +126,7 @@ class ViewStatementBuilder {
       // Squash array to object
       watches = groupArray(watches, 'property', watch => {
       	let {converter, target, raw} = watch
-      	return buidlCallbackStatement(saveAs, converter, target, raw) // TODO: extract this
+      	return buidlWatchCallbackLine(saveAs, converter, target, raw) // TODO: extract this
       })
 
       // Group statements into single function

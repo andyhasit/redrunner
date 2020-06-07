@@ -1,7 +1,7 @@
 /**
  * Functionality relating to RedRunner __html__ syntax.
  */
-
+const {c, EOL} = require('../utils/constants')
 
 /**
  * Replaces the () at the end of name with ? so we don't create two watches for the same thing
@@ -32,7 +32,7 @@ const buildCacheInit = (cacheDef, cacheKey) => {
 /**
  * Builds callback statement for a watch.
  */
-const buidlCallbackStatement = (saveAs, convert, target, raw) => {
+const buidlWatchCallbackLine = (saveAs, convert, target, raw) => {
   let callbackBody, wrapper = `this.dom.${saveAs}`
   convert = convert ? expandConverter(convert) : ''
   if (target) {
@@ -63,10 +63,10 @@ const buidlCallbackStatement = (saveAs, convert, target, raw) => {
  * Builds the callback function for an event listener.
  */
 const buildEventCallback = (statement) => {
-  let text = this.expandShorthand(statement.trim())
-  const extra = text.endsWith(')') ? '' : '(e, w)'
+  let text = expandShorthand(statement.trim())
   // Cater for '?' ending
   text = text.endsWith('?') ? text.slice(0, -1) : text
+  const extra = text.endsWith(')') ? '' : '(e, w)'
   // Convert 'this' to 'view' because of binding
   text = text.startsWith('this.') ? 'view' + text.substr(4) : text
   const body = `${text}${extra}`
@@ -185,7 +185,8 @@ const watchArgs = '(n, o)'
 module.exports = {
   adjustName,
   buildCacheInit,
-  buidlCallbackStatement,
+  buidlWatchCallbackLine,
+  buildEventCallback,
   expandConverter,
   expandProperty,
   expandShorthand,

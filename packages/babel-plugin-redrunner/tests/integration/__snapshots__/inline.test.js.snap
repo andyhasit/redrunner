@@ -3,35 +3,32 @@
 exports[`Inline leaves atts alone 1`] = `
 "class MyView extends View {}
 
-MyView.prototype.__wq = {
+var __buildUtils__ = MyView.prototype.buildUtils;
+MyView.prototype.__ht = '<div><span></span><span id=\\"hey\\" ></span></div>';
+MyView.prototype.__wc = [__buildUtils__.getWatch('_1_', undefined, false, {
+  'name': function (n, o) {
+    this.dom._1_.text(this.getName(n, o));
+  }
+}), __buildUtils__.getWatch('_2_', undefined, false, {
+  'style': function (n, o) {
+    this.dom._2_.att('class', \\"my-style \\" + n);
+  }
+})];
+MyView.prototype.queryCollection = __buildUtils__.getQueryCollection({
   'name': function () {
     return this.props.name;
   },
   'style': function () {
     return this.props.style;
   }
-};
-MyView.prototype.__wc = [{
-  wrapper: '__1',
-  shield: 0,
-  callbacks: {
-    'name': this.dom.__1.text(this.getName(n, o))
-  }
-}, {
-  wrapper: '__2',
-  shield: 0,
-  callbacks: {
-    'style': this.dom.__2.att('class', \\"my-style \\" + n)
-  }
-}];
-MyView.prototype.__ht = '<div><span></span><span id=\\"hey\\"></span></div>';
+});
 
 MyView.prototype.__bv = function (view, prototype) {
   view.__bd(prototype, false);
 
   view.dom = {
-    __1: view.__gw([0]),
-    __2: view.__gw([1])
+    '_1_': view.__gw([0]),
+    '_2_': view.__gw([1])
   };
 };"
 `;
@@ -39,39 +36,34 @@ MyView.prototype.__bv = function (view, prototype) {
 exports[`Inline with different endings 1`] = `
 "class MyView extends View {}
 
-MyView.prototype.__wq = {
+var __buildUtils__ = MyView.prototype.buildUtils;
+MyView.prototype.__ht = '<div><span></span><span></span><span></span></div>';
+MyView.prototype.__wc = [__buildUtils__.getWatch('_1_', undefined, false, {
+  'name': function (n, o) {
+    this.dom._1_.text(this.getName);
+  }
+}), __buildUtils__.getWatch('_2_', undefined, false, {
+  'name': function (n, o) {
+    this.dom._2_.text(this.getName(n, o));
+  }
+}), __buildUtils__.getWatch('_3_', undefined, false, {
+  'name': function (n, o) {
+    this.dom._3_.text(this.getName());
+  }
+})];
+MyView.prototype.queryCollection = __buildUtils__.getQueryCollection({
   'name': function () {
     return this.props.name;
   }
-};
-MyView.prototype.__wc = [{
-  wrapper: '__1',
-  shield: 0,
-  callbacks: {
-    'name': this.dom.__1.text(this.getName)
-  }
-}, {
-  wrapper: '__2',
-  shield: 0,
-  callbacks: {
-    'name': this.dom.__2.text(this.getName(n, o))
-  }
-}, {
-  wrapper: '__3',
-  shield: 0,
-  callbacks: {
-    'name': this.dom.__3.text(this.getName())
-  }
-}];
-MyView.prototype.__ht = '<div><span></span><span></span><span></span></div>';
+});
 
 MyView.prototype.__bv = function (view, prototype) {
   view.__bd(prototype, false);
 
   view.dom = {
-    __1: view.__gw([0]),
-    __2: view.__gw([1]),
-    __3: view.__gw([2])
+    '_1_': view.__gw([0]),
+    '_2_': view.__gw([1]),
+    '_3_': view.__gw([2])
   };
 };"
 `;
@@ -79,25 +71,24 @@ MyView.prototype.__bv = function (view, prototype) {
 exports[`Simple inline 1`] = `
 "class MyView extends View {}
 
-MyView.prototype.__wq = {
+var __buildUtils__ = MyView.prototype.buildUtils;
+MyView.prototype.__ht = '<div><span></span></div>';
+MyView.prototype.__wc = [__buildUtils__.getWatch('_1_', undefined, false, {
+  'name': function (n, o) {
+    this.dom._1_.text(n);
+  }
+})];
+MyView.prototype.queryCollection = __buildUtils__.getQueryCollection({
   'name': function () {
     return this.props.name;
   }
-};
-MyView.prototype.__wc = [{
-  wrapper: '__1',
-  shield: 0,
-  callbacks: {
-    'name': this.dom.__1.text(n)
-  }
-}];
-MyView.prototype.__ht = '<div><span></span></div>';
+});
 
 MyView.prototype.__bv = function (view, prototype) {
   view.__bd(prototype, false);
 
   view.dom = {
-    __1: view.__gw([0])
+    '_1_': view.__gw([0])
   };
 };"
 `;
