@@ -1,6 +1,7 @@
 
 
 /**
+ * Used internally.
  * An object which caches the results of queries.
  * Intended to be shared between instances of a view.
  * Must call reset() on every update.
@@ -37,7 +38,8 @@ class QueryCache {
 }
 
 /**
- * Used internally. Represents a watch on an element.
+ * Used internally.
+ * Represents a watch on an element.
  */
 class Watch {
   constructor(el, shieldQuery, callbacks) {

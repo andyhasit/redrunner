@@ -125,6 +125,7 @@ class ViewStatementBuilder {
       	return buidlCallbackStatement(saveAs, converter, target, raw) // TODO: extract this
       })
 
+      // Group statements into single function
       let allCallbacks = new ObjectStatement()
       for (let [property, statements] of Object.entries(watches)) {
       	this.addWatchQueryCallback(property)

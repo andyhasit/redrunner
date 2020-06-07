@@ -11,7 +11,9 @@ var _utils = require("./utils");
 
 var _helpers = require("./helpers");
 
-var _wrapper2 = require("./wrapper");
+var _wrapper = require("./wrapper");
+
+var _buildUtils = require("./build-utils");
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -88,14 +90,15 @@ var View = /*#__PURE__*/function () {
    * This field gets transformed by the babel plugin.
    * Providing a default here so that child classes get processed.
    */
+  //__html__ = '<div/>'
+
+  /**
+   * Gets called once immediately after building.
+   */
 
 
   _createClass(View, [{
     key: "init",
-
-    /**
-     * Gets called once immediately after building.
-     */
     value: function init() {}
     /**
      *   The external call to update the view.
@@ -208,24 +211,14 @@ var View = /*#__PURE__*/function () {
       this.e = clone ? prototype.__cn.cloneNode(true) : (0, _helpers.makeEl)(prototype.__ht);
     }
     /**
-     * Returns a refular wrapper around element at path, where path is an array of indices.
+     * Returns a regular wrapper around element at path, where path is an array of indices.
      * This is used by the babel plugin.
      */
 
   }, {
     key: "__gw",
     value: function __gw(path) {
-      return new _wrapper2.Wrapper(this.__lu(path));
-    }
-    /**
-     * Returns a cached wrapper around element at path, where path is an array of indices.
-     * This is used by the babel plugin.
-     */
-
-  }, {
-    key: "__cw",
-    value: function __cw(path, cache, config) {
-      return new _wrapper2.CachedWrapper(this.__lu(path), cache, config);
+      return new _wrapper.Wrapper(this.__lu(path));
     }
     /**
      * Returns an element at specified path, where path is an array of indices.
@@ -294,57 +287,58 @@ var View = /*#__PURE__*/function () {
     key: "__uw",
     value: function __uw() {
       var i = 0,
-          newValue,
-          oldValue,
-          hasChanged,
-          wrapper,
-          shield,
-          callbacks;
-      var watchCallbacks = this.__wc;
+          watch,
+          shield;
+      var watches = this.__wc;
 
-      if (!watchCallbacks) {
+      if (!watches) {
         return;
       }
 
-      var il = watchCallbacks.length;
-      var queries = {}; // The saved results of queries. Should we optimize this?
+      var il = watches.length;
+      var queryCache = this.queryCache;
+      queryCache.reset();
 
       while (i < il) {
-        var _watchCallbacks$i = watchCallbacks[i],
-            _wrapper = _watchCallbacks$i.wrapper,
-            _shield = _watchCallbacks$i.shield,
-            _callbacks = _watchCallbacks$i.callbacks;
+        watch = watches[i];
+        shield = watch.shieldFor(this, watch, queryCache);
 
-        for (var _i2 = 0, _Object$entries2 = Object.entries(_callbacks); _i2 < _Object$entries2.length; _i2++) {
-          var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
-              key = _Object$entries2$_i[0],
-              callback = _Object$entries2$_i[1];
+        if (shield) {
+          i += shield;
+          continue;
+        }
 
+        watch.appyCallbacks(this, queryCache);
+        i++;
+      }
+      /*
+      TODO: need a different algorithm, whereby the first thing we check is whether that
+      element shows.
+         while (i < il) {
+        let {el, shield, callbacks} = watches[i]
+        for (let [key, callback] of Object.entries(callbacks)) {
           if (key === '*') {
-            callback.apply(this);
+            callback.apply(this)
           } else {
             if (key in queries) {
-              var _queries$key = _slicedToArray(queries[key], 3);
-
-              newValue = _queries$key[0];
-              oldValue = _queries$key[1];
-              hasChanged = _queries$key[2];
+              [newValue, oldValue, hasChanged] = queries[key]
             } else {
-              oldValue = this.__ov[key];
-              newValue = this.__wq[key].apply(this);
-              hasChanged = newValue !== oldValue;
-              this.__ov[key] = newValue;
-              queries[key] = [newValue, oldValue, hasChanged];
+              oldValue = this.__ov[key]
+              newValue = this.__wq[key].apply(this)
+              hasChanged = newValue !== oldValue
+              this.__ov[key] = newValue
+              queries[key] = [newValue, oldValue, hasChanged]
             }
-
             if (hasChanged) {
-              callback.apply(this, [newValue, oldValue]);
+              callback.apply(this, [newValue, oldValue])
             }
           }
         }
-
-        i = _shield && _wrapper.__shield ? i + _shield + 1 : i + 1;
+        i = (shield && el._shield) ? i + shield + 1 : i + 1
+        //i ++
       }
+      */
+
     }
   }, {
     key: "__rn",
@@ -355,13 +349,15 @@ var View = /*#__PURE__*/function () {
 
   return View;
 }();
+/**
+ * This just creates a default.
+ */
+
 
 exports.View = View;
-View.prototype.__wc = [];
 View.prototype.__ht = '<div></div>';
+/**
+ * This is used by the generated code.
+ */
 
-View.prototype.__bv = function (view, prototype) {
-  view.__bd(prototype, false);
-
-  view.dom = {};
-};
+View.prototype.buildUtils = _buildUtils.buildUtils;

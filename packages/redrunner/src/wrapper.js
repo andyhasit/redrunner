@@ -1,5 +1,10 @@
 import {c, doc} from './helpers'
 
+
+
+const rtnSelf = x => x
+
+
 /**
  * A wrapper around a DOM element.
  * All transformative methods return this (except transitions as they return promises)
@@ -8,10 +13,11 @@ import {c, doc} from './helpers'
 export class Wrapper {
   constructor(element) {
     this.e = element
-    this._items = [] // For advanced manipulation.
+    this._keys = undefined
+    this._cache = undefined
   }
   /**
-   * Get element as 'e' form item, else return text node.
+   * Get element as 'e' from item, else return text node.
    */
   __ge(item) {
     return item.e || doc.createTextNode(item)
@@ -39,7 +45,6 @@ export class Wrapper {
 
   append(item) {
     this.e.appendChild(this.__ge(item))
-    this._items.push(item)
     return this
   }
   att(name, value) {
@@ -50,6 +55,11 @@ export class Wrapper {
     for (let name in atts) {
       this.att(name, atts[name])
     }
+    return this
+  }
+  cache(cache) {
+    this._cache = cache
+    this._keys = []
     return this
   }
   clear() {
@@ -100,7 +110,7 @@ export class Wrapper {
     return this.att('id', value)
   }
   /*
-   * Set inner as individual or array. Not optimised.
+   * Set inner as individual item or array. Not optimised.
    */
   inner(items) {
     if (!Array.isArray(items)) {
@@ -113,18 +123,52 @@ export class Wrapper {
     }
     return this
   }
-  /**
-   * Set inner items.
-   *
-   * @param {array} items An array of wrappers or views
+  /*
+   * Set items from cache.
    */
   items(items) {
     const e = this.e
-    e.innerHTML = ''
-    for (var i=0, il=items.length; i<il; i++) {
-      e.appendChild(items[i].e)
+    const childNodes = e.childNodes
+    const cache = this._cache
+    const cmp = cache.keyFn || rtnSelf
+    const oldKeys = this._keys
+    const newKeys = []
+    const itemsLength = items.length
+    let canAddNow = oldKeys.length - 1
+    let offset = 0
+    cache.reset()
+
+    /*
+     * We loop over the newKeys and pull Elements forward.
+     * oldKeys will be edited in place to look like newKeys, but may have trailing
+     * keys which represent the items to be removed.
+     */
+    for (let i=0; i<itemsLength; i++) {
+      let item = items[i]
+      let key = cmp(items[i]) // TODO change to get from cache with key
+      let view = this._cache.getOne(items[i]) // view is now updated
+      newKeys.push(key)
+
+      if (i > canAddNow) {
+        e.appendChild(view.e, this)
+      } else if (key !== oldKeys[i + offset]) {
+        /*
+         * Note: insertBefore removes the element from the DOM if attached
+         * elsewhere, which should either only be further down in the
+         * childNodes, or in case of a shared cache, somewhere we don't
+         * care about removing it from, so its OK.
+         */
+        e.insertBefore(view.e, childNodes[i])
+        offset ++
+      }
     }
-    this._items = items
+
+    let lastIndex = childNodes.length - 1
+    let keepIndex = itemsLength - 1
+    for (let i=lastIndex; i>keepIndex; i--) {
+      e.removeChild(childNodes[i])
+    }
+    this._keys = newKeys
     return this
   }
   on(event, callback) {
@@ -151,66 +195,5 @@ export class Wrapper {
   }
   value(value) {
     return this.att('value', value)
-  }
-}
-
-const rtnSelf = x => x
-
-/**
- * A wrapper which uses a cache.
- */
-export class CachedWrapper extends Wrapper {
-  constructor(element, cache, config) {
-    super(element)
-    this.cache = cache
-    this.config = config
-    this._items = []
-    this.oldKeys = []
-  }
-  items(items) {
-    const e = this.e
-    const childNodes = e.childNodes
-    const cache = this.cache
-    const cmp = cache.keyFn || rtnSelf
-    const oldKeys = this.oldKeys
-    const newKeys = []
-    const itemsLength = items.length
-    let canAddNow = oldKeys.length - 1
-    let offset = 0
-    cache.reset()
-
-    /*
-     * We loop over the newKeys and pull Elements forward.
-     * oldKeys will be edited in place to look like newKeys, but may have trailing
-     * keys which represent the items to be removed.
-     */
-    for (let i=0; i<itemsLength; i++) {
-      let item = items[i]
-      let key = cmp(items[i]) // TODO change to get from cache with key
-      let view = this.cache.getOne(items[i]) // view is now updated
-      newKeys.push(key)
-
-      if (i > canAddNow) {
-        e.appendChild(view.e, this)
-      } else if (key !== oldKeys[i + offset]) {
-        /*
-         * Note: insertBefore removes the element from the DOM if attached
-         * elsewhere, which should either only be further down in the
-         * childNodes, or in case of a shared cache, somewhere we don't
-         * care about removing it from, so its OK.
-         */
-        e.insertBefore(view.e, childNodes[i])
-        offset ++
-      }
-    }
-
-    let lastIndex = childNodes.length - 1
-    let keepIndex = itemsLength - 1
-    for (let i=lastIndex; i>keepIndex; i--) {
-      e.removeChild(childNodes[i])
-    }
-    this.oldKeys = newKeys
-    this._items = items
-    return this
   }
 }

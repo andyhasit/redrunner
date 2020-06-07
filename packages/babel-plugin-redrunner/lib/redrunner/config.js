@@ -14,10 +14,19 @@ const config = {
         this.shieldQuery = property
       }
     },
-    ':nest': {
-      params: 'event, callbackStr',
-      handle: function(event, callbackStr) {
-        this.addEventListener(event, callbackStr)
+    ':inner': {
+      params: 'property, converter',
+      handle: function(property, converter) {
+        this.addWatch(property, converter, 'inner')
+      }
+    },
+    ':items': {
+      params: 'property, converter, cacheDef?, cacheKey?',
+      handle: function(property, converter, cacheDef, cacheKey) {
+        if (cacheDef) {
+          this.chainedCalls.push(`cache(${this.buildCacheInit(cacheDef, cacheKey)})`)
+        }
+        this.addWatch(property, converter, 'items')
       }
     },
     ':on': {

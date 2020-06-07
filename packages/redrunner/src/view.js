@@ -1,7 +1,7 @@
 import {KeyedCache, SequentialCache} from './view-cache'
 import {createView} from  './utils'
 import {und, makeEl} from './helpers'
-import {CachedWrapper, Wrapper} from './wrapper'
+import {Wrapper} from './wrapper'
 import {buildUtils} from './build-utils'
 
 
@@ -142,13 +142,6 @@ export class View {
     return new Wrapper(this.__lu(path))
   }
   /**
-   * Returns a cached wrapper around element at path, where path is an array of indices.
-   * This is used by the babel plugin.
-   */
-  __cw(path, cache, config) {
-    return new CachedWrapper(this.__lu(path), cache, config)
-  }
-  /**
    * Returns an element at specified path, where path is an array of indices.
    * This is used by the babel plugin.
    */
@@ -213,39 +206,10 @@ export class View {
       watch.appyCallbacks(this, queryCache)
       i ++
     }
-
-
-    /*
-    TODO: need a different algorithm, whereby the first thing we check is whether that
-    element shows.
-
-
-
-    while (i < il) {
-      let {el, shield, callbacks} = watches[i]
-      for (let [key, callback] of Object.entries(callbacks)) {
-        if (key === '*') {
-          callback.apply(this)
-        } else {
-          if (key in queries) {
-            [newValue, oldValue, hasChanged] = queries[key]
-          } else {
-            oldValue = this.__ov[key]
-            newValue = this.__wq[key].apply(this)
-            hasChanged = newValue !== oldValue
-            this.__ov[key] = newValue
-            queries[key] = [newValue, oldValue, hasChanged]
-          }
-          if (hasChanged) {
-            callback.apply(this, [newValue, oldValue])
-          }
-        }
-      }
-      i = (shield && el._shield) ? i + shield + 1 : i + 1
-      //i ++
-    }
-    */
   }
+  /**
+   * Replace node at path.
+   */
   __rn(path, view) {
     this.__gw(path).replace(view.e)
   }

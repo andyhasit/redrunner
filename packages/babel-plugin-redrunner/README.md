@@ -1,10 +1,20 @@
-#babel-plugin-redrunner
+#RedRunner Babel Plugin
 
-The babel plugin for RedRunner.
+The babel plugin for use with RedRunner.
+
+## Installation
+
+Install into your project with:
+
+```
+npm i -D babel-plugin-redrunner
+```
 
 ## Overview
 
-This plugin mainly processes the `__html__` definition of RedRunner view classes:
+This plugin mainly replaces the `__html__` definition of RedRunner views with fields on the prototype.
+
+This:
 
 ```javascript
 class MyView extends View {
@@ -12,42 +22,18 @@ class MyView extends View {
 }
 ```
 
-The `__html__` property is removed and in its place we define fields on the prototype which interact with core library code (View & Wrapper).
-
-These fields include:
-
-* A query to determine the new value
-* A callback to apply the change to the element
-* A method to build the view
-
-And might look something like this:
+Becomes something like:
 
 ```javascript
-class MyView extends View {}
-MyView.prototype.__wq = {
-  'name': function () {
-    return this.props.name;
-  }
-};
-MyView.prototype.__wc = {
-  'name': [function (n, o) {
-    this.dom.__1.text(n);
-  }]
-};
-MyView.prototype.__ht = '<div></div>';
-MyView.prototype.__bv = function (view, prototype) {
-  view.__bd(prototype, false);
-  view.dom = {
-    __1: view.__gw([])
-  };
-};
+MyView.prototype.html = '...';
+MyView.prototype.watches = [...];
+MyView.prototype.queries = {...};
+MyView.prototype.build = function () {...};
 ```
-
-The directives are configurable.
 
 ## Compatibility
 
-Currently under 0.1.0 so its wild wild west, thereafter you **must** match the major minor to the version of redrunner you are using.
+You *must* match the minor version to the version of RedRunner you are using.
 
 ## Tests
 
@@ -55,37 +41,35 @@ Run with:
 
 `npm test`
 
-There is a very simple built in test runner which checks expected output, see **tests/index.js** for more details.
+## Configuration
 
-Update snapshots with:
+### The helper (not working yet)
 
+TBC
+
+### Directives (not configurable yet)
+
+You can override or define your own directives (i.e. the special attributes in `__html__` which get parsed).
+
+```json
+{
+  "plugins": [
+    ["redrunner", {"configFile": "./src/config.js"}]
+  ]
+}
 ```
-jest -u
-```
 
-
-
-## Extendable API
-
-The plugin works by looking for directives, which are defined in the plugin's source code but can be customised or added to via plugin options:
-
-```
-//example of plugin options
-```
-
-Where options are provided, they are patched onto the internal config object.
-
-### Directives
+In your **config.js**:
 
 ```javascript
-':visible': {
-  args: ['property', 'converter'],
-  actions: {
-    watch: {
-      method: 'visible',
-      args: 'n',
-    },
-    shield: true // Shields nested wrappers from being updated
+module.exports = {
+   directives: {
+    ':my-dir': {
+         params: 'arg1, arg2',
+         handle: function(arg1, arg2) {
+           this...
+       }
+    }
   }
 }
 ```
@@ -97,12 +81,6 @@ This specifies the expected arguments, which are separated by the `|` symbol:
 ```html
 <div :foo="arg1|arg2"/>
 ```
-
-You can provide:
-
-1. A function
-2. An array (of function and strings)
-3. Nothing
 
 ##### Function
 
@@ -213,5 +191,5 @@ config = {
 	  }
 
 	}
-}
+}build
 ```

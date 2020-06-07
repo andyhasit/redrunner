@@ -1,7 +1,29 @@
 /**
- * Functionality relating to RedRunner Views
+ * Functionality relating to RedRunner __html__ syntax.
  */
 
+
+/**
+ * Replaces the () at the end of name with ? so we don't create two watches for the same thing
+ */
+function adjustName(name) {
+  return name.endsWith('()') ? name.slice(0, -2) + '?' : name
+}
+
+/**
+ * Builds the callback function for an event listener.
+ */
+const buildEventCallback = (statement) => {
+  let text = this.expandShorthand(statement.trim())
+  const extra = text.endsWith(')') ? '' : '(e, w)'
+  // Cater for '?' ending
+  text = text.endsWith('?') ? text.slice(0, -1) : text
+  // Convert 'this' to 'view' because of binding
+  text = text.startsWith('this.') ? 'view' + text.substr(4) : text
+  const body = `${text}${extra}`
+  // TODO: do we need the intermediate function? Can't we just bind?
+  return ['function(e, w) {', body, '}'].join(EOL)
+}
 
 /**
  * Returns the args string for a node lookup based on nodePath.
@@ -73,12 +95,7 @@ function expandProperty(property) {
   return property.endsWith('?') ? expanded.slice(0, -1) + '()' : expanded
 }
 
-/**
- * Replaces the () at the end of name with ? so we don't create two watches for the same thing
- */
-function adjustName(name) {
-  return name.endsWith('()') ? name.slice(0, -2) + '?' : name
-}
+
 
 function parseTarget(target) {
   if (target.startsWith('@')) {
@@ -117,36 +134,23 @@ function buidlCallbackStatement(saveAs, convert, target, raw) {
   return callbackBody
 }
 
-
-function getCachedWrapperCall(nest, nodePath, wrapperClass) {
-  const path = getLookupArgs(nodePath)
-  const config = nest.config ? expandShorthand(nest.config) : '{}'
-  let cache
-
-  const getCacheKeyFunction = key => {
-    if (key.endsWith('?')) {
-      return expandShorthand(key.slice(0, -1))
-    }
-    return `function(props) {return props.${key}}`
-  }
-  // Build cache call
-  if (nest.cache.startsWith('@')) {
-    cache = expandShorthand(nest.cache.substr(1))
+/**
+ * Builds the call to create a cache.
+ */
+const buildCacheInit = (cacheDef, cacheKey) => {
+  if (cacheDef.startsWith('@')) {
+    let cacheStatement = expandProperty(cacheDef.substr(1))
   } else {
-    const [viewCacheClass, viewCacheKey] = nest.cache.split(':')
-    if (viewCacheKey) {
-      const keyFn = getCacheKeyFunction(viewCacheKey)
-      cache = `view.__kc(${viewCacheClass}, ${keyFn})`
+    if (cacheKey) {
+      const keyFn = `function(props) {return props.${cacheKey}}`
+      cacheStatement = `view.__kc(${cacheDef}, ${keyFn})`
     } else {
-      cache = `view.__sc(${viewCacheClass})`
+      cacheStatement = `view.__sc(${cacheDef})`
     }
   }
-
-  if (wrapperClass) {
-    return `new ${wrapperClass}(view.__lu(${path}), ${cache}, ${config})`
-  }
-  return `view.__cw(${path}, ${cache}, ${config})`
+  return cacheStatement
 }
+
 
 /**
  * Returns the callback for the watch query, or undefined.
@@ -159,6 +163,7 @@ function getWatchQueryCallBack(property) {
   }
 }
 
+
 /**
  * The character on which to split attributes and inlines
  */
@@ -170,10 +175,9 @@ const splitter = '|'
 const watchArgs = '(n, o)'
 
 
-
-
 module.exports = {
   adjustName,
+  buildCacheInit,
   buidlCallbackStatement,
   expandConverter,
   expandProperty,

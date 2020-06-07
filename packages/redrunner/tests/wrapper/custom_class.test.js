@@ -1,7 +1,7 @@
 import {c, load, View, Wrapper} from '../utils'
 
 class TestView extends View {
-  __html__ = '<span :wrapper="SpecialWrapper" :watch="*|name|"></span>'
+  __html__ = '<span :wrapper="SpecialWrapper" :watch="*|name|text"></span>'
 }
 
 

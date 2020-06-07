@@ -3,25 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.CachedWrapper = exports.Wrapper = void 0;
+exports.Wrapper = void 0;
 
 var _helpers = require("./helpers");
-
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function () { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -29,21 +13,26 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+var rtnSelf = function rtnSelf(x) {
+  return x;
+};
 /**
  * A wrapper around a DOM element.
  * All transformative methods return this (except transitions as they return promises)
  * This means those methods can be chained.
  */
+
+
 var Wrapper = /*#__PURE__*/function () {
   function Wrapper(element) {
     _classCallCheck(this, Wrapper);
 
     this.e = element;
-    this.__shield = false;
-    this._items = []; // For advanced manipulation.
+    this._keys = undefined;
+    this._cache = undefined;
   }
   /**
-   * Get element as 'e' form item, else return text node.
+   * Get element as 'e' from item, else return text node.
    */
 
 
@@ -85,9 +74,6 @@ var Wrapper = /*#__PURE__*/function () {
     key: "append",
     value: function append(item) {
       this.e.appendChild(this.__ge(item));
-
-      this._items.push(item);
-
       return this;
     }
   }, {
@@ -103,6 +89,13 @@ var Wrapper = /*#__PURE__*/function () {
         this.att(name, _atts[name]);
       }
 
+      return this;
+    }
+  }, {
+    key: "cache",
+    value: function cache(_cache) {
+      this._cache = _cache;
+      this._keys = [];
       return this;
     }
   }, {
@@ -185,7 +178,7 @@ var Wrapper = /*#__PURE__*/function () {
       return this.att('id', value);
     }
     /*
-     * Set inner as individual or array. Not optimised.
+     * Set inner as individual item or array. Not optimised.
      */
 
   }, {
@@ -204,23 +197,60 @@ var Wrapper = /*#__PURE__*/function () {
 
       return this;
     }
-    /**
-     * Set inner items.
-     *
-     * @param {array} items An array of wrappers or views
+    /*
+     * Set items from cache.
      */
 
   }, {
     key: "items",
     value: function items(_items) {
       var e = this.e;
-      e.innerHTML = '';
+      var childNodes = e.childNodes;
+      var cache = this._cache;
+      var cmp = cache.keyFn || rtnSelf;
+      var oldKeys = this._keys;
+      var newKeys = [];
+      var itemsLength = _items.length;
+      var canAddNow = oldKeys.length - 1;
+      var offset = 0;
+      cache.reset();
+      /*
+       * We loop over the newKeys and pull Elements forward.
+       * oldKeys will be edited in place to look like newKeys, but may have trailing
+       * keys which represent the items to be removed.
+       */
 
-      for (var i = 0, il = _items.length; i < il; i++) {
-        e.appendChild(_items[i].e);
+      for (var i = 0; i < itemsLength; i++) {
+        var item = _items[i];
+        var key = cmp(_items[i]); // TODO change to get from cache with key
+
+        var view = this._cache.getOne(_items[i]); // view is now updated
+
+
+        newKeys.push(key);
+
+        if (i > canAddNow) {
+          e.appendChild(view.e, this);
+        } else if (key !== oldKeys[i + offset]) {
+          /*
+           * Note: insertBefore removes the element from the DOM if attached
+           * elsewhere, which should either only be further down in the
+           * childNodes, or in case of a shared cache, somewhere we don't
+           * care about removing it from, so its OK.
+           */
+          e.insertBefore(view.e, childNodes[i]);
+          offset++;
+        }
       }
 
-      this._items = _items;
+      var lastIndex = childNodes.length - 1;
+      var keepIndex = itemsLength - 1;
+
+      for (var _i = lastIndex; _i > keepIndex; _i--) {
+        e.removeChild(childNodes[_i]);
+      }
+
+      this._keys = newKeys;
       return this;
     }
   }, {
@@ -259,7 +289,6 @@ var Wrapper = /*#__PURE__*/function () {
   }, {
     key: "visible",
     value: function visible(_visible) {
-      this.__shield = !_visible;
       return this.style('visibility', _visible ? 'visible' : 'hidden');
     }
   }, {
@@ -273,88 +302,3 @@ var Wrapper = /*#__PURE__*/function () {
 }();
 
 exports.Wrapper = Wrapper;
-
-var rtnSelf = function rtnSelf(x) {
-  return x;
-};
-/**
- * A wrapper which uses a cache.
- */
-
-
-var CachedWrapper = /*#__PURE__*/function (_Wrapper) {
-  _inherits(CachedWrapper, _Wrapper);
-
-  var _super = _createSuper(CachedWrapper);
-
-  function CachedWrapper(element, cache, config) {
-    var _this5;
-
-    _classCallCheck(this, CachedWrapper);
-
-    _this5 = _super.call(this, element);
-    _this5.cache = cache;
-    _this5.config = config;
-    _this5._items = [];
-    _this5.oldKeys = [];
-    return _this5;
-  }
-
-  _createClass(CachedWrapper, [{
-    key: "items",
-    value: function items(_items2) {
-      var e = this.e;
-      var childNodes = e.childNodes;
-      var cache = this.cache;
-      var cmp = cache.keyFn || rtnSelf;
-      var oldKeys = this.oldKeys;
-      var newKeys = [];
-      var itemsLength = _items2.length;
-      var canAddNow = oldKeys.length - 1;
-      var offset = 0;
-      cache.reset();
-      /*
-       * We loop over the newKeys and pull Elements forward.
-       * oldKeys will be edited in place to look like newKeys, but may have trailing
-       * keys which represent the items to be removed.
-       */
-
-      for (var i = 0; i < itemsLength; i++) {
-        var item = _items2[i];
-        var key = cmp(_items2[i]); // TODO change to get from cache with key
-
-        var view = this.cache.getOne(_items2[i]); // view is now updated
-
-        newKeys.push(key);
-
-        if (i > canAddNow) {
-          e.appendChild(view.e, this);
-        } else if (key !== oldKeys[i + offset]) {
-          /*
-           * Note: insertBefore removes the element from the DOM if attached
-           * elsewhere, which should either only be further down in the
-           * childNodes, or in case of a shared cache, somewhere we don't
-           * care about removing it from, so its OK.
-           */
-          e.insertBefore(view.e, childNodes[i]);
-          offset++;
-        }
-      }
-
-      var lastIndex = childNodes.length - 1;
-      var keepIndex = itemsLength - 1;
-
-      for (var _i = lastIndex; _i > keepIndex; _i--) {
-        e.removeChild(childNodes[_i]);
-      }
-
-      this.oldKeys = newKeys;
-      this._items = _items2;
-      return this;
-    }
-  }]);
-
-  return CachedWrapper;
-}(Wrapper);
-
-exports.CachedWrapper = CachedWrapper;

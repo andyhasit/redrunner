@@ -1,6 +1,12 @@
 const {c, EOL} = require('../utils/constants')
 const {isFunc, isUnd, splitTrim} = require('../utils/javascript')
-const {expandShorthand, expandProperty, getLookupArgs} = require('./syntax')
+const {
+  buildCacheInit,
+  buildEventCallback,
+  expandShorthand,
+  expandProperty,
+  getLookupArgs
+} = require('./syntax')
 
 
 class NodeData {
@@ -31,22 +37,16 @@ class NodeData {
    */
   wrapperInit(nodePath) {
     const path = this.getLookupArgs(nodePath)
-    return this.wrapperClass ? `new ${this.wrapperClass}(view.__lu(${path}))` : `view.__gw(${path})`
+    if (this.wrapperOverride) {
+      return this.wrapperOverride
+    } else if (this.wrapperClass) {
+      return `new ${this.wrapperClass}(view.__lu(${path}))`
+    }
+    return `view.__gw(${path})`
   }
   addEventListener(event, callbackStr) {
-  const callbackCode = this.buildEventCallbackCode(callbackStr)
-    this.chainedCalls.push(`on('${event}', ${callbackCode})`)
-  }
-  buildEventCallbackCode(statement) {
-    let text = this.expandShorthand(statement.trim())
-    const extra = text.endsWith(')') ? '' : '(e, w)'
-    // Cater for '?' ending
-    text = text.endsWith('?') ? text.slice(0, -1) : text
-    // Convert 'this' to 'view' because of binding
-    text = text.startsWith('this.') ? 'view' + text.substr(4) : text
-    const body = `${text}${extra}`
-    // TODO: do we need the intermediate function? Can't we just bind?
-    return ['function(e, w) {', body, '}'].join(EOL)
+    const callback = buildEventCallback(callbackStr)
+    this.chainedCalls.push(`on('${event}', ${callback})`)
   }
   processDirective(directiveName, directive, attVal) {
     if (!isFunc(directive.handle)) {
@@ -87,8 +87,10 @@ class NodeData {
 }
 
 
-// Util methods:
+// Util methods that we may want to use in config:
 
+NodeData.prototype.buildCacheInit = buildCacheInit
+NodeData.prototype.buildEventCallback = buildEventCallback
 NodeData.prototype.expandProperty = expandProperty
 NodeData.prototype.expandShorthand = expandShorthand
 NodeData.prototype.getLookupArgs = getLookupArgs
