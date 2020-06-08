@@ -1,6 +1,7 @@
 import {KeyedCache, SequentialCache} from './viewcache'
 import {createView} from  './utils'
 import {und, makeEl} from './helpers'
+import mountie from './mountie'
 import {Wrapper} from './wrapper'
 import {Watch} from './watch'
 import {QueryCollection} from './querycollection'
@@ -56,6 +57,9 @@ export class View {
    * Gets called once immediately after building.
    */
   init() {
+  }
+  trackMounting() {
+    this.__mt.track(this)
   }
   /**
    *   The external call to update the view.
@@ -133,12 +137,14 @@ export class View {
    * Determines whether this view is attached to the DOM.
    */
   __ia() {
-    let el = this.el
-    while (el != document && element.parentNode) {
-      /* jump to the parent element */
-      el = element.parentNode
+    let e = this.e
+    while (e) {
+      if (e === document) {
+        return true
+      }
+      e = e.parentNode
     }
-    return el.e.parentNode
+    return false
   }
   __kc(cls, keyFn) {
     return new KeyedCache(cls, keyFn)
@@ -203,3 +209,5 @@ View.prototype.buildUtils = {
     return new QueryCollection(callbacks)
   }
 }
+
+View.prototype.__mt = mountie

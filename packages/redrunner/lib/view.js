@@ -11,11 +11,15 @@ var _utils = require("./utils");
 
 var _helpers = require("./helpers");
 
+var _mountie = _interopRequireDefault(require("./mountie"));
+
 var _wrapper = require("./wrapper");
 
 var _watch = require("./watch");
 
 var _querycollection = require("./querycollection");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -84,6 +88,11 @@ var View = /*#__PURE__*/function () {
   _createClass(View, [{
     key: "init",
     value: function init() {}
+  }, {
+    key: "trackMounting",
+    value: function trackMounting() {
+      this.__mt.track(this);
+    }
     /**
      *   The external call to update the view.
      *   @props -- new props, else it keeps its old (which is fine)
@@ -193,20 +202,22 @@ var View = /*#__PURE__*/function () {
     /**
      * Is Attached.
      * Determines whether this view is attached to the DOM.
-     *
-     * Note: currently unreliable as the view could be attached to an element which is itself detached.
      */
 
   }, {
     key: "__ia",
     value: function __ia() {
-      var el = this; // let element =
-      // while (element != document && element.parentNode) {
-      //   /* jump to the parent element */
-      //   element = element.parentNode;
-      // }
+      var e = this.e;
 
-      return el.e.parentNode;
+      while (e) {
+        if (e === document) {
+          return true;
+        }
+
+        e = e.parentNode;
+      }
+
+      return false;
     }
   }, {
     key: "__kc",
@@ -297,3 +308,4 @@ View.prototype.buildUtils = {
     return new _querycollection.QueryCollection(callbacks);
   }
 };
+View.prototype.__mt = _mountie["default"];

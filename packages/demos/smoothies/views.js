@@ -2,28 +2,6 @@ import {View} from 'redrunner'
 import {fruitService} from './services/fruit'
 import {smoothiesService} from './services/smoothies'
 
-class Mountie {
-  constructor() {
-    this.trackedViews = []
-  }
-  track(view) {
-    this.trackedViews.push({view: view, isAttached: view.__ia()})
-  }
-  flush() {
-    const trackedViews = this.trackedViews
-    for (let i=0, il=trackedViews.length; i<il; i++) {
-      let trackedView = trackedViews[i]
-      let view = trackedView.view
-      let isAttached = view.__ia()
-      if (isAttached !== trackedView.isAttached) {
-        let fn = isAttached ? view.mount : view.unmount
-        fn.apply(view)
-        trackedView[isAttached] = isAttached
-      }
-    }
-  }
-}
-const mountie = new Mountie()
 
 export class HomePage extends View {
   __html__ = `
@@ -34,21 +12,21 @@ export class HomePage extends View {
     </div>
   `
   init() {
-    const fruitItems = fruitService.getItems()
-    mountie.track(this)
+    this.trackMounting()
   }
   swapFruit() {
-    let fruit = fruitItems[Math.floor(Math.random() * fruitItems.length)]
-    c.log(fruit)
+    const fruitItems = fruitService.getItems()
+    const fruit = fruitItems[Math.floor(Math.random() * fruitItems.length)]
+    c.log(fruit.name)
     this.dom.logo.inner(fruit.emoji).style('color', fruit.color)
   }
   mount() {
-    c.log('m')
-    //this.interval = setInterval(this.swapFruit, 900)
+    c.log('mount')
+    this.interval = setInterval(_ => this.swapFruit(), 900)
   }
   unmount() {
-    c.log('u')
-    //clearInterval(interval)
+    c.log('unmount')
+    clearInterval(this.interval)
   }
 }
 

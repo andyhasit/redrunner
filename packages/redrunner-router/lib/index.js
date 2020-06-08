@@ -181,7 +181,9 @@ var Router = /*#__PURE__*/function (_View) {
             route.getView(routeData).then(function (view) {
               _this3.e.innerHTML = '';
 
-              _this3.e.appendChild(view.e); // Use this? bubble?
+              _this3.e.appendChild(view.e);
+
+              _this3.__mt.flush(); // Use this? bubble?
               // call back?
               //this.app.emit('route_changed', {routeData, url, view})
 
@@ -238,10 +240,7 @@ var Router = /*#__PURE__*/function (_View) {
 
 
 exports.Router = Router;
-var __buildUtils__ = Router.prototype.buildUtils;
 Router.prototype.__ht = '<div></div>';
-Router.prototype.__wc = [];
-Router.prototype.queryCollection = __buildUtils__.getQueryCollection({});
 
 Router.prototype.__bv = function (view, prototype) {
   view.__bd(prototype, false);

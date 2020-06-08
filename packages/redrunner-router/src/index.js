@@ -89,6 +89,7 @@ export class Router extends View {
           route.getView(routeData).then(view => {
             this.e.innerHTML = ''
             this.e.appendChild(view.e)
+            this.__mt.flush()
             // Use this? bubble?
             // call back?
             //this.app.emit('route_changed', {routeData, url, view})
