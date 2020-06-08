@@ -131,16 +131,13 @@ export class View {
   /**
    * Is Attached.
    * Determines whether this view is attached to the DOM.
-   *
-   * Note: currently unreliable as the view could be attached to an element which is itself detached.
    */
   __ia() {
-    let el = this
-    // let element =
-    // while (element != document && element.parentNode) {
-    //   /* jump to the parent element */
-    //   element = element.parentNode;
-    // }
+    let el = this.el
+    while (el != document && element.parentNode) {
+      /* jump to the parent element */
+      el = element.parentNode
+    }
     return el.e.parentNode
   }
   __kc(cls, keyFn) {

@@ -7,7 +7,7 @@ const {stripHtml} = require('../utils/dom')
  *  - DOM traversal
  *  - Error context
  */
-class DOMWalker {
+class DomWalker {
   constructor(html, processNode) {
     //TODO The lookups go wrong if we don't strip the HTML.
     // but then we also lose the line position for showing errors.
@@ -50,4 +50,4 @@ class DOMWalker {
 }
 
 
-module.exports = {DOMWalker}
+module.exports = {DomWalker}

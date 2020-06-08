@@ -30,7 +30,7 @@ export class Store {
   getItems() {
     return this.items
   }
-  delete(id) {  
+  delete(id) {
     this.items = this.items.filter(item => item.id !== id)
     delete this.hash[id]
     this.changed

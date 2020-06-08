@@ -8,7 +8,7 @@ import {
   FunctionStatement,
   ObjectStatement,
   ValueStatement
-} from '../../lib/redrunner/StatementBuilders'
+} from '../../lib/redrunner/statement_builders'
 
 
 test('ArrayStatement', () => {

@@ -2,8 +2,8 @@ const c = console
 const {EOL} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
 const {groupArray} = require('../utils/javascript')
-const {DOMWalker} = require('./DOMWalker.js')
-const {extractNodeData} = require('./extractNodeData')
+const {DomWalker} = require('./dom_walker.js')
+const {extractNodeData} = require('./extract_node_data')
 const {buidlWatchCallbackLine, getLookupArgs, getWatchQueryCallBack} = require('./syntax')
 const {
   ArrayStatement,
@@ -11,7 +11,7 @@ const {
   FunctionStatement,
   ObjectStatement,
   ValueStatement
-} = require('./StatementBuilders')
+} = require('./statement_builders')
 
 /**
  * Builds all the generated statements for a RedRunner View.
@@ -26,7 +26,7 @@ const {
  */
 class ViewStatementBuilder {
   constructor(viewData) {
-    this.walker = new DOMWalker(viewData.html, nodeInfo => this.processNode(nodeInfo))
+    this.walker = new DomWalker(viewData.html, nodeInfo => this.processNode(nodeInfo))
     this.className = viewData.className
 
     this.clone = viewData.clone
@@ -80,7 +80,7 @@ class ViewStatementBuilder {
 		this.htmlString.set(`'${stripHtml(this.walker.dom.toString())}'`)
 	}
   /**
-   * Gets passed to the DOMWalker, who calls this at every node.
+   * Gets passed to the DomWalker, who calls this at every node.
    * Simply punts the call to the appropriate method depending on node type.
    */
   processNode(nodeInfo) {

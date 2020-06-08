@@ -241,7 +241,7 @@ exports.Router = Router;
 var __buildUtils__ = Router.prototype.buildUtils;
 Router.prototype.__ht = '<div></div>';
 Router.prototype.__wc = [];
-Router.prototype.queryCache = __buildUtils__.getQueryCollection({});
+Router.prototype.queryCollection = __buildUtils__.getQueryCollection({});
 
 Router.prototype.__bv = function (view, prototype) {
   view.__bd(prototype, false);
@@ -306,7 +306,7 @@ var Route = /*#__PURE__*/function () {
       var _this4 = this;
 
       return this.resolve(routeData, this).then(function (result) {
-        return _this4._vc.getOne(result, _this4);
+        return _this4._vc.getOne(result, _this4).view;
       });
     }
   }, {

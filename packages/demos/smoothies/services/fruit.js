@@ -1,6 +1,6 @@
 import {Store} from './store'
 
-export const fruit = new Store([
+export const fruitService = new Store([
   {name: 'grape', emoji: '🍇', color: '#be31e0'},
   {name: 'peach', emoji: '🍑', color: '#ff9800'},
   {name: 'cherries', emoji: '🍒', color: '#e91e63'},

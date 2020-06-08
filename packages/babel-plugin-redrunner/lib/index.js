@@ -1,6 +1,6 @@
 const babel = require('@babel/core')
 const {getNodeHtmlString, removeProperty} = require('./utils/babel')
-const {generateStatements} = require('./redrunner/generateStatements')
+const {generateStatements} = require('./redrunner/generate_statements')
 const {config} = require('./redrunner/config')
 
 let viewCount = 0

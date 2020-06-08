@@ -1,6 +1,6 @@
 const {getAttVal, removeAtt} = require('../utils/dom')
 const {extractInlineWatches} = require('./inline')
-const {NodeData} = require('./node-data')
+const {NodeData} = require('./node_data')
 
 
 function extractNodeData(node, config) {
