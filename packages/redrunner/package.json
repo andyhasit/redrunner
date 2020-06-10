@@ -3,8 +3,8 @@
   "version": "0.2.0",
   "description": "A tiny framework with legs",
   "scripts": {
-    "prepublish": "npm test && babel src -d lib",
-    "build": "NODE_ENV=production babel src -d lib",
+    "prepublish": "npm test && npm run build",
+    "build": "NODE_ENV=production rollup -c",
     "test": "jest --clearCache && jest",
     "clear-jest": "jest --clearCache"
   },
@@ -19,22 +19,24 @@
     ]
   },
   "files": [
-    "lib",
+    "dist",
     "src"
   ],
   "license": "MIT",
-  "main": "lib/index.js",
+  "main": "dist/bundle.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/andyhasit/redrunner"
   },
   "devDependencies": {
-    "babel-preset-env": "^1.7.0",
+    "@babel/preset-env": "^7.10.2",
+    "@rollup/plugin-babel": "^5.0.3",
+    "babel-core": "^7.0.0-bridge.0",
     "html": "^1.0.0",
-    "jest": "^26.0.1"
+    "jest": "^26.0.1",
+    "rollup-plugin-terser": "^6.1.0"
   },
   "dependencies": {
-    "babel-core": "^7.0.0-bridge.0",
     "babel-plugin-redrunner": "^0.2.0"
   }
 }
