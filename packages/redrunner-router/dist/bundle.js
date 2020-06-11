@@ -194,28 +194,6 @@ function _nonIterableRest() {
 var defaultKeyFn = function defaultKeyFn(_) {
   return 1;
 };
-/*
- * Router - an object responsible for managing routes
-
- -- how do we cache and update views?
-
-When a route is first activated, the view gets instantiated and we call update()
-When a route is reactivated, there are options:
-  - build a completely new view
-  - retrieve a cached view based on args
-  - always reuse the same view
-
-Todo:
-  change route to accept a cache - else it creates its own
-
-  this.cache()
-
-https://blog.pshrmn.com/entry/how-single-page-applications-work/
-
-
-params vs vars
-*/
-
 /* RouterView
  * A view which responds to changes in the hash url.
  * Arg 'data' must be an object like {routes, resources}

@@ -12,22 +12,23 @@ import {Wrapper} from './wrapper'
  * @param {int} seq The sequence (optional)
  */
 export function mount(elementOrId, cls, props, parent) {
-  let view = createView(cls, parent).setProps(props)
+  let view = createView(cls, parent, props)
+  view.update()
   let nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId
   nodeToReplace.parentNode.replaceChild(view.e, nodeToReplace)
   return view
 }
 
 /**
- * Creates a view, builds its DOM, and updates it.
+ * Creates a view, builds its DOM.
  *
  * @param {class} cls The class of View to create
  * @param {object} parent The parent view (optional)
  * @param {object} props The props to pass to the view (optional)
  * @param {int} seq The sequence (optional)
  */
-export function createView(cls, parent) {
-  let view = new cls(parent)
+export function createView(cls, parent, props) {
+  let view = new cls(parent, props)
   view.__bv(view, cls.prototype)
   view.init()
   return view

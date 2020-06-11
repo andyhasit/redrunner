@@ -133,6 +133,11 @@ var Wrapper = /*#__PURE__*/function () {
       /* Returns the value of the element */
       return this.e.value;
     }
+    /**
+     * Returns a promise which resolves after a transition.
+     * Saves having to know times of transitions.
+     */
+
   }, {
     key: "transition",
     value: function transition(fn) {
@@ -392,14 +397,15 @@ var Wrapper = /*#__PURE__*/function () {
  * @param {int} seq The sequence (optional)
  */
 
-function mount(elementOrId, cls, props, parent, seq) {
-  var view = createView(cls, props, parent, seq);
+function mount(elementOrId, cls, props, parent) {
+  var view = createView(cls, parent, props);
+  view.update();
   var nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId;
   nodeToReplace.parentNode.replaceChild(view.e, nodeToReplace);
   return view;
 }
 /**
- * Creates a view, builds its DOM, and updates it.
+ * Creates a view, builds its DOM.
  *
  * @param {class} cls The class of View to create
  * @param {object} parent The parent view (optional)
@@ -407,13 +413,12 @@ function mount(elementOrId, cls, props, parent, seq) {
  * @param {int} seq The sequence (optional)
  */
 
-function createView(cls, props, parent, seq) {
-  var view = new cls(parent, props, seq);
+function createView(cls, parent, props) {
+  var view = new cls(parent, props);
 
   view.__bv(view, cls.prototype);
 
   view.init();
-  view.update();
   return view;
 }
 /**
@@ -432,44 +437,10 @@ function h(tag, inner) {
   return new Wrapper(doc.createElement(tag)).inner(inner);
 }
 
-//   /**
-//    * @param {class} cls The class of View to create
-//    * @param {function} keyFn A function which obtains the key to cache by
-//    */
-//   constructor(cls, keyFn) {
-//     this.cls = cls
-//     this.cache = {}
-//     this.keyFn = keyFn
-//     this._seq = 0
-//   }
-//   getMany(items, parentView, reset) {
-//     if (reset) {
-//       this.reset()
-//     }
-//     return items.map(props => this.getOne(props, parentView))
-//   }
-//   getOne(props, parentView) {
-//     Gets a view, potentially from cache
-//     let view, key = this.keyFn(props, this._seq)
-//     // TODO: can I detect whether we use seq?
-//     if (this.cache.hasOwnProperty(key)) {
-//       view = this.cache[key]
-//       if (parentView !== view.parent) {
-//         view.move(parentView)
-//       }
-//       view.update(props)
-//     } else {
-//       // Don't use nest
-//       view = createView(this.cls, props, parentView, this._seq)
-//       this.cache[key] = view
-//     }
-//     this._seq += 1
-//     return view
-//   }
-//   reset() {
-//     this._seq = 0
-//   }
-// }
+/**
+ * An object which caches and returns views of a same type, using a key Function
+ * to retrieve views.
+ */
 
 
 var KeyedCache = /*#__PURE__*/function () {
@@ -516,9 +487,9 @@ var KeyedCache = /*#__PURE__*/function () {
           view.move(parentView);
         }
 
-        view.update(props);
+        view.setProps(props);
       } else {
-        view = createView(this.cls, props, parentView, this._seq);
+        view = createView(this.cls, parentView).setProps(props);
         this.cache[key] = view;
       }
 
@@ -537,10 +508,13 @@ var KeyedCache = /*#__PURE__*/function () {
 
   return KeyedCache;
 }();
+/**
+ * An object which caches and returns views of a same type, caching by sequence.
+ */
+
 var SequentialCache = /*#__PURE__*/function () {
   /**
-   * @param {class} cls The class of View to create
-   * @param {function} keyFn A function which obtains the key to cache by
+   * @param {class} cls The class of View to create.
    */
   function SequentialCache(cls) {
     _classCallCheck(this, SequentialCache);
@@ -566,9 +540,9 @@ var SequentialCache = /*#__PURE__*/function () {
           view.move(parentView);
         }
 
-        view.update(props);
+        view.setProps(props);
       } else {
-        view = createView(this.cls, props, parentView, this._seq);
+        view = createView(this.cls, parentView).setProps(props);
         this.cache.push(view);
       }
 
@@ -796,17 +770,12 @@ var View = /*#__PURE__*/function () {
       this.__mt.track(this);
     }
     /**
-     *   The external call to update the view.
-     *   @props -- new props, else it keeps its old (which is fine)
+     * Updates the view.
      */
 
   }, {
     key: "update",
-    value: function update(props) {
-      if (!und(props)) {
-        this.props = props;
-      }
-
+    value: function update() {
       this.__uw();
 
       this.__un();
@@ -831,8 +800,8 @@ var View = /*#__PURE__*/function () {
 
   }, {
     key: "nest",
-    value: function nest(cls, props, seq) {
-      var child = createView(cls, props, this, seq);
+    value: function nest(cls) {
+      var child = createView(cls, {}, this, 0);
 
       this.__nv.push(child);
 
@@ -865,6 +834,18 @@ var View = /*#__PURE__*/function () {
     key: "old",
     value: function old(name) {
       return this.__ov[name];
+    }
+    /**
+     * Sets the props and updates the view.
+     * @props -- new props, else it keeps its old (which is fine)
+     */
+
+  }, {
+    key: "setProps",
+    value: function setProps(props) {
+      this.props = props;
+      this.update();
+      return this;
     }
     /**
      * Build the DOM. We pass prototype as local var for speed.

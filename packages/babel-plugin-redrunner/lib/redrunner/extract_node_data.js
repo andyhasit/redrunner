@@ -1,6 +1,8 @@
-const {getAttVal, removeAtt} = require('../utils/dom')
+const c = console
+const {extractAtts, getAttVal, removeAtt} = require('../utils/dom')
 const {extractInlineWatches} = require('./inline')
 const {NodeData} = require('./node_data')
+
 
 
 function extractNodeData(node, config) {
@@ -22,6 +24,28 @@ function extractNodeData(node, config) {
 	  		removeAtt(node, directiveName)
 	  	}
 		}
+	}
+
+	// Process event attributes
+
+  const remainingAtts = extractAtts(node)
+  if (remainingAtts) {
+	  for (let [key, value] of Object.entries(remainingAtts)) {
+	  	if (key.toLowerCase().startsWith(':on')) {
+	  		let event = key.substr(3)
+	  		let directive = {
+				  params: 'callbackStr',
+				  handle: function(callbackStr) {
+				    this.addEventListener(event, callbackStr)
+				  }
+				}
+				c.log(event)
+				c.log(value)
+				c.log(directive)
+	  		nodeData.processDirective(key, directive, value)
+	  		hasData = true
+	  	}
+	  }
 	}
 	return hasData ? nodeData : undefined
 }

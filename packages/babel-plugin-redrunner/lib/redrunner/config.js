@@ -65,15 +65,4 @@ const config = {
 }
 
 
-const events = ['click', 'keyUp', 'keyDown']
-events.forEach(event => {
-  config.directives[':on' + capitalize(event)] = {
-    params: 'callbackStr',
-    handle: function(callbackStr) {
-      this.addEventListener(event, callbackStr)
-    }
-  }
-})
-
-
 module.exports = {config}
