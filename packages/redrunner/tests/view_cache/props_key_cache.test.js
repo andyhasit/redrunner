@@ -20,8 +20,8 @@ class NestedView extends View {
   init() {
     this.uniqueSeq = counter.next()
   }
-  update(props) {
-    super.update(props)
+  update() {
+    super.update()
     counter.increment(this.uniqueSeq)
   }
 }

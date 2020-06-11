@@ -14,7 +14,6 @@ class TestView extends View {
 
 test('Nest without cache declaration adds wrappers', () => {
   const div = load(TestView)
-
   expect(div).toShow(`
     <div>
       <span>joe</span>

@@ -21,8 +21,8 @@ class NestedView extends View {
   init() {
     this.uniqueSeq = getSeq()
   }
-  update(props) {
-    super.update(props)
+  update() {
+    super.update()
     updateCounter(this.uniqueSeq)
   }
 }

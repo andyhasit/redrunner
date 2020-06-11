@@ -62,13 +62,9 @@ export class View {
     this.__mt.track(this)
   }
   /**
-   *   The external call to update the view.
-   *   @props -- new props, else it keeps its old (which is fine)
+   * Updates the view.
    */
-  update(props) {
-    if (!und(props)) {
-      this.props = props
-    }
+  update() {
     this.__uw()
     this.__un()
   }
@@ -108,6 +104,14 @@ export class View {
    */
   old(name) {
     return this.__ov[name]
+  }
+  /**
+   * Sets the props and updates the view.
+   * @props -- new props, else it keeps its old (which is fine)
+   */
+  setProps(props) {
+    this.props = props
+    this.update()
   }
   /**
    * Build the DOM. We pass prototype as local var for speed.

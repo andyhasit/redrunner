@@ -26,6 +26,10 @@ export class Wrapper {
     /* Returns the value of the element */
     return this.e.value
   }
+  /**
+   * Returns a promise which resolves after a transition.
+   * Saves having to know times of transitions.
+   */
   transition(fn) {
     return new Promise(resolve => {
       fn()

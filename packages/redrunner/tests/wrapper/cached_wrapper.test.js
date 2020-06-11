@@ -29,7 +29,7 @@ test('Adding items works', () => {
       <div>2</div>
     </div>
   `)
-  div.update([5, 2, 6])
+  div.setProps([5, 2, 6])
   expect(div).toShow(`
     <div>
       <div>5</div>
@@ -41,7 +41,7 @@ test('Adding items works', () => {
 
 test('Removing items works', () => {
   const div = load(Container, [5, 2, 3, 8])
-  div.update([2, 8])
+  div.setProps([2, 8])
   expect(div).toShow(`
     <div>
       <div>2</div>
@@ -52,7 +52,7 @@ test('Removing items works', () => {
 
 test('Complete replacement', () => {
   const div = load(Container, [5, 2, 3, 8])
-  div.update([22, 18])
+  div.setProps([22, 18])
   expect(div).toShow(`
     <div>
       <div>22</div>
@@ -63,7 +63,7 @@ test('Complete replacement', () => {
 
 test('Reshuffle', () => {
   const div = load(Container, [7, 5, 6, 2])
-  div.update([5, 2, 6, 7])
+  div.setProps([5, 2, 6, 7])
   expect(div).toShow(`
     <div>
       <div>5</div>
@@ -76,7 +76,7 @@ test('Reshuffle', () => {
 
 test('Multiple add and remove shorter', () => {
   const div = load(Container, [7, 5, 44, 6, 2, 8, 5, 6])
-  div.update([2, 7, 11, 8, 23,])
+  div.setProps([2, 7, 11, 8, 23,])
   expect(div).toShow(`
     <div>
       <div>2</div>
@@ -90,7 +90,7 @@ test('Multiple add and remove shorter', () => {
 
 test('Multiple add and remove longer', () => {
   const div = load(Container, [7, 5, 8])
-  div.update([2, 7, 11, 8, 5, 23,])
+  div.setProps([2, 7, 11, 8, 5, 23,])
   expect(div).toShow(`
     <div>
       <div>2</div>
@@ -105,7 +105,7 @@ test('Multiple add and remove longer', () => {
 
 test('Clear', () => {
   const div = load(Container, [5, 2, 3, 8])
-  div.update([])
+  div.setProps([])
   expect(div).toShow(`
     <div>
     </div>

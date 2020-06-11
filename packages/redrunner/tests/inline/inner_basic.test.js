@@ -56,7 +56,7 @@ test('Inner update when props changed', () => {
 
 test('Inner update when new props passed', () => {
   const div = load(TestView, props)
-  div.update({name: 'alice'})
+  div.setProps({name: 'alice'})
   expect(div).toShow(`
     <div>
       <span>alice</span>

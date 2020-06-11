@@ -23,8 +23,12 @@ class TestMount {
   	this.html = undefined
   	this.setHtml()
   }
-  update(props) {
-  	this.view.update(props)
+  setProps(props) {
+  	this.view.setProps(props)
+    this.setHtml()
+  }
+  update() {
+    this.view.update()
   	this.setHtml()
   }
   setHtml() {

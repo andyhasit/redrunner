@@ -56,7 +56,6 @@ test("Hide masks", () => {
 
   props.show = true
   div.update()
-  //
   expect(div).toShow(`
     <div>
       <div style="visibility: visible;">

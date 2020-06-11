@@ -56,7 +56,7 @@ test('Attributes update when props changed', () => {
 
 test('Attributes update when new props passed', () => {
   const div = load(TestView, props)
-  div.update({style: 'different'})
+  div.setProps({style: 'different'})
   expect(div).toShow(`
     <div>
       <span class="different"></span>
