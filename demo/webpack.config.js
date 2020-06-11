@@ -2,7 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
-  mode: 'production',
+  mode: 'development',
   entry: './src/main.js',
   output: {
     filename: 'main.js',
@@ -19,7 +19,7 @@ module.exports = {
 				{
 					loader: 'babel-loader',
 					options: {
-            sourceMaps: false,
+            sourceMaps: true,
 						presets: ['@babel/preset-env'],
 						plugins: ['babel-plugin-redrunner', '@babel/plugin-proposal-class-properties'],
 					}
