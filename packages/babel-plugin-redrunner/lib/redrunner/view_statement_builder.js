@@ -91,13 +91,13 @@ class ViewStatementBuilder {
   	const {nodePath, node, tagName} = nodeInfo
     const nodeData = extractNodeData(node, this.config, this.walker)
     if (nodeData) {
-      let {afterSave, beforeSave, initialProps, saveAs, shieldQuery, reverseShield, watches} = nodeData
+      let {afterSave, beforeSave, saveAs, shieldQuery, reverseShield, watches} = nodeData
 
       // Use the saveAs supplied, or get a sequential one
       saveAs = saveAs ? saveAs : this.getNextElementRef()
 
       if (isNestedView(nodeInfo)) {
-        this.saveNestedView(nodePath, saveAs, nodeData, tagName, initialProps)
+        this.saveNestedView(nodePath, saveAs, nodeData, tagName)
       } else {
         this.saveWrapper(nodePath, saveAs, nodeData)
       }
@@ -141,11 +141,8 @@ class ViewStatementBuilder {
   saveWrapper(nodePath, saveAs, nodeData) {
     this.saveElement(saveAs, nodeData.wrapperInit(nodePath), nodeData.chainedCalls)
   }
-  saveNestedView(nodePath, saveAs, nodeData, tagName, initialProps) {
+  saveNestedView(nodePath, saveAs, nodeData, tagName) {
     let constructorStr =  `view.nest(${tagName})`
-    if (initialProps) {
-      constructorStr += `.setProps(${initialProps})`
-    }
     // Save as local variable, just use "saveAs" as a variable name.
     this.beforeSave.push(`var ${saveAs} = ${constructorStr};`)
     // Replace the node

@@ -15,7 +15,6 @@ class NodeData {
     this.saveAs = undefined
     this.customWrapperClass = undefined
     this.customWrapperArgs = undefined
-    this.initialProps = undefined
     this.shieldQuery = undefined
     this.reverseShield = false
     this.chainedCalls = []

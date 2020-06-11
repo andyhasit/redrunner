@@ -36,7 +36,7 @@ export class KeyedCache {
       }
       view.setProps(props)
     } else {
-      view = createView(this.cls, props, parentView, this._seq)
+      view = createView(this.cls, parentView).setProps(props)
       this.cache[key] = view
     }
     this._seq += 1
@@ -71,7 +71,7 @@ export class SequentialCache {
       }
       view.setProps(props)
     } else {
-      view = createView(this.cls, props, parentView, this._seq)
+      view = createView(this.cls, parentView).setProps(props)
       this.cache.push(view)
     }
     this._seq += 1

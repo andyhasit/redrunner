@@ -13,7 +13,6 @@ class TestView extends View {
     <div>
       <Child :props="..child1"/>
       <Child :props=".child2"/>
-      <Child/>
     </div>
   `
   init() {
@@ -27,7 +26,14 @@ test('Nest accepts props', () => {
     <div>
       <span>jo</span>
       <span>alice</span>
-      <span></span>
+    </div>
+  `)
+  child1.name = 'ems'
+  div.update()
+  expect(div).toShow(`
+    <div>
+      <span>ems</span>
+      <span>alice</span>
     </div>
   `)
 })

@@ -14,12 +14,6 @@ const config = {
         this.shieldQuery = property
       }
     },
-    ':init': {
-      params: 'args',
-      handle: function(args) {
-        this.initialProps = args
-      }
-    },
     ':inner': {
       params: 'property, converter',
       handle: function(property, converter) {
