@@ -49,6 +49,9 @@ export class SmoothieList extends View {
       <div class="smoothie-list" :items="*|..smoothiesService.items|SmoothieListItem"></div>
     </div>
   `
+  init() {
+    c.log(smoothiesService.items)
+  }
 }
 
 class SmoothieListItem extends View {
