@@ -14,6 +14,12 @@ const config = {
         this.shieldQuery = property
       }
     },
+    ':init': {
+      params: 'args',
+      handle: function(args) {
+        this.initialProps = args
+      }
+    },
     ':inner': {
       params: 'property, converter',
       handle: function(property, converter) {
@@ -36,9 +42,9 @@ const config = {
       }
     },
     ':props': {
-      params: 'args',
-      handle: function(args) {
-        this.props = expandShorthand(args)
+      params: 'property',
+      handle: function(property) {
+        this.addWatch(property, undefined, 'setProps')
       }
     },
     ':show': {

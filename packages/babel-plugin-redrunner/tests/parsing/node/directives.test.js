@@ -12,16 +12,16 @@ test('Node without relevant data returns undefined', () => {
 
 
 test('Setting saveAs', () => {
-  const directives = {
-    ':as': {
-      handle: function(arg) {
-        this.saveAs = arg
-      }
-    }
-  }
   const domNode = getNode('<div :as="foo"></div>')
-  const nodeData = extractNodeData(domNode, {directives})
+  const nodeData = extractNodeData(domNode, {directives: config.directives})
   expect(nodeData.saveAs).toEqual('foo')
+})
+
+
+test('Setting props', () => {
+  const domNode = getNode('<div :props=".bar"></div>')
+  const nodeData = extractNodeData(domNode, {directives: config.directives})
+  expect(nodeData.props).toEqual('this.bar')
 })
 
 

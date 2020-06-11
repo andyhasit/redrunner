@@ -128,13 +128,14 @@ const expandProperty = (property) => {
  *   .field   >  this.field
  *   ..field  >  field
  */
-const expandShorthand = (field) => {
+const expandShorthand = (field, inPrototype) => {
+  const viewVar = inPrototype ? 'view' : 'this'
   if (field.startsWith('..')) {
     return field.substr(2)
   } else if (field.startsWith('.')) {
-    return 'this.' + field.substr(1)
+    return viewVar + '.' + field.substr(1)
   }
-  return 'this.props.' + field
+  return viewVar + '.props.' + field
 }
 
 
@@ -157,6 +158,14 @@ const getWatchQueryCallBack = (property) => {
       'function() {return null}' :
       `function() {return ${expandProperty(property)}}`
   }
+}
+
+/**
+ * Returns true if node represents a nested view, i.e tag starts with uppercase.
+ */
+const isNestedView = (nodeInfo) => {
+  const isTagCapitalized = /[A-Z]/.test(nodeInfo.tagName[0])
+  return isTagCapitalized
 }
 
 const parseTarget = (target) => {
@@ -192,6 +201,7 @@ module.exports = {
   expandShorthand,
   getWatchQueryCallBack,
   getLookupArgs,
+  isNestedView,
   parseTarget,
   splitter,
   watchArgs

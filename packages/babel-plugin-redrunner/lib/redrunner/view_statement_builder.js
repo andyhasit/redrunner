@@ -4,7 +4,12 @@ const {stripHtml} = require('../utils/dom')
 const {groupArray} = require('../utils/javascript')
 const {DomWalker} = require('./dom_walker.js')
 const {extractNodeData} = require('./extract_node_data')
-const {buidlWatchCallbackLine, getLookupArgs, getWatchQueryCallBack} = require('./syntax')
+const {
+  buidlWatchCallbackLine,
+  getLookupArgs,
+  getWatchQueryCallBack,
+  isNestedView
+} = require('./syntax')
 const {
   ArrayStatement,
   CallStatement,
@@ -80,38 +85,22 @@ class ViewStatementBuilder {
 		this.htmlString.set(`'${stripHtml(this.walker.dom.toString())}'`)
 	}
   /**
-   * Gets passed to the DomWalker, who calls this at every node.
-   * Simply punts the call to the appropriate method depending on node type.
+   * Gets passed to the DomWalker, which calls this for every node.
    */
   processNode(nodeInfo) {
-  	const isTagCapitalized = /[A-Z]/.test(nodeInfo.tagName[0])
-    const processFunction = isTagCapitalized ? this.processViewNode : this.processNormalNode
-    processFunction.apply(this, [nodeInfo])
-  }
-  processViewNode(nodeInfo) {
-    let props, saveAs
-  	const {nodePath, node, tagName} = nodeInfo
-    const extractedData = extractNodeData(node, this.config, this.walker)
-    if (extractedData) {
-      let {props, saveAs} = extractedData
-    }
-    const constructorStr = props ? `view.nest(${tagName}, ${props})` : `view.nest(${tagName})`;
-	  if (saveAs) {
-	    this.beforeSave.push(`let ${saveAs} = ${constructorStr};`)
-	    this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, ${saveAs});`)
-	    this.saveElement(saveAs, saveAs)
-	  } else {
-	    this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, ${constructorStr});`)
-	  }
-  }
-  processNormalNode(nodeInfo) {
   	const {nodePath, node, tagName} = nodeInfo
     const nodeData = extractNodeData(node, this.config, this.walker)
     if (nodeData) {
-      let {afterSave, beforeSave, saveAs, shieldQuery, reverseShield, watches} = nodeData
+      let {afterSave, beforeSave, initialProps, saveAs, shieldQuery, reverseShield, watches} = nodeData
 
       // Use the saveAs supplied, or get a sequential one
       saveAs = saveAs ? saveAs : this.getNextElementRef()
+
+      if (isNestedView(nodeInfo)) {
+        this.saveNestedView(nodePath, saveAs, nodeData, tagName, initialProps)
+      } else {
+        this.saveWrapper(nodePath, saveAs, nodeData)
+      }
 
       // Ensure the shieldQuery gets added
       if (shieldQuery) {
@@ -120,8 +109,6 @@ class ViewStatementBuilder {
       // Use the shieldQuery supplied, undefined (must set as string here)
       shieldQuery = shieldQuery ? `'${shieldQuery}'` : 'undefined'
 
-      // Save the element.
-      this.saveElement(nodePath, saveAs, nodeData)
 
       // Squash array to object
       watches = groupArray(watches, 'property', watch => {
@@ -144,7 +131,31 @@ class ViewStatementBuilder {
       	allCallbacks
       ])
       this.watches.add(watchCall)
+    } else if (isNestedView(nodeInfo)) {
+      this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, view.nest(${tagName}));`)
     }
+  }
+  /**
+   * Add a saved Element.
+   */
+  saveWrapper(nodePath, saveAs, nodeData) {
+    this.saveElement(saveAs, nodeData.wrapperInit(nodePath), nodeData.chainedCalls)
+  }
+  saveNestedView(nodePath, saveAs, nodeData, tagName, initialProps) {
+    let constructorStr =  `view.nest(${tagName})`
+    if (initialProps) {
+      constructorStr += `.setProps(${initialProps})`
+    }
+    // Save as local variable, just use "saveAs" as a variable name.
+    this.beforeSave.push(`var ${saveAs} = ${constructorStr};`)
+    // Replace the node
+    this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, ${saveAs});`)
+    // Save element
+    this.saveElement(saveAs, saveAs, nodeData.chainedCalls)
+  }
+  saveElement(saveAs, initCall, chainedCalls) {
+    const chainedCallStatement = chainedCalls.length ? '.' + chainedCalls.join('.') : ''
+    this.savedElements.add(saveAs, `${initCall}${chainedCallStatement}`)
   }
   addWatchQueryCallback(property) {
   	const callback = getWatchQueryCallBack(property)
@@ -152,15 +163,6 @@ class ViewStatementBuilder {
       this.queryCallbacks.add(property, callback)
     }
   	// TODO: also initiate the previous values object?
-  }
-  /**
-   * Add a saved Element.
-   */
-  saveElement(nodePath, saveAs, nodeData) {
-    let {chainedCalls} = nodeData
-    const wrapperInit = nodeData.wrapperInit(nodePath)
-    const chainedCallStatement = chainedCalls.length ? '.' + chainedCalls.join('.') : ''
-    this.savedElements.add(saveAs, `${wrapperInit}${chainedCallStatement}`)
   }
   /**
    * Gets next name for saving elements.

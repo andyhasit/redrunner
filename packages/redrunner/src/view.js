@@ -81,8 +81,8 @@ export class View {
   /**
    * Builds a nested view of the specified class. Its up to you how you use it.
    */
-  nest(cls, props, seq) {
-    let child = createView(cls, props, this, seq)
+  nest(cls) {
+    let child = createView(cls, {}, this, 0)
     this.__nv.push(child)
     return child
   }
@@ -112,6 +112,7 @@ export class View {
   setProps(props) {
     this.props = props
     this.update()
+    return this
   }
   /**
    * Build the DOM. We pass prototype as local var for speed.

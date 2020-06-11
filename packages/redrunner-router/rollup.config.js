@@ -6,6 +6,7 @@ export default {
     file: 'dist/bundle.js',
     format: 'cjs'
   },
+  external: ['redrunner'],
   plugins: [
     babel({ babelHelpers: 'bundled' })
   ]

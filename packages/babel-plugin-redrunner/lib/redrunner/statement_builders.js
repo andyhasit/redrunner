@@ -67,7 +67,7 @@ class FunctionStatement extends BaseStatement {
   buildValue() {
     const lines = [`function(${this.argString}) {`]
     this.items.forEach(value => {
-      lines.push(`${expand(value)}${EOL}`)
+      lines.push(`${expand(value)}`)
     })
     lines.push('}')
     return lines.join(EOL)
