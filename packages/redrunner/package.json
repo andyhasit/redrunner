@@ -33,8 +33,7 @@
     "@rollup/plugin-babel": "^5.0.3",
     "babel-core": "^7.0.0-bridge.0",
     "html": "^1.0.0",
-    "jest": "^26.0.1",
-    "rollup-plugin-terser": "^6.1.0"
+    "jest": "^26.0.1"
   },
   "dependencies": {
     "babel-plugin-redrunner": "^0.2.0"
