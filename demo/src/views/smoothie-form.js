@@ -12,24 +12,31 @@ class FormLine extends View {
   `
   changed(e, w) {
     c.log(w.getValue())
-    // Maybe us emit?
+    // Maybe use emit?
 
   }
 }
 
-const nameField = {name: 'name', caption:'Smoothie name', type: 'text'}
 
 export class SmoothieForm extends View {
   __html__ = `
     <form class="form-example">
-      <FormLine :props="..nameField"/>
-      <button class="button" type="button" onClick=".clickSave">Save</button>
+      <FormLine :props=".nameField"/>
+      <FormLine :props=".costField"/>
+      <button class="button" type="button" :onClick=".clickSave">Save</button>
     </form>
   `
   init() {
-    this.nameField = {name: 'name', caption:'Smoothie name', type: 'text'}
+    this.nameField = {name: 'name', caption: 'Name', type: 'text'}
+    this.costField = {name: 'cost', caption: 'Cost', type: 'text'}
+  }
+  update() {
+    this.formData = {
+      name: '',
+      cost: 0
+    }
   }
   clickSave(e, w) {
-
+    c.log(e)
   }
 }
