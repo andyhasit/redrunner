@@ -389,17 +389,15 @@ var Wrapper = /*#__PURE__*/function () {
 /**
  * Creates and mounts a view onto an element.
  *
- * @param {unsure} elementOrId Either a string representing an id, or an
- *     element.
+ * @param {unsure} elementOrId Either a string representing an id, or an element.
  * @param {class} cls The class of View to create
  * @param {object} props The props to pass to the view (optional)
  * @param {object} parent The parent view (optional)
- * @param {int} seq The sequence (optional)
  */
 
 function mount(elementOrId, cls, props, parent) {
-  var view = createView(cls, parent, props);
-  view.update();
+  var view = createView(cls, parent, props); //view.update()
+
   var nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId;
   nodeToReplace.parentNode.replaceChild(view.e, nodeToReplace);
   return view;
@@ -410,7 +408,6 @@ function mount(elementOrId, cls, props, parent) {
  * @param {class} cls The class of View to create
  * @param {object} parent The parent view (optional)
  * @param {object} props The props to pass to the view (optional)
- * @param {int} seq The sequence (optional)
  */
 
 function createView(cls, parent, props) {
@@ -419,6 +416,7 @@ function createView(cls, parent, props) {
   view.__bv(view, cls.prototype);
 
   view.init();
+  view.update();
   return view;
 }
 /**
@@ -489,7 +487,8 @@ var KeyedCache = /*#__PURE__*/function () {
 
         view.setProps(props);
       } else {
-        view = createView(this.cls, parentView).setProps(props);
+        view = createView(this.cls, parentView, props); //view.update()
+
         this.cache[key] = view;
       }
 
@@ -542,7 +541,8 @@ var SequentialCache = /*#__PURE__*/function () {
 
         view.setProps(props);
       } else {
-        view = createView(this.cls, parentView).setProps(props);
+        view = createView(this.cls, parentView, props); //view.update()
+
         this.cache.push(view);
       }
 
@@ -716,7 +716,6 @@ var QueryCollection = /*#__PURE__*/function () {
  *  init    -- override to set initial state
  *  parent  -- the parent view
  *  props   -- the props passed to the view
- *  seq     -- the sequence
  *  update  -- method which gets called when a view is updated
  *
  * Private members (for internal use) start with __ and are listed here:
@@ -735,15 +734,13 @@ var QueryCollection = /*#__PURE__*/function () {
  */
 
 var View = /*#__PURE__*/function () {
-  function View(parent, props, seq) {
+  function View(parent, props) {
     _classCallCheck(this, View);
 
     var s = this;
     s.parent = parent; // The parent view
 
     s.props = props; // The props passed to the view. May be changed
-
-    s.seq = seq; // The sequence - only for nested views
     // Internal state objects
 
     s.__nv = []; // Array of nested views
@@ -801,7 +798,7 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "nest",
     value: function nest(cls) {
-      var child = createView(cls, {}, this, 0);
+      var child = createView(cls, this, {});
 
       this.__nv.push(child);
 

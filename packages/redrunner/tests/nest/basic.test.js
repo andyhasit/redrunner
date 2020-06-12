@@ -17,6 +17,7 @@ class TestView extends View {
   `
   init() {
     this.child2 = {name: 'alice'}
+    super.init()
   }
 }
 

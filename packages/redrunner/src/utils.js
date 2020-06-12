@@ -4,33 +4,39 @@ import {Wrapper} from './wrapper'
 /**
  * Creates and mounts a view onto an element.
  *
- * @param {unsure} elementOrId Either a string representing an id, or an
- *     element.
+ * @param {unsure} elementOrId Either a string representing an id, or an element.
  * @param {class} cls The class of View to create
  * @param {object} props The props to pass to the view (optional)
  * @param {object} parent The parent view (optional)
- * @param {int} seq The sequence (optional)
  */
 export function mount(elementOrId, cls, props, parent) {
-  let view = createView(cls, parent, props)
-  view.update()
-  let nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId
+  const view = createView(cls, parent, props)
+  const nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId
   nodeToReplace.parentNode.replaceChild(view.e, nodeToReplace)
   return view
 }
 
 /**
- * Creates a view, builds its DOM.
+ * Creates a view and initialises it.
  *
  * @param {class} cls The class of View to create
  * @param {object} parent The parent view (optional)
  * @param {object} props The props to pass to the view (optional)
- * @param {int} seq The sequence (optional)
  */
 export function createView(cls, parent, props) {
-  let view = new cls(parent, props)
-  view.__bv(view, cls.prototype)
+  const view = buildView(cls, parent)
+  view.props = props
   view.init()
+  view.update()
+  return view
+}
+
+/**
+ * Builds a view.
+ */
+export function buildView(cls, parent) {
+  const view = new cls(parent)
+  view.__bv(view, cls.prototype)
   return view
 }
 

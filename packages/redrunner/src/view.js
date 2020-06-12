@@ -1,5 +1,5 @@
 import {KeyedCache, SequentialCache} from './viewcache'
-import {createView} from  './utils'
+import {buildView, createView} from  './utils'
 import {und, makeEl} from './helpers'
 import mountie from './mountie'
 import {Wrapper} from './wrapper'
@@ -20,7 +20,6 @@ const c = console;
  *  init    -- override to set initial state
  *  parent  -- the parent view
  *  props   -- the props passed to the view
- *  seq     -- the sequence
  *  update  -- method which gets called when a view is updated
  *
  * Private members (for internal use) start with __ and are listed here:
@@ -38,11 +37,10 @@ const c = console;
  *
  */
 export class View {
-  constructor(parent, props, seq) {
+  constructor(parent) {
     let s = this
     s.parent = parent       // The parent view
-    s.props = props         // The props passed to the view. May be changed
-    s.seq = seq             // The sequence - only for nested views
+    s.props = undefined     // The props passed to the view. May be changed.
     // Internal state objects
     s.__nv = []             // Array of nested views
 
@@ -57,6 +55,11 @@ export class View {
    * Gets called once immediately after building.
    */
   init() {
+    for (let [k, v] of Object.entries(this.__ip)) {
+      let view = this.dom[k]
+      view.props = v.apply(this)
+      view.init()
+    }
   }
   trackMounting() {
     this.__mt.track(this)
@@ -66,6 +69,7 @@ export class View {
    */
   update() {
     this.__uw()
+    this.__ui()
     this.__un()
   }
   /**
@@ -81,10 +85,24 @@ export class View {
   /**
    * Builds a nested view of the specified class. Its up to you how you use it.
    */
-  nest(cls) {
-    let child = createView(cls, {}, this, 0)
+  nest(cls, props) {
+    let child = createView(cls, this, props)
     this.__nv.push(child)
     return child
+  }
+  /**
+   * Nest Internal. For building a nested view declare in the html
+   */
+  __ni(path, cls) {
+    const child = buildView(cls, this)
+    this.__gw(path).replace(child.e)
+    return child
+  }
+  __ui() {
+    for (let [k, v] of Object.entries(this.__ip)) {
+      let view = this.dom[k]
+      view.setProps(v.apply(this))
+    }
   }
   /**
    * Was intended as a way to bubble events up the tree. Not sure if needed.
@@ -181,7 +199,7 @@ export class View {
       return
     }
     const il = watches.length
-    const queryCollection = this.queryCollection
+    const queryCollection = this.__qc
     queryCollection.reset()
 
     while (i < il) {
@@ -204,15 +222,19 @@ export class View {
 }
 
 /**
- * This is used by the generated code.
+ * The global mount tracker.
  */
-View.prototype.buildUtils = {
-  getWatch: function(el, shieldQuery, reverseShield, callbacks) {
+View.prototype.__mt = mountie
+
+
+/**
+ * Build utils used by the generated code.
+ */
+View.prototype.__bu = {
+  _wt: function(el, shieldQuery, reverseShield, callbacks) {
     return new Watch(el, shieldQuery, reverseShield, callbacks)
   },
-  getQueryCollection: function(callbacks) {
+  _qc: function(callbacks) {
     return new QueryCollection(callbacks)
   }
 }
-
-View.prototype.__mt = mountie

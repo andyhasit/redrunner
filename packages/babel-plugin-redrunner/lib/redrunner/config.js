@@ -36,9 +36,9 @@ const config = {
       }
     },
     ':props': {
-      params: 'property',
-      handle: function(property) {
-        this.addWatch(property, undefined, 'setProps')
+      params: 'args',
+      handle: function(args) {
+        this.props = this.expandShorthand(args)
       }
     },
     ':show': {

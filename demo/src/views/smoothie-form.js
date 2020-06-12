@@ -10,7 +10,17 @@ class FormLine extends View {
       <input type="{{type}}" name="{{name}}" :onKeyUp=".changed" required>
     </div>
   `
+  init() {
+
+    c.log(this.props)
+  }
+
+  update() {
+    super.update()
+    c.log(this.props)
+  }
   changed(e, w) {
+    c.log(this.props)
     c.log(w.getValue())
     // Maybe use emit?
 
@@ -31,6 +41,7 @@ export class SmoothieForm extends View {
     this.costField = {name: 'cost', caption: 'Cost', type: 'text'}
   }
   update() {
+    super.update()
     this.formData = {
       name: '',
       cost: 0

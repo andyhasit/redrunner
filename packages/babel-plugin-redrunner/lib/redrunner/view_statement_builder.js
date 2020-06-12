@@ -18,6 +18,13 @@ const {
   ValueStatement
 } = require('./statement_builders')
 
+
+const vars = {
+  buildUtils: '__bu__',
+  getWatch: '_wt',
+  getQueryCollection: '_qc',
+}
+
 /**
  * Builds all the generated statements for a RedRunner View.
  * Deals with:
@@ -39,7 +46,6 @@ class ViewStatementBuilder {
     this.nextElementRefIndex = 0
 
     // This is the variable to which the build utils object is added
-    this.buildUtils = '__buildUtils__'
 
     // These are used in the buildMethod
     this.savedElements = new ObjectStatement()
@@ -51,7 +57,8 @@ class ViewStatementBuilder {
     this.buildMethod = new FunctionStatement('view, prototype')
     this.watches = new ArrayStatement()
     this.queryCallbacks = new ObjectStatement()
-    this.queryCollection = new CallStatement(`${this.buildUtils}.getQueryCollection`)
+    this.nestedViewProps = new ObjectStatement()
+    this.queryCollection = new CallStatement(`${vars.buildUtils}.${vars.getQueryCollection}`)
     this.queryCollection.add(this.queryCallbacks)
   }
   /**
@@ -60,16 +67,18 @@ class ViewStatementBuilder {
   buildStatements() {
   	this.walker.parse()
   	this.postParsing()
-  	const prefix = `${this.className}.prototype`
+    const protoVar = `_${this.className}Prototype`
 		const statements = [
-      `var ${this.buildUtils} = ${prefix}.buildUtils;`,
-			this.htmlString.buildAssign(`${prefix}.__ht`),
-			this.watches.buildAssign(`${prefix}.__wc`),
-			this.queryCollection.buildAssign(`${prefix}.queryCollection`),
-			this.buildMethod.buildAssign(`${prefix}.__bv`),
+      `var ${protoVar} = ${this.className}.prototype;`,
+      `var ${vars.buildUtils} = ${protoVar}.__bu;`,
+			this.htmlString.buildAssign(`${protoVar}.__ht`),
+			this.watches.buildAssign(`${protoVar}.__wc`),
+			this.queryCollection.buildAssign(`${protoVar}.__qc`),
+      this.nestedViewProps.buildAssign(`${protoVar}.__ip`),
+			this.buildMethod.buildAssign(`${protoVar}.__bv`),
 		]
 		if (this.clone) {
-			statements.push(new ValueStatement('undefined').buildAssign(`${prefix}.__cn`))
+			statements.push(new ValueStatement('undefined').buildAssign(`${protoVar}.__cn`))
 		}
 		return statements.reverse()
 	}
@@ -91,13 +100,13 @@ class ViewStatementBuilder {
   	const {nodePath, node, tagName} = nodeInfo
     const nodeData = extractNodeData(node, this.config, this.walker)
     if (nodeData) {
-      let {afterSave, beforeSave, saveAs, shieldQuery, reverseShield, watches} = nodeData
+      let {afterSave, beforeSave, saveAs, props, shieldQuery, reverseShield, watches} = nodeData
 
       // Use the saveAs supplied, or get a sequential one
       saveAs = saveAs ? saveAs : this.getNextElementRef()
 
       if (isNestedView(nodeInfo)) {
-        this.saveNestedView(nodePath, saveAs, nodeData, tagName)
+        this.saveNestedView(nodePath, saveAs, nodeData, tagName, props)
       } else {
         this.saveWrapper(nodePath, saveAs, nodeData)
       }
@@ -124,7 +133,7 @@ class ViewStatementBuilder {
       	statements.forEach(s => callback.add(s))
         allCallbacks.add(property, callback)
       }
-      let watchCall = new CallStatement(`${this.buildUtils}.getWatch` , [
+      let watchCall = new CallStatement(`${vars.buildUtils}.${vars.getWatch}` , [
       	`'${saveAs}'`,
       	shieldQuery,
         reverseShield.toString(),
@@ -141,14 +150,17 @@ class ViewStatementBuilder {
   saveWrapper(nodePath, saveAs, nodeData) {
     this.saveElement(saveAs, nodeData.wrapperInit(nodePath), nodeData.chainedCalls)
   }
-  saveNestedView(nodePath, saveAs, nodeData, tagName) {
-    let constructorStr =  `view.nest(${tagName})`
-    // Save as local variable, just use "saveAs" as a variable name.
-    this.beforeSave.push(`var ${saveAs} = ${constructorStr};`)
-    // Replace the node
-    this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, ${saveAs});`)
+  saveNestedView(nodePath, saveAs, nodeData, tagName, props) {
+    this.nestedViewProps.add(saveAs, new FunctionStatement('', [`return ${props}`]))
+    // let constructorStr =  `view.nest(${tagName})`
+    // // Save as local variable, just use "saveAs" as a variable name.
+    // this.beforeSave.push(`var ${saveAs} = ${constructorStr};`)
+    // // Replace the node
+    // this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, ${saveAs});`)
+
+    const initCall = `view.__ni(${getLookupArgs(nodePath)}, ${tagName})`
     // Save element
-    this.saveElement(saveAs, saveAs, nodeData.chainedCalls)
+    this.saveElement(saveAs, initCall, nodeData.chainedCalls)
   }
   saveElement(saveAs, initCall, chainedCalls) {
     const chainedCallStatement = chainedCalls.length ? '.' + chainedCalls.join('.') : ''

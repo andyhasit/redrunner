@@ -39,9 +39,6 @@ function extractNodeData(node, config) {
 				    this.addEventListener(event, callbackStr)
 				  }
 				}
-				c.log(event)
-				c.log(value)
-				c.log(directive)
 	  		nodeData.processDirective(key, directive, value)
 	  		hasData = true
 	  	}

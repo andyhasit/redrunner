@@ -4,6 +4,11 @@
 const {c, EOL} = require('../utils/constants')
 
 /**
+ * The name of the arg representing the view in the buildView method.
+ */
+const viewVar = 'view'
+
+/**
  * Replaces the () at the end of name with ? so we don't create two watches for the same thing
  */
 const adjustName = (name) => {
@@ -128,14 +133,13 @@ const expandProperty = (property) => {
  *   .field   >  this.field
  *   ..field  >  field
  */
-const expandShorthand = (field, inPrototype) => {
-  const viewVar = inPrototype ? 'view' : 'this'
+const expandShorthand = (field) => {
   if (field.startsWith('..')) {
     return field.substr(2)
   } else if (field.startsWith('.')) {
-    return viewVar + '.' + field.substr(1)
+    return 'this.' + field.substr(1)
   }
-  return viewVar + '.props.' + field
+  return 'this.props.' + field
 }
 
 
