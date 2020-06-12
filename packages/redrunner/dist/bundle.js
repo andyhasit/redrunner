@@ -396,14 +396,13 @@ var Wrapper = /*#__PURE__*/function () {
  */
 
 function mount(elementOrId, cls, props, parent) {
-  var view = createView(cls, parent, props); //view.update()
-
+  var view = createView(cls, parent, props);
   var nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId;
   nodeToReplace.parentNode.replaceChild(view.e, nodeToReplace);
   return view;
 }
 /**
- * Creates a view, builds its DOM.
+ * Creates a view and initialises it.
  *
  * @param {class} cls The class of View to create
  * @param {object} parent The parent view (optional)
@@ -411,12 +410,21 @@ function mount(elementOrId, cls, props, parent) {
  */
 
 function createView(cls, parent, props) {
-  var view = new cls(parent, props);
+  var view = buildView(cls, parent);
+  view.props = props;
+  view.init();
+  view.update();
+  return view;
+}
+/**
+ * Builds a view.
+ */
+
+function buildView(cls, parent) {
+  var view = new cls(parent);
 
   view.__bv(view, cls.prototype);
 
-  view.init();
-  view.update();
   return view;
 }
 /**
@@ -487,8 +495,7 @@ var KeyedCache = /*#__PURE__*/function () {
 
         view.setProps(props);
       } else {
-        view = createView(this.cls, parentView, props); //view.update()
-
+        view = createView(this.cls, parentView, props);
         this.cache[key] = view;
       }
 
@@ -541,8 +548,7 @@ var SequentialCache = /*#__PURE__*/function () {
 
         view.setProps(props);
       } else {
-        view = createView(this.cls, parentView, props); //view.update()
-
+        view = createView(this.cls, parentView, props);
         this.cache.push(view);
       }
 
@@ -734,13 +740,13 @@ var QueryCollection = /*#__PURE__*/function () {
  */
 
 var View = /*#__PURE__*/function () {
-  function View(parent, props) {
+  function View(parent) {
     _classCallCheck(this, View);
 
     var s = this;
     s.parent = parent; // The parent view
 
-    s.props = props; // The props passed to the view. May be changed
+    s.props = undefined; // The props passed to the view. May be changed.
     // Internal state objects
 
     s.__nv = []; // Array of nested views
@@ -760,7 +766,17 @@ var View = /*#__PURE__*/function () {
 
   _createClass(View, [{
     key: "init",
-    value: function init() {}
+    value: function init() {
+      for (var _i = 0, _Object$entries = Object.entries(this.__ip); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+            k = _Object$entries$_i[0],
+            v = _Object$entries$_i[1];
+
+        var view = this.dom[k];
+        view.props = v.apply(this);
+        view.init();
+      }
+    }
   }, {
     key: "trackMounting",
     value: function trackMounting() {
@@ -774,6 +790,8 @@ var View = /*#__PURE__*/function () {
     key: "update",
     value: function update() {
       this.__uw();
+
+      this.__ui();
 
       this.__un();
     }
@@ -797,12 +815,37 @@ var View = /*#__PURE__*/function () {
 
   }, {
     key: "nest",
-    value: function nest(cls) {
-      var child = createView(cls, this, {});
+    value: function nest(cls, props) {
+      var child = createView(cls, this, props);
 
       this.__nv.push(child);
 
       return child;
+    }
+    /**
+     * Nest Internal. For building a nested view declare in the html
+     */
+
+  }, {
+    key: "__ni",
+    value: function __ni(path, cls) {
+      var child = buildView(cls, this);
+
+      this.__gw(path).replace(child.e);
+
+      return child;
+    }
+  }, {
+    key: "__ui",
+    value: function __ui() {
+      for (var _i2 = 0, _Object$entries2 = Object.entries(this.__ip); _i2 < _Object$entries2.length; _i2++) {
+        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+            k = _Object$entries2$_i[0],
+            v = _Object$entries2$_i[1];
+
+        var view = this.dom[k];
+        view.setProps(v.apply(this));
+      }
     }
     /**
      * Was intended as a way to bubble events up the tree. Not sure if needed.
@@ -945,7 +988,7 @@ var View = /*#__PURE__*/function () {
       }
 
       var il = watches.length;
-      var queryCollection = this.queryCollection;
+      var queryCollection = this.__qc;
       queryCollection.reset();
 
       while (i < il) {
@@ -975,18 +1018,22 @@ var View = /*#__PURE__*/function () {
   return View;
 }();
 /**
- * This is used by the generated code.
+ * The global mount tracker.
  */
 
-View.prototype.buildUtils = {
-  getWatch: function getWatch(el, shieldQuery, reverseShield, callbacks) {
+View.prototype.__mt = mountie;
+/**
+ * Build utils used by the generated code.
+ */
+
+View.prototype.__bu = {
+  _wt: function _wt(el, shieldQuery, reverseShield, callbacks) {
     return new Watch(el, shieldQuery, reverseShield, callbacks);
   },
-  getQueryCollection: function getQueryCollection(callbacks) {
+  _qc: function _qc(callbacks) {
     return new QueryCollection(callbacks);
   }
 };
-View.prototype.__mt = mountie;
 
 module.exports = {
   createView: createView,

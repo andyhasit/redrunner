@@ -16,7 +16,6 @@ const defaultKeyFn = _ => 1
  * @data.resources: an object representing load-once resources as name:function
  *   the function will be called with (this) and must return a promise.
  */
-
 export class Router extends View {
   __html__ = '<div/>'
   init() {
@@ -33,6 +32,7 @@ export class Router extends View {
     }
     window.addEventListener('hashchange', e => this._hashChanged())
     window.addEventListener('load', e => this._hashChanged())
+    super.init()
   }
   /*
    */

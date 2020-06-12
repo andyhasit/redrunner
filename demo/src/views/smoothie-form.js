@@ -1,3 +1,4 @@
+const c = console;
 import {View} from 'redrunner'
 import {fruitService} from '../services/fruit'
 import {smoothiesService} from '../services/smoothies'

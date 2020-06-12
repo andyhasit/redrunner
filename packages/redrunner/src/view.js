@@ -91,20 +91,6 @@ export class View {
     return child
   }
   /**
-   * Nest Internal. For building a nested view declare in the html
-   */
-  __ni(path, cls) {
-    const child = buildView(cls, this)
-    this.__gw(path).replace(child.e)
-    return child
-  }
-  __ui() {
-    for (let [k, v] of Object.entries(this.__ip)) {
-      let view = this.dom[k]
-      view.setProps(v.apply(this))
-    }
-  }
-  /**
    * Was intended as a way to bubble events up the tree. Not sure if needed.
    */
   emit(name, args) {
@@ -176,6 +162,23 @@ export class View {
     return new SequentialCache(cls)
   }
   /**
+   * Nest Internal. For building a nested view declare in the html
+   */
+  __ni(path, cls) {
+    const child = buildView(cls, this)
+    this.__gw(path).replace(child.e)
+    return child
+  }
+  /**
+   * Update internal views.
+   */
+  __ui() {
+    for (let [k, v] of Object.entries(this.__ip)) {
+      let view = this.dom[k]
+      view.setProps(v.apply(this))
+    }
+  }
+  /**
    * Update nested views.
    */
   __un() {
@@ -212,12 +215,6 @@ export class View {
       watch.appyCallbacks(this, queryCollection)
       i ++
     }
-  }
-  /**
-   * Replace node at path.
-   */
-  __rn(path, view) {
-    this.__gw(path).replace(view.e)
   }
 }
 

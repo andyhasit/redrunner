@@ -121,6 +121,36 @@ function _createSuper(Derived) {
   };
 }
 
+function _superPropBase(object, property) {
+  while (!Object.prototype.hasOwnProperty.call(object, property)) {
+    object = _getPrototypeOf(object);
+    if (object === null) break;
+  }
+
+  return object;
+}
+
+function _get(target, property, receiver) {
+  if (typeof Reflect !== "undefined" && Reflect.get) {
+    _get = Reflect.get;
+  } else {
+    _get = function _get(target, property, receiver) {
+      var base = _superPropBase(target, property);
+
+      if (!base) return;
+      var desc = Object.getOwnPropertyDescriptor(base, property);
+
+      if (desc.get) {
+        return desc.get.call(receiver);
+      }
+
+      return desc.value;
+    };
+  }
+
+  return _get(target, property, receiver || target);
+}
+
 function _slicedToArray(arr, i) {
   return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
 }
@@ -247,6 +277,8 @@ var Router = /*#__PURE__*/function (_View) {
       window.addEventListener('load', function (e) {
         return _this._hashChanged();
       });
+
+      _get(_getPrototypeOf(Router.prototype), "init", this).call(this);
     }
     /*
      */
@@ -357,9 +389,14 @@ var Router = /*#__PURE__*/function (_View) {
  * value is passed as data to the view. routeData is {args, params, url}
  */
 
-Router.prototype.__ht = '<div></div>';
+var _RouterPrototype = Router.prototype;
+var __bu__ = _RouterPrototype.__bu;
+_RouterPrototype.__ht = '<div></div>';
+_RouterPrototype.__wc = [];
+_RouterPrototype.__qc = __bu__._qc({});
+_RouterPrototype.__ip = {};
 
-Router.prototype.__bv = function (view, prototype) {
+_RouterPrototype.__bv = function (view, prototype) {
   view.__bd(prototype, false);
 
   view.dom = {};
