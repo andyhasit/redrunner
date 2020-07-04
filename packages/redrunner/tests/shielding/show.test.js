@@ -18,7 +18,7 @@ const props = {
 }
 
 
-test("Hide masks", () => {
+test("Show masks", () => {
   const div = load(TestView, props)
   expect(div).toShow(`
   	<div>

@@ -1,3 +1,4 @@
+const c = console;
 import {KeyedCache, SequentialCache} from './viewcache'
 import {buildView, createView} from  './utils'
 import {und, makeEl} from './helpers'
@@ -7,13 +8,11 @@ import {Watch} from './watch'
 import {QueryCollection} from './querycollection'
 
 
-const c = console;
 /*
  * Public members:
  *
  *  e       -- the root element
  *  nest    -- create a nested view
- *  debug   -- prints out debug info
  *  dom     -- an object containing all the saved wrappers
  *  emit    -- emit an event to be handled by a parent views
  *  handle  -- register a function to handle an event emitted by a nested view
@@ -222,7 +221,6 @@ export class View {
  * The global mount tracker.
  */
 View.prototype.__mt = mountie
-
 
 /**
  * Build utils used by the generated code.

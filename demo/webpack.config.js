@@ -11,20 +11,23 @@ module.exports = {
   devServer: {
     contentBase: './',
   },
-	module: {
-		rules: [{
-			test: /\.js?$/,
-			exclude: /node_modules/,
-			use: [
-				{
-					loader: 'babel-loader',
-					options: {
+  module: {
+    rules: [{
+      test: /\.js?$/,
+      exclude: /node_modules/,
+      use: [
+        {
+          loader: 'babel-loader',
+          options: {
             sourceMaps: true,
-						presets: ['@babel/preset-env'],
-						plugins: ['babel-plugin-redrunner', '@babel/plugin-proposal-class-properties'],
-					}
-				}
-			]
-		}]
-	}
+            presets: ['@babel/preset-env'],
+            plugins: [
+              'babel-plugin-redrunner',
+              '@babel/plugin-proposal-class-properties'
+            ],
+          }
+        }
+      ]
+    }]
+  }
 };

@@ -17,19 +17,10 @@
     "rebuild-redrunner": "cd ../packages/redrunner && npm run build && cd - && npm run copy-redrunner",
     "rebuild-plugin": " npm run copy-plugin",
     "rebuild-router": "cd ../packages/redrunner-router && npm run build && cd - && npm run copy-router",
-    "start": "webpack-dev-server --open",
+    "start": "webpack-dev-server --host 0.0.0.0",
     "watch": "webpack --watch"
   },
   "author": "Andrew Buchan",
-  "babel": {
-    "presets": [
-      "@babel/preset-env"
-    ],
-    "plugins": [
-      "babel-plugin-redrunner",
-      "@babel/plugin-proposal-class-properties"
-    ]
-  },
   "devDependencies": {
     "@babel/core": "^7.7.4",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
