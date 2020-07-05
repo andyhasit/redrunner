@@ -9,7 +9,7 @@ export class LandingPage extends View {
       <h3>A RedRunner demo app</h3>
       <hr/>
       <div class="splash-wrapper">
-        <span class="homepage-logo":as="logo"/>
+        <span class="homepage-logo" :as="logo"/>
       </div>
       <a class="button" href="#/smoothies">Enter</a>
     </div>

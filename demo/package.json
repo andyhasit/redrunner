@@ -2,8 +2,10 @@
   "name": "redrunner-demo",
   "version": "0.0.1",
   "description": "A demo app for RedRunner",
+  "author": "Andrew Buchan",
+  "private": "true",
   "scripts": {
-    "build": "webpack -p",
+    "build-prod": "webpack -p",
     "build-dev": "webpack -d",
     "copy-all": "npm run copy-plugin && npm run copy-redrunner && npm run copy-router",
     "copy-plugin": "cp -r ../packages/babel-plugin-redrunner/lib/* node_modules/babel-plugin-redrunner/lib",
@@ -20,15 +22,14 @@
     "start": "webpack-dev-server --host 0.0.0.0",
     "watch": "webpack --watch"
   },
-  "author": "Andrew Buchan",
   "devDependencies": {
     "@babel/core": "^7.7.4",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/preset-env": "^7.7.4",
     "babel-loader": "^8.0.6",
-    "babel-plugin-redrunner": "0.2.0",
-    "redrunner": "0.2.0",
-    "redrunner-router": "^0.2.0",
+    "babel-plugin-redrunner": "*",
+    "redrunner": "*",
+    "redrunner-router": "*",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.9.0"

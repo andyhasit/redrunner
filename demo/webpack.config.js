@@ -1,15 +1,17 @@
 const path = require('path');
 const webpack = require('webpack');
 
-module.exports = {
-  mode: 'development',
+const presets = [];
+
+const baseConfig = {
   entry: './src/main.js',
+  devtool: 'eval-cheap-source-map',
+  devServer: {
+    contentBase: './',
+  },
   output: {
     filename: 'main.js',
     path: path.resolve(__dirname, 'dist'),
-  },
-  devServer: {
-    contentBase: './',
   },
   module: {
     rules: [{
@@ -19,8 +21,7 @@ module.exports = {
         {
           loader: 'babel-loader',
           options: {
-            sourceMaps: true,
-            presets: ['@babel/preset-env'],
+            presets: presets,
             plugins: [
               'babel-plugin-redrunner',
               '@babel/plugin-proposal-class-properties'
@@ -31,3 +32,18 @@ module.exports = {
     }]
   }
 };
+
+
+module.exports =  function(env, argv) {
+  // For some reason env is undefined, so use argv.mode
+  const mode = argv.mode;
+  baseConfig.mode = mode;
+  if (mode == 'production') {
+    presets.push('@babel/preset-env');
+    console.log("MODE=development... Using preset @babel/preset-env.");
+  } else {
+    console.log("MODE=development... Not using any presets.");
+  }
+  // console.log(baseConfig.module.rules[0].use[0])
+  return baseConfig
+}
