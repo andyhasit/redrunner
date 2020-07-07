@@ -36,10 +36,6 @@ class DomWalker {
     walkNode(this.dom)
   }
   /**
-   * Returns a short variable name guaranteed to be unique within the view.
-   */
-
-  /**
    * Exit with an error.
    * TODO: flesh this out to print more useful info.
    */

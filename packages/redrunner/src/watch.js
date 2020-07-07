@@ -3,19 +3,19 @@
  * Represents a watch on an element.
  */
 export class Watch {
-  constructor(el, shieldQuery, reverseShield, callbacks) {
+  constructor(el, shieldQuery, reverseShield, shieldCount, callbacks) {
     this.el = el                         // The name of the saved element.
     this.shieldQuery = shieldQuery       // The shield query key -
     this.reverseShield = reverseShield   // whether shieldQuery should be flipped
+    this.shieldCount = shieldCount       // The number of items to shield
     this.callbacks = callbacks           // Callbacks - object
-    this.blockCount = 1
   }
   shieldFor(view, watch, queryCache) {
     if (this.shieldQuery) {
       const {n} = queryCache.get(view, this.shieldQuery)
       const visible = this.reverseShield? n : !n
       view.dom[watch.el].visible(visible)
-      return visible ? 0: this.blockCount
+      return visible ? 0 : this.shieldCount
     }
     return 0
   }

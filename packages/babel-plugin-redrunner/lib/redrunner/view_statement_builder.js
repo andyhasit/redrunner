@@ -44,8 +44,7 @@ class ViewStatementBuilder {
     this.clone = viewData.clone
     this.config = viewData.config
     this.nextElementRefIndex = 0
-
-    // This is the variable to which the build utils object is added
+    this.savedWatchCallArgs = []
 
     // These are used in the buildMethod
     this.savedElements = new ObjectStatement()
@@ -86,6 +85,7 @@ class ViewStatementBuilder {
 	 * Consolidates various bits after parsing.
 	 */
 	postParsing() {
+    this.setShieldCounts()
 		this.buildMethod.add(`view.__bd(prototype, ${this.clone})`)
 		this.beforeSave.forEach(i => this.buildMethod.add(i))
 		this.buildMethod.add(this.savedElements.buildAssign('view.dom'))
@@ -93,6 +93,36 @@ class ViewStatementBuilder {
 		// We do this at the end as the dom has been changed
 		this.htmlString.set(`'${stripHtml(this.walker.dom.toString())}'`)
 	}
+  /**
+   * Sets the shieldCounts, which has to be done after parsing as nodes
+   * can't know how many child nodes they will have at point of being
+   * parsed.
+   */
+  setShieldCounts() {
+    /*
+    Loop over each and determine from path whether wrapper is a a child, in which case
+    all parents get bumped up.
+    Farm this out to a function which takes
+
+    this.savedWatchCallArgs.map(i => i.nodePath)
+
+    and returns array of shieldCounts to apply,
+    which we then set as the
+
+    // [0, 0, 0]
+
+    */
+    const shieldCountArgIndex = 3
+    c.log(this.savedWatchCallArgs)
+  }
+  /**
+   * Saves the watchCallArgs against the nodePath, which well use in watchCallArgs
+   */
+  saveWatchCallArgs(nodePath, watchCallArgs) {
+    // The first element is undefined, which we don't need here.
+    nodePath = nodePath.slice(1)
+    this.savedWatchCallArgs.push({nodePath, watchCallArgs})
+  }
   /**
    * Gets passed to the DomWalker, which calls this for every node.
    */
@@ -112,12 +142,13 @@ class ViewStatementBuilder {
       }
 
       // Ensure the shieldQuery gets added
+      // This is the query to determine whether the wrappers should shield
+      // nested wrappers
       if (shieldQuery) {
         this.addWatchQueryCallback(shieldQuery)
       }
       // Use the shieldQuery supplied, undefined (must set as string here)
       shieldQuery = shieldQuery ? `'${shieldQuery}'` : 'undefined'
-
 
       // Squash array to object
       watches = groupArray(watches, 'property', watch => {
@@ -126,19 +157,30 @@ class ViewStatementBuilder {
       })
 
       // Group statements into single function
-      let allCallbacks = new ObjectStatement()
+      const allCallbacks = new ObjectStatement()
       for (let [property, statements] of Object.entries(watches)) {
       	this.addWatchQueryCallback(property)
       	let callback = new FunctionStatement('n, o')
       	statements.forEach(s => callback.add(s))
         allCallbacks.add(property, callback)
       }
-      let watchCall = new CallStatement(`${vars.buildUtils}.${vars.getWatch}` , [
-      	`'${saveAs}'`,
-      	shieldQuery,
+
+      // shieldCount is the number of wrappers to shield, which will equate to the
+      // number of wrappers nested underneath, which we have to calculate postParsing
+      // so we just set it to 0 for now.
+      const shieldCount = 0
+      const watchCallArgs = [
+        `'${saveAs}'`,
+        shieldQuery,
         reverseShield.toString(),
-      	allCallbacks
-      ])
+        shieldCount,  // shieldCount is at position 3 - if this changes we must change setShieldCounts!
+        allCallbacks
+      ]
+      // We save this as we're going to need it postParsing to set the shieldCount
+      // Must slice the nodePath!
+      this.saveWatchCallArgs(nodePath.slice(), watchCallArgs)
+
+      const watchCall = new CallStatement(`${vars.buildUtils}.${vars.getWatch}`, watchCallArgs)
       this.watches.add(watchCall)
     } else if (isNestedView(nodeInfo)) {
       this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, view.nest(${tagName}));`)

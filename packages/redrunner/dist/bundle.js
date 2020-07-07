@@ -600,7 +600,7 @@ var mountie = {
  * Represents a watch on an element.
  */
 var Watch = /*#__PURE__*/function () {
-  function Watch(el, shieldQuery, reverseShield, callbacks) {
+  function Watch(el, shieldQuery, reverseShield, shieldCount, callbacks) {
     _classCallCheck(this, Watch);
 
     this.el = el; // The name of the saved element.
@@ -609,9 +609,9 @@ var Watch = /*#__PURE__*/function () {
 
     this.reverseShield = reverseShield; // whether shieldQuery should be flipped
 
-    this.callbacks = callbacks; // Callbacks - object
+    this.shieldCount = shieldCount; // The number of items to shield
 
-    this.blockCount = 1;
+    this.callbacks = callbacks; // Callbacks - object
   }
 
   _createClass(Watch, [{
@@ -623,7 +623,7 @@ var Watch = /*#__PURE__*/function () {
 
         var visible = this.reverseShield ? n : !n;
         view.dom[watch.el].visible(visible);
-        return visible ? 0 : this.blockCount;
+        return visible ? 0 : this.shieldCount;
       }
 
       return 0;
@@ -715,7 +715,6 @@ var QueryCollection = /*#__PURE__*/function () {
  *
  *  e       -- the root element
  *  nest    -- create a nested view
- *  debug   -- prints out debug info
  *  dom     -- an object containing all the saved wrappers
  *  emit    -- emit an event to be handled by a parent views
  *  handle  -- register a function to handle an event emitted by a nested view
@@ -823,31 +822,6 @@ var View = /*#__PURE__*/function () {
       return child;
     }
     /**
-     * Nest Internal. For building a nested view declare in the html
-     */
-
-  }, {
-    key: "__ni",
-    value: function __ni(path, cls) {
-      var child = buildView(cls, this);
-
-      this.__gw(path).replace(child.e);
-
-      return child;
-    }
-  }, {
-    key: "__ui",
-    value: function __ui() {
-      for (var _i2 = 0, _Object$entries2 = Object.entries(this.__ip); _i2 < _Object$entries2.length; _i2++) {
-        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
-            k = _Object$entries2$_i[0],
-            v = _Object$entries2$_i[1];
-
-        var view = this.dom[k];
-        view.setProps(v.apply(this));
-      }
-    }
-    /**
      * Was intended as a way to bubble events up the tree. Not sure if needed.
      */
 
@@ -879,6 +853,7 @@ var View = /*#__PURE__*/function () {
      * Sets the props and updates the view.
      * @props -- new props, else it keeps its old (which is fine)
      */
+    //TODO: rename to not camel case.
 
   }, {
     key: "setProps",
@@ -953,6 +928,35 @@ var View = /*#__PURE__*/function () {
       return new SequentialCache(cls);
     }
     /**
+     * Nest Internal. For building a nested view declare in the html
+     */
+
+  }, {
+    key: "__ni",
+    value: function __ni(path, cls) {
+      var child = buildView(cls, this);
+
+      this.__gw(path).replace(child.e);
+
+      return child;
+    }
+    /**
+     * Update internal views.
+     */
+
+  }, {
+    key: "__ui",
+    value: function __ui() {
+      for (var _i2 = 0, _Object$entries2 = Object.entries(this.__ip); _i2 < _Object$entries2.length; _i2++) {
+        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+            k = _Object$entries2$_i[0],
+            v = _Object$entries2$_i[1];
+
+        var view = this.dom[k];
+        view.setProps(v.apply(this));
+      }
+    }
+    /**
      * Update nested views.
      */
 
@@ -1004,15 +1008,6 @@ var View = /*#__PURE__*/function () {
         i++;
       }
     }
-    /**
-     * Replace node at path.
-     */
-
-  }, {
-    key: "__rn",
-    value: function __rn(path, view) {
-      this.__gw(path).replace(view.e);
-    }
   }]);
 
   return View;
@@ -1027,8 +1022,8 @@ View.prototype.__mt = mountie;
  */
 
 View.prototype.__bu = {
-  _wt: function _wt(el, shieldQuery, reverseShield, callbacks) {
-    return new Watch(el, shieldQuery, reverseShield, callbacks);
+  _wt: function _wt(el, shieldQuery, reverseShield, shieldCount, callbacks) {
+    return new Watch(el, shieldQuery, reverseShield, shieldCount, callbacks);
   },
   _qc: function _qc(callbacks) {
     return new QueryCollection(callbacks);

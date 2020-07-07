@@ -112,6 +112,7 @@ export class View {
    * Sets the props and updates the view.
    * @props -- new props, else it keeps its old (which is fine)
    */
+  //TODO: rename to not camel case.
   setProps(props) {
     this.props = props
     this.update()
@@ -226,8 +227,8 @@ View.prototype.__mt = mountie
  * Build utils used by the generated code.
  */
 View.prototype.__bu = {
-  _wt: function(el, shieldQuery, reverseShield, callbacks) {
-    return new Watch(el, shieldQuery, reverseShield, callbacks)
+  _wt: function(el, shieldQuery, reverseShield, shieldCount, callbacks) {
+    return new Watch(el, shieldQuery, reverseShield, shieldCount, callbacks)
   },
   _qc: function(callbacks) {
     return new QueryCollection(callbacks)

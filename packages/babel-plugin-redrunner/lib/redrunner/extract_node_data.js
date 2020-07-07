@@ -27,7 +27,6 @@ function extractNodeData(node, config) {
 	}
 
 	// Process event attributes
-
   const remainingAtts = extractAtts(node)
   if (remainingAtts) {
 	  for (let [key, value] of Object.entries(remainingAtts)) {
@@ -44,6 +43,7 @@ function extractNodeData(node, config) {
 	  	}
 	  }
 	}
+
 	return hasData ? nodeData : undefined
 }
 
