@@ -2,10 +2,10 @@ const path = require('path');
 const webpack = require('webpack');
 
 const presets = [];
+const productionPreset = '@babel/preset-env';
 
 const baseConfig = {
   entry: './src/main.js',
-  devtool: 'eval-cheap-source-map',
   devServer: {
     contentBase: './',
   },
@@ -39,10 +39,11 @@ module.exports =  function(env, argv) {
   const mode = argv.mode;
   baseConfig.mode = mode;
   if (mode == 'production') {
-    presets.push('@babel/preset-env');
+    presets.push(productionPreset);
     console.log("MODE=development... Using preset @babel/preset-env.");
   } else {
     console.log("MODE=development... Not using any presets.");
+    baseConfig['devtool'] = 'eval-cheap-source-map'
   }
   // console.log(baseConfig.module.rules[0].use[0])
   return baseConfig
