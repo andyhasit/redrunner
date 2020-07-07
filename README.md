@@ -1,24 +1,73 @@
 # RedRunner
 
-A tiny progressive frontend framework.
+A small JavaScript framework with legs.
 
-#### Update May 2020
+## 1. Overview
 
-RedRunner works (experimentally) and looks very promising, but is in alpha mode, so anything could change.
+RedRunner is a JavaScript framework for building dynamic pages and apps.
 
-To see how it works, look at the **tests** and **demos** (user guide coming soon).
+It is component-based (like [React](https://reactjs.org/) or [Vue](https://vuejs.org/)) and heavily compiled (like [Svelte](https://svelte.dev/)) however it works quite differently to all of those. 
+
+Here are some of its features:
 
 #### Performance
 
-I've been testing performance using [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) and it measures up pretty well. 
+RedRunner is *very* fast: local testing with [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) puts it ahead of most other major frameworks on almost all benchmarks (some exceptions, and all still to be officially confirmed). 
 
-It is faster than React in all but one test, the bundles are *much*\* smaller, and the code looks nicer too. 
+#### Size
 
-I'm yet to raise a PR on there to add RedRunner, just been testing it locally to date.
+RedRunner itself is just *2.86kB* gzipped, but what really matters is bundle size.
 
-\* The same benchmark app is 4.8K compared to 39K (both gzipped).
+The sample app for [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) comes out at *4.8kB* compared to *39kB* for React (both sizes gzipped).
 
-## Installation
+#### Clarity
+
+RedRunner doesn't use *logic* in the HTML, only simple statements, meaning your HTML remains a clean visual representation of your the DOM structure (as it should be). 
+
+You can also keep CSS out of your HTML in case you're using a library which puts long lists of class names in your tags rather than a specific class (which necessarily isn't a bad thing, see [tailwindcss](https://tailwindcss.com/)).
+
+#### Control
+
+You can take progressively more control of several aspects of any view, including:
+
+* Detecting data change.
+* Deciding whether to update the DOM (far more granular than `shouldComponentUpdate`).
+* Deciding whether to do the calculations before you even get to that point.
+* DOM reuse strategies.
+* The actual DOM updates (using wrappers, which have very neat syntax trick).
+
+You mostly use this for quick and easy performance improvements, or to get out of tight spots.
+
+#### Power
+
+When you get really stuck in a framework, sometimes the only viable option is to step out of it and manipulate the DOM directly. But that is sometimes risky and always ugly.
+
+If you need to step out of RedRunner then it makes sense to use the wrappers for DOM manipulation, as they're already there and nice to work with. And if you're responding to data changes then you might as well tap into the view's existing mechanism as its easy. And if you're reusing DOM, then the same cache classes used by RedRunner are just the tool you need.
+
+Its also very clear which DOM elements are controlled by RedRunner and which aren't, so you can do your changes safely side by side. You can even inter-mesh (e.g. your code sets the element's visibility but use RedRunner for it's value) without risk.
+
+And of course, you'll be familiar with these elements control long before you reach this point from all those times you wanted a little bit more control.
+
+In fact, it may be hard to tell from your code whether you stepped out of the framework and landed back in it, or whether you stayed in the framework but took progressively more control. Maybe they're the same thing?
+
+## 2. Demo
+
+There is currently just one demo app, which you can run like so:
+
+```
+cd demo
+npm i
+npm run start
+```
+
+You can also run these to inspect the output and bundle sizes:
+
+```
+npm run build-dev
+npm run build-prod
+```
+
+## 3. Installation
 
 #### Quick start
 
@@ -47,21 +96,22 @@ The `babel-plugin-redrunner` transforms parts of your code and is required for R
 
 #### Bundling
 
-I recommend using [webpack](https://webpack.js.org/) as it gives you full control over source maps which are necessary for development, whereas I found [parcel](https://parceljs.org/) more problematic in this regard.
+I recommend using [webpack](https://webpack.js.org/) instead of alternatives as it gives you better control over source maps, which really helps for development.
 
 #### Source maps
 
 The babel plugin replaces each view's `__html__` field with generated code, and debugging is a lot easier if you can see that generated code.
 
-With webpack you can set the config's `devtools` to something like `'eval-cheap-source-map'` which makes the source maps show the *transformed* code, but preserves the module separation which is nice. You can find more details and options [here](https://webpack.js.org/configuration/devtool/).
+With webpack you can set the config's `devtools` to something like `'eval-cheap-source-map'` which makes the source maps show the *transformed* code, but preserves the module separation which is nice. However this will include *all* transformations, so if you're transpiling to ES5 (which you probably do using a preset) then it will make it harder to track your own code.
 
-However this will include *all* transformations, so assuming you have a babel preset then you will see the resulting ES5 output of your code, which isn't pretty.
+One solution is not transpile to ES5 during development, meaning the only transformations you'll see are RedRunner's, which makes debugging a lot nicer.
 
-One solution is not use the preset for development, meaning the only transformations are RedRunner's, which makes debugging a lot nicer. 
+The [demo's webpack.config.js](https://github.com/andyhasit/redrunner/tree/demo/webpack.config.js) file shows one way to achieve this. 
 
-The [demo's webpack.config.js](https://github.com/andyhasit/redrunner/tree/demo/webpack.config.js) file shows one way to achieve this.
+You can read more about webpack's devtools option [here](https://webpack.js.org/configuration/devtool/).
 
-## User Guide
+
+## 4. User Guide
 
 A more complete tutorial is on its way. Until then you can:
 
@@ -69,11 +119,11 @@ A more complete tutorial is on its way. Until then you can:
 * Study the unit tests [here](https://github.com/andyhasit/redrunner/tree/packages/redrunner/tests)
 * Read the overview given in this section...
 
-### Basics
+### 4.1 Basics
 
-RedRunner is used in a similar way to React and VueJs - you create your app from components (called Views) which each control their own section of the DOM. Aside from a basic HTML skeleton with anchor points on which to mount views, everything else is done in pure JavaScript modules.
+RedRunner is used in a similar way to React and Vue: you create your app from components (called Views) which each control their own section of the DOM. Aside from a basic HTML skeleton with anchor points on which to mount views, everything else is done in pure JavaScript modules.
 
-Here is what the `<body>` tag of the demo's only .html file looks like: 
+Here is what the `<body>` tag of the demo's only html file looks like: 
 
 ```html
 <body>
@@ -83,9 +133,11 @@ Here is what the `<body>` tag of the demo's only .html file looks like:
 </body>
 ```
 
-### Views
+### 4.2 Views
 
-A view is an object which controls a section of the DOM. Views can contain nested views, forming a tree which will mirror the broad structure of the page.
+A view is an object which controls a section of the DOM. Views can contain nested views, forming a tree which will mirror the broad structure of the page. 
+
+Views are the only building blocks which RedRunner supplies - there are no controllers, widgets, services or other gimmicks (but views have internal parts which you can work with).
 
 You define a view by extending the `View` class:
 
@@ -95,24 +147,23 @@ import {View} from 'redrunner'
 class MyView extends View {
   __html__ = `
     <div>
-      <h1>Hello RedRunner</h1>
+      <h1>Hello {{name}}</h1>
     </div>
   `
 }
 ```
 
-> The `__html__` field gets converted into special code by the plugin, which includes code to build the DOM when an instance is requested.
->
+The main focus is the `__html__` field, but you will also write methods, either to hook into life-cycle events or for custom functionality.
 
-Run your file through babel with the above mentioned plugins to see the generated code (it will be hard to follow initially as it interacts with code hidden in the framework, but at least you can see what gets added).
+### 4.3 The \_\_html\_\_ field
 
-Views are the only building blocks which RedRunner supplies - there are no controllers, widgets, services or other gimmicks (but views have internal parts which you can take control of if needed).
+The `__html__` field gets converted into code by RedRunner's babel-plugin (`babel-plugin-redrunner`). The generated code is added to the prototype of your view class, and interacts with methods defined in the base `View` class to build the DOM and update it when things change etc...
 
-Views also have several methods and hooks which we'll explore later.
+The plugin also removes the `__html__` field from the class (except in development mode as it helps with debugging). Given that `__html__` won't exist at run time `${template_literals}` are no use.
 
-### Mounting
+### 4.4 Mounting
 
-A view instance can be mounted to the DOM using the `mount` function, which accepts an DOM node (or a jQuery like id string), a view class, and optionally data to pass as props.
+A view instance can be mounted to the DOM using the `mount` function, which accepts a DOM node (or a jQuery like id string), a view class, and optionally data to pass as props.
 
 ```javascript
 import {mount} from 'redrunner'
@@ -137,7 +188,7 @@ The 3 code snippets above combine to produce this:
 
 Not very impressive, so lets add some dynamic content.
 
-### Inline directives
+### 4.5 Inline directives
 
 RedRunner has several ways of making content dynamic the simplest of which is an inline directive. Inline directives uses curly braces and are placed in the `__html__` field:
 
@@ -181,6 +232,8 @@ class UserProfile extends View {
 ```
 
 > The `init()` method gets called after the view is built and has been given its props, here we are just using it to set the field `fullName` on the view instance.
+>
+> Note that setting a field during `init()` is generally bad practice as it introduces state, which we'll cover later.
 
 You can also prefix a field with `..` which tells RedRunner to look for it in the global (module) scope:
 
@@ -210,9 +263,17 @@ class UserProfile extends View {
 }
 ```
 
-This implementation will update its DOM when the props change, whereas the previous one which set `fullName` in the `init()` method won't, because `init()` only gets called one.
+> This implementation will update its DOM when the props change, whereas the previous one which set `fullName` in the `init()` method won't - because `init()` only gets called once on each view instance.
+>
+> It is important to remember that you will likely reuse the same view instances, and therefore should not be saving data as state.
 
-### Updates
+And of course you can place inline directives in attributes too:
+
+```html
+<div class="{{.getCssClass?}}">Hello {{.fullName?}}</div>
+```
+
+### 4.6 Updates
 
 To update a view after props have changed, you must call its `update()` method:
 
@@ -228,9 +289,21 @@ If you come from an [Angular](https://angular.io/) background this might feel ra
 
 Having said that, in most apps you simply update the top level component after every data change, and as `update()` cascades down to nested views it all feels very automatic.
 
-If you come from a [React](https://reactjs.org/) background this will feel familiar, except that you can call `update()` without arguments. RedRunner views store a reference to their props, which they retain until you pass new props, and this is something you need to be aware of.
+If you come from a [React](https://reactjs.org/) background this will feel familiar, except that you can call `update()` without arguments. RedRunner views store a reference to their props, which they retain until you pass new props. 
 
-### Transformers
+RedRunner doesn't enforce statelessness as stringently as React. In most cases you should make your views stateless and not think any further on it, but RedRunner is designed to facilitate serious performance optimisations, the likes of which can only achieved by tracking state (mostly view caches) and then you do need to keep track of things.
+
+One thing to note is that RedRunner won't touch the DOM if the values are the same:
+
+```javascript
+const props = {firstName: 'Jane', lastName: 'Doe'}
+const view = mount('#main', UserProfile, props)
+const newProps = {firstName: 'Jane', lastName: 'Doe'}
+view.update(newProps)
+// DOM stays untouched as the values are the same, even if the props object is different.
+```
+
+### 4.7 Transformers
 
 Inline directives can take a second argument to transform the data before it hits the DOM:
 
@@ -247,7 +320,31 @@ class UserProfile extends View {
 }
 ```
 
-The same rule for **prefixes** and **suffixes** apply. The function actually gets called with old and new value, which means you can do things like this:
+The same rule for **prefixes** and **suffixes** apply, which is why we need the `?` to ensure `capitalise` is read as a function and not a field. Why you might want do use a field will become apparent later, for now just remember the same syntax applies to both arguments.
+
+A transformer function actually gets called with new *and* old value, which means you can do things like this:
+
+```javascript
+class FriendsTracker extends View {
+  __html__ = `<div>{{friends.length|.showFriendCount?}}</div>`
+  showFriendCount(n, o) {
+    return `${n} friends (previously: ${o})`
+  }
+}
+```
+
+> Notice how we can access nested properties like `friends.length`
+>
+
+As with a single argument directive, nothing happens if the value hasn't changed. In fact `showFriendCount()` doesn't even get called if `friends.length` hasn't changed. This functionality is achieved by using *watchers*.
+
+### 4.8 Watchers
+
+A view creates a *watcher* for each distinct value used in the directives. 
+
+A watcher is a simple object with a target (the field or function with the value) and an array of callbacks. When you call `update()` on a view it goes through the watchers and gets the target's new value. If that new differs from the old value, the callbacks are called.
+
+Lets see how this works:
 
 ```javascript
 const capitalise = (s) => s.charAt(0).toUpperCase() + s.slice(1)
@@ -255,373 +352,445 @@ const capitalise = (s) => s.charAt(0).toUpperCase() + s.slice(1)
 class UserProfile extends View {
   __html__ = `
     <ul>
-     <li>{{firstName|..capitalise?}}</li>
-     <li>{{lastName|..capitalise?}}</li>
+     <li>{{.fullName?}}</li>
+     <li>{{.fullName?|..capitalise?}}</li>
     </ul>
+  `
+  fullName() {
+    return `${this.props.firstName} ${this.props.lastName}`
+  }
+}
+```
+
+The above view will only create *one* watcher which targets `.fullName?` and has two callbacks, one for each `<li>` element. During `update()` it will call `view.fullName()` *once* and if that has changed it then calls the callbacks.
+
+The first callback uses the value of `fullName` directly, the second runs it through the `capitalise()`. Note that the transformer won't get called if the value hasn't changed.
+
+This is another point of difference compared to React:
+
+- React performs all the data manipulations, and then patches the parts of the DOM which have changed. 
+- RedRunner checks to see if the relevant data has changes data before doing manipulations, which makes it a lot more efficient, and that's before we even get into heavy performance optimisation.
+
+### 4.9 Transformers II
+
+A transformer function doesn't have to make use of the *new* and *old* arguments provided - it can return any value based on whatever it like. Let's modify our FriendTracker:
+
+```javascript
+class FriendsTracker extends View {
+  __html__ = `
+    <div>
+      <div>{{friends.length|.showFriendCount?}}</div>
+      <div>{{friends.length|.showFriendNames?}}</div>
+    </div>
+  `
+  showFriendCount() {
+    return `Your have ${this.props.friends.length} friends.`
+  }
+  showFriendNames() {
+    const names = this.props.friends.map(f => f.name).join()
+    return `Your friends are: ${names}`
+  }
+}
+```
+
+In this arrangement `friends.length` merely acts as a test to determine whether to call `showFriendNames()` and update the DOM.
+
+Just to recap, inline directives can be used in the following ways:
+
+```html
+<div>{{valueToWatchAndDisplay}}</div>
+<div>{{valueToWatch|tranformationValueForDisplay}}</div>
+<div>{{valueToWatch|valueToDisplay}}</div>
+```
+
+### 4.10 Always update
+
+There's a flaw in our latest FriendsTracker: if we lose one friend but gain a new one, then when we update the view `friends.length` will be the same as before, meaning `showFriendNames()` wouldn't get called and the names would not be updated.
+
+So we need a better way to determine if the list of friends has changed. We would normally be using nested views to display repeat elements, so we'll cover this later. In the meantime we'll just tell a directive to always update using the `*` symbol:
+
+```html
+<div>{{*|.showFriendNames?}}</div>   <!-- Rebuilds on every update -->
+```
+
+This is extremely useful during prototyping.
+
+### 4.11 Never update
+
+We can also leave the first argument empty, which means build only once:
+
+```html
+so <div>{{*|.showFriendNames?}}</div>   <!-- Builds once and never changes -->
+```
+
+This is useful for static components built with variables, e.g. buttons.
+
+### 4.12 Inline gotchas
+
+There are two gotcha with inline directives inside of tags
+
+##### You can only have one
+
+You can't use more than one inline in the text area of a single element:
+
+```html
+<!-- This will fail -->
+<div>Hello {{firstName}} {{lastName}}</div>  
+```
+
+You could use spans, but this is ugly:
+
+```html
+<!-- This is ugly -->
+<div>
+    Hello <span>{{firstName}}</span> <span>{{firstName}}</span>
+</div>
+```
+
+The better solution is to have the full text generated by a function which builds the full text.
+
+```html
+<!-- This is best -->
+<div>{{.greeting?}}</div>
+```
+
+##### Must be a leaf node
+
+Inline directives will overwrite the textContents of the element it resides in, in this case, this div:
+
+```html
+<!-- This will delete the <strong> element -->
+<div>
+    <strong>Hello</strong> {{firstName}}
+</div>
+```
+
+Note that these only apply to inline directives which set the inner contents of an element. Inline directives for attributes are not affected.
+
+```html
+<!-- This is perfectly fine -->
+<div id="{{myId}}" class="{{outterCss}}">
+    <span class="{{innerCss}}">Hello {{firstName}}</span>
+</div>
+```
+
+And that covers everything you need to know about inline directives.
+
+### 4.13 Standard directives
+
+Standard directives are instructions to the plugin's code generating mechanism. 
+
+##### Just HTML attributes
+
+We write standard directives as HTML attributes in the view's `__html__` field (they will be stripped out by the plugin so you won't see them on the page). The built in directives all start with `:` but you can change this (and even define your own).
+
+##### Example
+
+This code:
+
+```javascript
+class Basket extends View {
+  __html__ = `
+    <div>
+      <div>£{{basketTotal}}</div>
+      <button :on="click|.update?">Refresh</button>
+      <ul :items="*|basketContents|BasketItem"></ul>
+    </div>
+  `
+}
+
+class BasketItem extends View {
+  __html__ = `
+    <li>
+      <span>{{name}}</span>
+      <span>{{price}}</span>
+    </li>
   `
 }
 ```
 
+Would yield something like this:
 
-
-
-
-
-setTimeout(() => view.update(), 3000);
-
-(don't worry, it cascades down to nested views so )
-
-
-
-
-
-This implementation of `UserProfile` has the advantage over the previous one which set `fullName` in the `init()` method, as `init()` only gets called once so `fullName` would never change even if the props changed.
-
-
-
-only gets called once, soon't be updated if the props change. Lets fix this by making it a function instead:
-
-
-
-The suffix `?` in the directive `{{.fullName?}}` tells RedRunner to call this as a function. Let update the props to see this working. Add this after the call to `mount()`:
-
-```javascript
-props.firstName = 'John'
-setTimeout(() => view.update(), 3000);
+```html
+<div>
+  <div>£2.15</div>
+  <button>Refresh</button>
+  <ul>
+    <li>
+      <span>Bread</span>
+      <span>£1.15</span>
+    </li>
+    <li>
+      <span>Bananas</span>
+      <span>£1.00</span>
+    </li>
+  </ul>
+</div>
 ```
 
-Notice how nothing changes until `view.update()` gets called. 
+##### The :watch directive
 
-RedRunner has no magic data binding or special watched arrays: everything is mechanical and predictable which means less goes wrong. Don't worry, you typically only call `update()` on top level view after data changes, which cascades the call down to nested views, so it feels very automatic.
+The most important directive to understand is **:watch** which you would use like so:
 
+```html
+<div :watch="friends.length|.showFriendCount?|text"></div>
+```
 
+This does the exact same thing as this inline directive we used earlier:
 
+```html
+<div>{{friends.length|.showFriendCount?}}</div>
+```
 
+In fact the babel plugin will generate the *exact* same code for both of the above, so you could say inline directives are just a shorthand way of creating **:watch** directives. 
 
+Just like inline directives, you can use `*` and `(blank)` in the arguments in **:watch**:
 
+```html
+<div :watch="*|.showFriendCount?|text"></div>  <!-- always update -->
+<div :watch="|.showFriendCount?|text"></div>   <!-- only run once -->
+<div :watch="friends.length||text"></div>    <!-- use friends.length unmodified -->
+```
 
-This is very simple to use (use a value and optionally pass it through a transformer function) but before we explore this further, we're going to cover three concepts:
+Many other directives follow the same rules.
 
-* Wrappers
-* Directives
-* Watches
+This is clearly not as pretty as inline directives, so why use **:watch**?
 
-RedRunner's learning curve is steep, but very short. Once you grasp these three concepts you'll have 90% of it covered.
+The answer to that lies in the third argument (so far we have only used `text`) which corresponds to a method on a *wrapper*.
 
-#### Wrappers
+### 4.14 Wrappers
 
-A wrapper is an object which wraps a single DOM element and exposes methods to manipulate it, very much like jQuery:
+A wrapper is a small object which wraps a single DOM element and exposes methods to manipulate it, very much like jQuery's wrappers:
 
 ```javascript
 const el = document.getElementById('main');
 const wrapper = new Wrapper(el);
 
-wrapper.text('Hello');     // Set the element's text
-wrapper.cssAdd('danger');  // Add a css class
-wrapper.visible(false);    // Hide it
+wrapper.text('Hello');                // Set the element's text
+wrapper.css('button button-danger');  // Add a css class
+wrapper.visible(false);               // Hide the element
 ```
 
-But unlike jQuery:
+> Don't worry, the wrappers may be similar but RedRunner is nothing like jQuery! 
 
-1. You rarely work with them directly (RedRunner mainly uses them internally).
-2. They have almost no query functionality (RedRunner almost never queries the DOM).
-
-Each view creates a wrapper for every dynamic element in its DOM. 
-
-The `UserProfile` view described above would create a wrapper for both `<li>` elements, but not the `<ul>` or the `<span>` as those don't have any variable parts. The view then uses these two wrappers to update the `<li>` elements with the person's name and age when they change.
-
-All DOM updates are done via wrappers.
-
-#### Directives
-
-Directives are custom attributes we place in the `__html__` field which tell the plugin what code to generate. They are valid HTML, but get stripped from the final output. There is a list of all the available directives further down, and you can even define your own.
-
-The core directive is called **:watch** and looks like this:
-
-```html
-<div :watch="propertyToWatch|converterFunction|wrapperMethod"></div>
-```
-
-Directives take arguments separated by the `|` symbol. 
-
-The **:watch** directive accepts 3 arguments:
-
-1. **propertyToWatch** a property somewhere whose value we will watch.
-2. **converterFunction** an optional function which converts that value before using it.
-3. **wrapperMethod** the method of the wrapper which the value will be passed to.
-
-It essentially watches a field for changes, and calls a method on the wrapper (thereby updating the DOM) if the field's value has changed.
-
-
-
-Let's try that out:
-
-```javascript
-class MyView extends View {
-  __html__ = `
-    <div>
-      <span :watch=".message|.capitalize?|text"></span>
-    </div>
-  `
-  init() {
-    this.message = 'hello';
-  }
-  capitalize(s) {
-    return s.charAt(0).toUpperCase() + s.slice(1) + '!'
-  }
-}
-```
-
-The above translates as:
-
-* Create a *watch* on field `this.message`
-* Pass the value to `this.capitalise()`
-* Pass the result to `wrapper.text()`
-
-Where `this` is the view instance and `wrapper` is the view's internal wrapper around the `<span>` element.
-
-We'll cover watches in more detail later, for now just think of them as something which remembers the old and new values of a field.
-
-The prefix `.` in front of the first two arguments (`.message` and `.capitalize?`) this tells RedRunner to look on the view instance for those fields. 
-
-The prefixes is as follows:
-
-| Prefix | Example    | Meaning                        |
-| ------ | ---------- | ------------------------------ |
-| (none) | `message`  | Look on view props.            |
-| **.**  | `.message` | Look on view instance.         |
-| **..** | `..foo`    | Look in global (module) scope. |
-
-We'll cover props shortly.
-
-The `?` at the end of `.capitalize?` means it should be treated as a function.
-
-
-
-| Code                         | Meaning      |
-| ---------------------------- | ------------ |
-|`:watch="foo|bar?|text"`  | Watch props.foo, pass new & old values to props.bar(), pass result to wrapper.text() |
-|`:watch="foo|bar|text"`  | Watch props.foo, but use props.bar, pass to wrapper.text(). |
-|`:watch="foo|bar|text"`  | Watch props.foo, but use props.bar, pass to wrapper.text(). |
-|`:watch="foo|bar|text"`  | Watch props.foo, but use props.bar, pass to wrapper.text(). |
-|`:watch="foo|bar|text"`  | Watch props.foo, but use props.bar, pass to wrapper.text(). |
-|`:watch="foo|bar|text"`  | Watch props.foo, but use props.bar, pass to wrapper.text(). |
-
-
-
-
-
-
-```html
-<div :watch="firstName|..capitalize?|text"></div>
-```
-
-The above directive does two things:
-
-* Creates a **watch** against `props.name` 
-* Adds a callback to that watch which will update that div if the value changes
-
-
-
-The simplest directive is **:as** which looks like this:
-
-```html
-<div :as="myDiv"></div>
-```
-
-All it does is make the wrapper for that div available for you to work with:
-
-```javascript
-class MyView extends View {
-  __html__ = `
-    <div>
-      <div :as="myDiv"></div>
-    </div>
-  `
-  update(props) {
-    super.upate(props);
-    this.dom.myDiv.text('BOOM');
-  }
-}
-```
-
-As mentioned earlier, you will rarely need to do this as you can achieve most things using directives.
-
-However, the fact you *can* do this if you need to is a real lifeline. It means you can basically step out of the framework and do direct DOM manipulation whenever you please without:
-
-* Having to use ugly JavaScript
-* Having to load a separate jQuery-like library
-* Worrying about breaking the framework (you can do it inside a view which has framework-controlled elements - try that in React)
-* Worrying about scope leak (wrappers belong to the view)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Updates
-
-To update a view (i.e. make the DOM change) we call it's `update()` method, which will:
-
-* Update its own DOM based on *directives* (see below).
-* Cascades the `update()` call to its nested views.
-
-To start with you will likely update all top level views in response to every data change, which effectively creates one-way data binding throughout the app. Later on you can fine tune it to only update parts that need to be changed for better performance if necessary.
-
-RedRunner has no two-way data binding, as that is simply a terrible idea in the browser.
-
-
-
-#### Watches
-
-A watch is an object which reads a value and remembers it, in this case the field `firstName` on the view's props (see below). It also has callback functions it will call if the value is found to have changed since the last update.
-
-Note that these callbacks will only be triggered during the view's `update()` call.
-
-
-
-
-```javascript
-class MyView extends View {
-  __html__ = `
-    <div>
-      <div :watch="name|..capitalize|text"></div>
-    </div>
-  `
-}
-```
-
-
-
-
-
+Views creates a wrapper around every DOM element that needs to be worked with, so a view with the following `__html__` field would create two wrappers:
 
 ```html
 <div>
-  <div>{{age}}</div>
-  <div>{{name|capitalize}}</div>
-</div>
+  <span>User Details</span>    <!--  no wrapper we we'll never change this -->
+  <span>{{firstName}}</span>   <!--  creates a wrapper -->
+  <span>{{lastName}}</span>    <!--  creates a wrapper -->
+</ul>
 ```
 
+Most of the time you don't even know they are there - they simply act as RedRunner's internal way to update the DOM (all DOM updates are done through wrappers).
+
+The **:watch** directive lets you pipe a value to any of the wrapper's methods:
+
+```html
+<span :watch="shouldItemDisplay?||visible"></span>
+<option :watch="isItemSelected||checked"></option>
+<option :watch="isItemSelected|.getCss|css"></option>
+<div :watch="postHTML||html"></img>
+<img :watch="imgUrl||src"></img>
+```
+
+>  The above can be achieved more cleanly with inline directives, this is just for illustration.
+
+You can also access the wrappers to work with them directly if you need to. In fact, this is RedRunner's get out of jail card.
+
+### 4.15 Get out of jail card
+
+Every framework has edge cases which it doesn't handle well, be it performance issues or forcing us to write clunky code, and finding a satisfactory resolution to these can consume disproportionate amounts of project time.
+
+One reason we put with that is to avoid having to fall back to low-level DOM manipulation, because:
+
+* It's ugly (unless you bring in a library, but that's bloat)
+* It goes against the point of having a framework
+* It undermines the integrity of the codebase
+* You need to be careful it doesn't break the framework's operation or vice versa.
+
+With RedRunner you don't have this problem. Just to recap:
+
+1. RedRunner only has Views.
+2. Views only have wrappers and watches.
+3. Views only call their wrapper's methods during `update()` 
+4. They only do that if watched values differ from last run.
+
+This means:
+
+1. It's easy to follow what's happening.
+2. It's easy to step in and take over, as much or as little as you want.
+3. You'd be using the framework's own wrappers to do it.
+4. There is very little risk of breaking things.
+5. You and you get a nice syntax to work with.
+
+In other words, the kind of manual override that feels totally wrong in any other framework is really quite clean in RedRunner. So clean in fact that it can be considered normal framework code, which makes RedRunner a sort of hybrid between a framework and a library.
+
+There are a few ways you can do this.
+
+##### Use the :watch directive
+
+The first is by only providing two arguments to 
+
+The **:watch** directive usually requires three arguments. If you only specify two, then the second argument (the transformer) gets passed a reference to the wrapper and is expected to update it, rather than expecting a value back to be passed to a wrapper's method.
+
+This is useful if you want to do multiple changes to the element which would look ugly as inline directives
+
+```javascript
+class UserInfo extends View {
+  __html__ = `
+    <div>
+      <div>{{name}}</div>
+      <div :watch="stats|.renderStatsElement?"></div>
+    </div>
+  `
+  renderStatsElement(n, o, w) {
+    // args: newValue, oldValue, wrapper
+    const color n > 10 ? 'green' : 'red'
+    w.text(`score: ${n}`).style('color', color).visible(true)
+  }
+}
+```
+##### Use the :as directive with update()
+
+The **:as** directive lets you name a wrapper, this is then accessible on `this.dom`. You can also override the `update()` method, and use `this.old()` to retrieve an old value.
+
+
+```javascript
+class UserInfo extends View {
+  __html__ = `
+    <div>
+      <div>{{name}}</div>
+      <div :as="statsDiv"></div>
+    </div>
+  `
+  update(props) {
+    if (this.old('stats') !== props.stats) {
+       this.dom.statsDiv.text('Stats changed!')
+    }
+    /*
+    Do whatever you want with the named wrappers.
+    Make sure you call super.update() before or after as appropriate, 
+    so that the other watches run.
+    */
+    super.update(props)
+  }
+}
+```
+
+Having this level of control means:
+
+* Far less time spent being stuck or trapped
+* Far easier to bust your way through performance issues 
+
+### 4.16 List of directives
 
 
 
+#### :as
 
-
-
-### Inline directives (aka bracket syntax)
-
-The simplest way to add dynamic content is with inline directives:
+This directive saves the wrapper on `this.dom` as the name specified, so it can be accessed elsewhere, typically in the `update()` method:
 
 ```javascript
 class MyView extends View {
   __html__ = `
     <div>
-      <span style="color: {{.color}}">
-        {{.text|.greet?}}
-      </span>
+      <div :as="divA"></div>
+      <div :as="divB" :watch="name||text"></div>
+      <div :as="divC">{{name}}</div>
     </div>
   `
-  init() {
-    this.color = 'red'
-    this.name = 'hello redrunner'
-  }
-  greet(s) {
-    return s.charAt(0).toUpperCase() + s.slice(1) + '!'
+  update(props) {
+    this.dom.divA
+    this.dom.divB
+    this.dom.divC
   }
 }
 ```
 
-An inline directive has one or two slots, separated by `|` which work as follows: 
+#### :on
 
-| Format     | Effect |
-| ---------- | ------------ |
-| `{{data}}` | If `data` has changed, used in the DOM. |
-| `{{data|converter}}` | If `data` has changed, pass new & old value to `converter` and use the return value in the DOM. |
+This directive adds an event listener
 
-However, the `converter` function:
-
-* Doesn't need to use the new & old value, it can return anything.
-* Doesn't need be a function, it can be a field or variable, in which case it is used as-is.
-
-This means you can treat the `data` slot as merely a means to decide whether to update the DOM, and the `converter` as the value that gets inserted into tYou can use __clone__ instead of __html__ to make the view class create a DOM template first, which works better if you have large number of instances.
-
-View methods
-
-The view class has several methods, here are some common ones:he DOM:
-
-```
-{{ dataChangeDetect | dataToDisplay }}
+```javascript
+class MyView extends View {
+  __html__ = `<button :onclick=".clicked">Click Me</button>`
+  clicked(e, w) {
+    // e is the event, w is the wrapper
+  }
+}
 ```
 
-Either slot can be a field or a function. More on this in the next section.
+#### :hide
 
-### Property slot syntax
-
-Inline directives has two slots, both of which are **property slots**, which have a special syntax:
-
-##### ? and ()
-
-The `?` or `()` indicates that the field should be called rather than read:
-
-```html
-<div>{{ treatThisAsAValue }}</div>
-<div>{{ treatThisAsAFunction? }}</div>
-<div>{{ treatThisAsAFunction() }}</div>
+```javascript
+class MyView extends View {
+  __html__ = `<button :onclick=".clicked">Go</button>`
+  clicked(e, w) {
+  }
+}
 ```
 
-##### . and ..
+#### :inner
 
-Determines where to read the property:
-
-```html
-<div>{{ ..moduleScope }}</div>
-<div>{{ .view }}</div>
-<div>{{ props }}</div>
+```javascript
+class MyView extends View {
+  __html__ = `<button :onclick=".clicked">Go</button>`
+  clicked(e, w) {
+  }
+}
 ```
 
-##### * and [blank]
+#### :items
 
-In the watch slot `*` indicates always, and (blank) indicates once:
-
-```html
-// This will update the DOM at every update
-<div>{{*|name?}}</div>
-// This will update the DOM on initial creation only
-<div>{{|name?}}</div>
+```javascript
+class MyView extends View {
+  __html__ = `<button :onclick=".clicked">Go</button>`
+  clicked(e, w) {
+  }
+}
 ```
 
+#### :show
 
-### 
+```javascript
+class MyView extends View {
+  __html__ = `<button :onclick=".clicked">Go</button>`
+  clicked(e, w) {
+  }
+}
+```
 
-#### as
+#### :watch
 
-#### on
+```javascript
+class MyView extends View {
+  __html__ = `<button :onclick=".clicked">Go</button>`
+  clicked(e, w) {
+  }
+}
+```
 
-#### hide
+#### :wrapper
 
-#### inner
+```javascript
+class MyView extends View {
+  __html__ = `<button :onclick=".clicked">Go</button>`
+  clicked(e, w) {
+  }
+}
+```
 
-#### items
+### 4.17 Nested views
 
-#### show
 
-#### watch
 
-#### wrapper
+### 4.18 View caching
 
-### Nested Views
+
+
+### Performance tweaking
 
 ### Inheritance & Composition
 
@@ -657,26 +826,7 @@ class MyView extends View {
 
 
 
-## Demo
-
-There is currently just one demo app called Smoothies, which you can run like so:
-
-```
-cd demo
-npm i
-npm run start
-```
-
-You'll be able to view it from desktop or a mobile device on your network (you'll need to find your machine's IP address).
-
-You can also run these to inspect the output:
-
-```
-npm run build
-npm run build-dev
-```
-
-## Contributing
+## 5. Contributing
 
 Contributions welcome.
 
@@ -712,6 +862,6 @@ lerna bootstrap
 lerna publish
 ```
 
-## License
+## 6. License
 
 MIT
