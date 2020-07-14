@@ -92,6 +92,21 @@ export class View {
     return child
   }
   /**
+   * Lookup a watched value during update. Returns an object with {o, n, c}
+   * (oldValue, newValue, changed).
+   * You must call this.resetLookups before calling this during an update.
+   * The point is to cache the result so it doesn't have to be repeated.
+   */
+  lookup(query) {
+    return this.__qc.get(this, query)
+  }
+  /**
+   * Resets the lookups, muct be called before calling this.lookup() during an update.
+   */
+  resetLookups() {
+    this.__qc.reset()
+  }
+  /**
    * Sets the props and updates the view.
    * @props -- new props, else it keeps its old (which is fine)
    */
@@ -115,36 +130,40 @@ export class View {
     this.updateNested()
   }
   /**
-   * UpdateWatches.
+   * UpdateSelf
    *
-   * Calls update on all watches if watched value has changed, skipping shielded watches.
+   * Loops over watches skipping shielded watches if elements are hidden.
    */
-
-  resetLookups() {
-    this.__qc.reset()
-  }
-  lookup(query) {
-    return this.__qc.get(this, query)
-  }
   updateSelf() {
-    let i = 0, watch, shield
+    let i = 0, watch, shieldCount, shieldQueryBooleanResult, shouldBeVisible
     const watches = this.__wc
     if (!watches) {
       return
     }
     const il = watches.length
-
+    //c.log(watches)
     while (i < il) {
       watch = watches[i]
-      shield = watch.shieldFor(this)
-
-      console.log(shield)
-      if (shield) {
-        i += shield
-        continue
-      }
-      watch.appyCallbacks(this)
       i ++
+      shouldBeVisible = true
+      if (watch.shieldQuery) {
+        // Get the newValue for shieldQuery using lookup
+        shieldQueryBooleanResult = this.lookup(watch.shieldQuery).n
+
+        // Determine if shouldBeVisible based on reverseShield
+        // i.e. whether "shieldQuery==true" means show or hide.
+        shouldBeVisible = watch.reverseShield ? shieldQueryBooleanResult : !shieldQueryBooleanResult
+
+        // The number of watches to skip if this element is not visible
+        shieldCount = shouldBeVisible ? 0 : watch.shieldCount
+
+        // Set the element visibility
+        this.dom[watch.el].visible(shouldBeVisible)
+        i += shieldCount
+      }
+      if (shouldBeVisible) {
+        watch.appyCallbacks(this)
+      }
     }
   }
   /**

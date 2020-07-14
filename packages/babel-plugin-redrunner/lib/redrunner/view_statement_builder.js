@@ -1,7 +1,7 @@
 const c = console
 const {EOL} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
-const {groupArray} = require('../utils/misc')
+const {extractShieldCounts, groupArray} = require('../utils/misc')
 const {DomWalker} = require('./dom_walker.js')
 const {extractNodeData} = require('./extract_node_data')
 const {
@@ -99,21 +99,12 @@ class ViewStatementBuilder {
    * parsed.
    */
   setShieldCounts() {
-    /*
-    Loop over each and determine from path whether wrapper is a a child, in which case
-    all parents get bumped up.
-    Farm this out to a function which takes
-
-    this.savedWatchCallArgs.map(i => i.nodePath)
-
-    and returns array of shieldCounts to apply,
-    which we then set as the
-
-    // [0, 0, 0]
-
-    */
     const shieldCountArgIndex = 3
-    c.log(this.savedWatchCallArgs)
+    const nodePathOfEachWatchCall = this.savedWatchCallArgs.map(i => i.nodePath)
+    const shieldCountForEachWatchCall = extractShieldCounts(nodePathOfEachWatchCall)
+    for (const [i, argSet] of this.savedWatchCallArgs.entries()) {
+      argSet.watchCallArgs[shieldCountArgIndex] = shieldCountForEachWatchCall[i]
+    }
   }
   /**
    * Saves the watchCallArgs against the nodePath, which well use in watchCallArgs

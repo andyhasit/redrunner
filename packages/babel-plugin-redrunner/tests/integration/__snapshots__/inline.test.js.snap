@@ -6,11 +6,11 @@ exports[`Inline leaves atts alone 1`] = `
 var _MyViewPrototype = MyView.prototype;
 var __bu__ = _MyViewPrototype.__bu;
 _MyViewPrototype.__ht = '<div><span></span><span id=\\"hey\\" ></span></div>';
-_MyViewPrototype.__wc = [__bu__._wt('_1_', undefined, false, {
+_MyViewPrototype.__wc = [__bu__._wt('_1_', undefined, false, 0, {
   'name': function (n, o) {
     this.dom._1_.text(this.getName(n, o));
   }
-}), __bu__._wt('_2_', undefined, false, {
+}), __bu__._wt('_2_', undefined, false, 0, {
   'style': function (n, o) {
     this.dom._2_.att('class', \\"my-style \\" + n);
   }
@@ -41,15 +41,15 @@ exports[`Inline with different endings 1`] = `
 var _MyViewPrototype = MyView.prototype;
 var __bu__ = _MyViewPrototype.__bu;
 _MyViewPrototype.__ht = '<div><span></span><span></span><span></span></div>';
-_MyViewPrototype.__wc = [__bu__._wt('_1_', undefined, false, {
+_MyViewPrototype.__wc = [__bu__._wt('_1_', undefined, false, 0, {
   'name': function (n, o) {
     this.dom._1_.text(this.getName);
   }
-}), __bu__._wt('_2_', undefined, false, {
+}), __bu__._wt('_2_', undefined, false, 0, {
   'name': function (n, o) {
     this.dom._2_.text(this.getName(n, o));
   }
-}), __bu__._wt('_3_', undefined, false, {
+}), __bu__._wt('_3_', undefined, false, 0, {
   'name': function (n, o) {
     this.dom._3_.text(this.getName());
   }
@@ -78,7 +78,7 @@ exports[`Simple inline 1`] = `
 var _MyViewPrototype = MyView.prototype;
 var __bu__ = _MyViewPrototype.__bu;
 _MyViewPrototype.__ht = '<div><span></span></div>';
-_MyViewPrototype.__wc = [__bu__._wt('_1_', undefined, false, {
+_MyViewPrototype.__wc = [__bu__._wt('_1_', undefined, false, 0, {
   'name': function (n, o) {
     this.dom._1_.text(n);
   }

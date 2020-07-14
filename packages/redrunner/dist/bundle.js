@@ -850,6 +850,20 @@ var View = /*#__PURE__*/function () {
       return this.__ov[name];
     }
     /**
+     * Calls the callback if the value has changed (
+     */
+
+  }, {
+    key: "changed",
+    value: function changed(name, callback) {
+      var n = this.__ov[name];
+      var o = this.props[name];
+
+      if (n !== o) {
+        callback(n, o);
+      }
+    }
+    /**
      * Sets the props and updates the view.
      * @props -- new props, else it keeps its old (which is fine)
      */
@@ -921,6 +935,15 @@ var View = /*#__PURE__*/function () {
     key: "__kc",
     value: function __kc(cls, keyFn) {
       return new KeyedCache(cls, keyFn);
+    }
+    /**
+     * Replace node at path.
+     */
+
+  }, {
+    key: "__rn",
+    value: function __rn(path, view) {
+      this.__gw(path).replace(view.e);
     }
   }, {
     key: "__sc",

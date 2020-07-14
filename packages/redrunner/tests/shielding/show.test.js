@@ -18,8 +18,10 @@ const props = {
 }
 
 
-test("Show masks", () => {
+test("The :show directive stops its own element from updating.", () => {
   const div = load(TestView, props)
+
+  // Run some sanity checks first...
   expect(div).toShow(`
   	<div>
       <div style="visibility: visible;">
@@ -40,10 +42,12 @@ test("Show masks", () => {
       </div>
     </div>
   `)
+
+
+  // Now check that the shielded element is not updated if show is false.
+  props.show = false
   props.items = [4, 5]
   div.update()
-
-  // Nothing should change
   expect(div).toShow(`
     <div>
       <div style="visibility: hidden;">

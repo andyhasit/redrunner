@@ -17,8 +17,10 @@ const props = {
 }
 
 
-test("Show blocks nested watches", () => {
+test("The :show directive stops shielded elements from updating.", () => {
   const div = load(TestView, props)
+
+  // Run some sanity checks first...
   expect(div).toShow(`
     <div>
       <div style="visibility: visible;">
@@ -35,10 +37,11 @@ test("Show blocks nested watches", () => {
       </div>
     </div>
   `)
+
+  // Now check that the shielded element is not updated if show is false.
+  props.show = false
   props.message = 'goodbye'
   div.update()
-
-  // Nothing should change
   expect(div).toShow(`
     <div>
       <div style="visibility: hidden;">
@@ -47,6 +50,7 @@ test("Show blocks nested watches", () => {
     </div>
   `)
 
+  // Now check that the shielded element did update.
   props.show = true
   div.update()
   expect(div).toShow(`
