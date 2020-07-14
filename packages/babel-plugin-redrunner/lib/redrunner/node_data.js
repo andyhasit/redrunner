@@ -1,5 +1,5 @@
 const {c, EOL} = require('../utils/constants')
-const {isFunc, isUnd, splitTrim} = require('../utils/javascript')
+const {isFunc, isUnd, splitTrim} = require('../utils/misc')
 const {
   buildCacheInit,
   buildEventCallback,

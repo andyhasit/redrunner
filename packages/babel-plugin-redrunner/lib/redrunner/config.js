@@ -1,5 +1,5 @@
 const {c} = require('../utils/constants')
-const {capitalize} = require('../utils/javascript')
+const {capitalize} = require('../utils/misc')
 
 const config = {
   directives: {

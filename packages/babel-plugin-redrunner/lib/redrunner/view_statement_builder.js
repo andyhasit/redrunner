@@ -1,7 +1,7 @@
 const c = console
 const {EOL} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
-const {groupArray} = require('../utils/javascript')
+const {groupArray} = require('../utils/misc')
 const {DomWalker} = require('./dom_walker.js')
 const {extractNodeData} = require('./extract_node_data')
 const {
@@ -16,7 +16,7 @@ const {
   FunctionStatement,
   ObjectStatement,
   ValueStatement
-} = require('./statement_builders')
+} = require('../utils/statement_builders')
 
 
 const vars = {
