@@ -30,8 +30,8 @@ import {QueryCollection} from './querycollection'
  *  __nv (NestedViews)
  *  __ov (OldValues)
  *  __rn (ReplaceNode)
- *  __un (Update Nested Views)
- *  __uw (Update Watches)
+ *  updateNested (Update Nested Views)
+ *  updateSelf (Update Watches)
  *  __wc (Watcher Callbacks)
  *
  */
@@ -60,16 +60,18 @@ export class View {
       view.init()
     }
   }
-  trackMounting() {
-    this.__mt.track(this)
-  }
   /**
-   * Updates the view.
+   * Was intended as a way to bubble events up the tree. Not sure if needed.
    */
-  update() {
-    this.__uw()
-    this.__ui()
-    this.__un()
+  emit(name, args) {
+    let target = this
+    while (!und(target)) {
+      let handlers = target._handlers_
+      if (name in handlers) {
+        return handlers[name].apply(target, args)
+      }
+      target = target.parent
+    }
   }
   /**
    * Move the view to new parent.
@@ -90,34 +92,97 @@ export class View {
     return child
   }
   /**
-   * Was intended as a way to bubble events up the tree. Not sure if needed.
-   */
-  emit(name, args) {
-    let target = this
-    while (!und(target)) {
-      let handlers = target._handlers_
-      if (name in handlers) {
-        return handlers[name].apply(target, args)
-      }
-      target = target.parent
-    }
-  }
-  /**
-   * Returns the old value of a watch. Must use shorthand notation e.g. "..items"
-   */
-  old(name) {
-    return this.__ov[name]
-  }
-  /**
    * Sets the props and updates the view.
    * @props -- new props, else it keeps its old (which is fine)
    */
-  //TODO: rename to not camel case.
   setProps(props) {
     this.props = props
     this.update()
     return this
   }
+  /**
+   * Call this if you want to get mount() and unmount() callbacks.
+   */
+  trackMounting() {
+    this.__mt.track(this)
+  }
+  /**
+   * Updates the view.
+   */
+  update() {
+    this.resetLookups()
+    this.updateSelf()
+    this.updateNested()
+  }
+  /**
+   * UpdateWatches.
+   *
+   * Calls update on all watches if watched value has changed, skipping shielded watches.
+   */
+
+  resetLookups() {
+    this.__qc.reset()
+  }
+  lookup(query) {
+    return this.__qc.get(this, query)
+  }
+  updateSelf() {
+    let i = 0, watch, shield
+    const watches = this.__wc
+    if (!watches) {
+      return
+    }
+    const il = watches.length
+
+    while (i < il) {
+      watch = watches[i]
+      shield = watch.shieldFor(this)
+
+      console.log(shield)
+      if (shield) {
+        i += shield
+        continue
+      }
+      watch.appyCallbacks(this)
+      i ++
+    }
+  }
+  /**
+   * Update nested views (but not repeat elements).
+   */
+  updateNested() {
+    // These are user created by calling next()
+    const items = this.__nv
+    for (let i=0, il=items.length; i<il; i++) {
+      let child = items[i]
+      if (child.__ia()) {
+        child.update()
+      }
+    }
+    // These are created with directives, and whose props arguments may need reprocessed.
+    for (let [k, v] of Object.entries(this.__ip)) {
+      let view = this.dom[k]
+      view.setProps(v.apply(this))
+    }
+  }
+
+  /**
+   * Returns the old value of a watch. Must use shorthand notation e.g. "..items"
+   */
+  // old(name) {
+  //   return this.__ov[name]
+  // }
+  /**
+   * Calls the callback if the value has changed (
+   */
+  // changed(name, callback) {
+  //   const n = this.__ov[name]
+  //   const o = this.props[name]
+  //   if (n !== o) {
+  //     callback(n, o)
+  //   }
+  // }
+
   /**
    * Build the DOM. We pass prototype as local var for speed.
    */
@@ -158,6 +223,12 @@ export class View {
   __kc(cls, keyFn) {
     return new KeyedCache(cls, keyFn)
   }
+  /**
+   * Replace node at path.
+   */
+  __rn(path, view) {
+    this.__gw(path).replace(view.e)
+  }
   __sc(cls) {
     return new SequentialCache(cls)
   }
@@ -168,53 +239,6 @@ export class View {
     const child = buildView(cls, this)
     this.__gw(path).replace(child.e)
     return child
-  }
-  /**
-   * Update internal views.
-   */
-  __ui() {
-    for (let [k, v] of Object.entries(this.__ip)) {
-      let view = this.dom[k]
-      view.setProps(v.apply(this))
-    }
-  }
-  /**
-   * Update nested views.
-   */
-  __un() {
-    const items = this.__nv
-    for (let i=0, il=items.length; i<il; i++) {
-      let child = items[i]
-      if (child.__ia()) {
-        child.update()
-      }
-    }
-  }
-  /**
-   * UpdateWatches.
-   *
-   * Calls update on all watches if watched value has changed, skipping shielded watches.
-   */
-  __uw() {
-    let i = 0, watch, shield
-    const watches = this.__wc
-    if (!watches) {
-      return
-    }
-    const il = watches.length
-    const queryCollection = this.__qc
-    queryCollection.reset()
-
-    while (i < il) {
-      watch = watches[i]
-      shield = watch.shieldFor(this, watch, queryCollection)
-      if (shield) {
-        i += shield
-        continue
-      }
-      watch.appyCallbacks(this, queryCollection)
-      i ++
-    }
   }
 }
 
