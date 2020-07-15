@@ -3,7 +3,7 @@ import {c, h, load, View} from '../utils'
 class TestView extends View {
   __html__ = `
     <div>
-      <div :show="show" :watch="*|.getContents?|inner">
+      <div :show="show" :watch="*|.getContents|inner">
       </div>
     </div>
   `

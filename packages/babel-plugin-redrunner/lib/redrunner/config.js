@@ -38,7 +38,7 @@ const config = {
     ':props': {
       params: 'args',
       handle: function(args) {
-        this.props = this.expandShorthand(args)
+        this.props = this.expandPrefix(args)
       }
     },
     ':show': {

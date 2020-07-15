@@ -3,8 +3,8 @@ const {isFunc, isUnd, splitTrim} = require('../utils/misc')
 const {
   buildCacheInit,
   buildEventCallback,
-  expandShorthand,
-  expandProperty,
+  expandPrefix,
+  parseWatchedValueSlot,
   getLookupArgs
 } = require('./syntax')
 
@@ -93,8 +93,8 @@ class NodeData {
 
 NodeData.prototype.buildCacheInit = buildCacheInit
 NodeData.prototype.buildEventCallback = buildEventCallback
-NodeData.prototype.expandProperty = expandProperty
-NodeData.prototype.expandShorthand = expandShorthand
+NodeData.prototype.parseWatchedValueSlot = parseWatchedValueSlot
+NodeData.prototype.expandPrefix = expandPrefix
 NodeData.prototype.getLookupArgs = getLookupArgs
 
 module.exports = {NodeData}

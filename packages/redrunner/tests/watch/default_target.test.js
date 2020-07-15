@@ -9,7 +9,7 @@ class TestView extends View {
   __html__ = `
   	<div>
     	<span :watch="name||text"></span>
-      <span :watch="name|..toUpper?|text"></span>
+      <span :watch="name|..toUpper|text"></span>
     </div>
   `
 }

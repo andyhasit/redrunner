@@ -21,7 +21,7 @@ const adjustName = (name) => {
  */
 const buildCacheInit = (cacheDef, cacheKey) => {
   if (cacheDef.startsWith('@')) {
-    let cacheStatement = expandProperty(cacheDef.substr(1))
+    let cacheStatement = parseWatchedValueSlot(cacheDef.substr(1))
   } else {
     if (cacheKey) {
       const keyFn = `function(props) {return props.${cacheKey}}`
@@ -41,7 +41,7 @@ const buidlWatchCallbackLine = (saveAs, convert, target, raw) => {
   let callbackBody, wrapper = `this.dom.${saveAs}`
   convert = convert ? expandConverter(convert) : ''
   if (target) {
-    const targetString = parseTarget(target)
+    const targetString = parseWatchTargetSlot(target)
     if (raw) {
       callbackBody = `${wrapper}.${targetString}${raw})`
     } else if (convert) {
@@ -68,7 +68,7 @@ const buidlWatchCallbackLine = (saveAs, convert, target, raw) => {
  * Builds the callback function for an event listener.
  */
 const buildEventCallback = (statement) => {
-  let text = expandShorthand(statement.trim())
+  let text = expandPrefix(statement.trim())
   // Cater for '?' ending
   text = text.endsWith('?') ? text.slice(0, -1) : text
   const extra = text.endsWith(')') ? '' : '(e, w)'
@@ -81,28 +81,36 @@ const buildEventCallback = (statement) => {
 
 
 /**
- * expands the convert slot, including the expandShorthand
+ * expands the convert slot, including the expandPrefix
  *
  *   undefined  >  undefined
  *   ''         >  undefined
- *   foo        >  this.props.foo
+ *   foo        >  this.props.foo()
+ *   foo!       >  this.props.foo
  *   foo?       >  this.props.foo(n, o)
- *   foo()      >  this.props.foo()
  *   foo(x, 2)  >  this.props.foo(x, 2)
- *   .foo       >  this.foo
- *   ..foo      >  foo
  *
  */
 const expandConverter = (convert) => {
   if (convert && (convert !== '')) {
-    const expanded = expandShorthand(convert)
-    return convert.endsWith('?') ? `${expanded.slice(0, -1)}${watchArgs}` : expanded
+
+    // If it ends with ) then we treat it as raw function call.
+    if (convert.endsWith(')')) {
+      return expandPrefix(convert)
+    }
+
+    // Remove ? because it's just the user explicity marking this a function
+    convert = convert.endsWith('?') ? convert.slice(0, -1) : convert
+
+    // If ends with . then treat as field, else turn it into a call with the watch args
+    convert = convert.endsWith('.') ? convert.slice(0, -1) : `${convert}${watchArgs}`
+    return expandPrefix(convert)
   }
 }
 
 
 /**
- * expands the watched property slot, including the expandShorthand:
+ * expands the watched property slot, including the expandPrefix:
  *
  *   undefined  >  undefined
  *   ''         >  undefined
@@ -114,14 +122,18 @@ const expandConverter = (convert) => {
  *   ..foo      >  foo
  *
  */
-const expandProperty = (property) => {
+const parseWatchedValueSlot = (property) => {
   if (property == '*') {
     return '*'
   }
   if (property === '' || property === undefined) {
     return undefined
   }
-  const expanded = expandShorthand(property)
+
+  // Remove ! because it's just the user explicity marking this a field
+  property = property.endsWith('!') ? property.slice(0, -1) : property
+
+  const expanded = expandPrefix(property)
   return property.endsWith('?') ? expanded.slice(0, -1) + '()' : expanded
 }
 
@@ -133,7 +145,7 @@ const expandProperty = (property) => {
  *   .field   >  this.field
  *   ..field  >  field
  */
-const expandShorthand = (field) => {
+const expandPrefix = (field) => {
   if (field.startsWith('..')) {
     return field.substr(2)
   } else if (field.startsWith('.')) {
@@ -160,7 +172,7 @@ const getWatchQueryCallBack = (property) => {
   if (property !== '*') {
     return (property === '' || property === undefined) ?
       'function() {return null}' :
-      `function() {return ${expandProperty(property)}}`
+      `function() {return ${parseWatchedValueSlot(property)}}`
   }
 }
 
@@ -172,7 +184,7 @@ const isNestedView = (nodeInfo) => {
   return isTagCapitalized
 }
 
-const parseTarget = (target) => {
+const parseWatchTargetSlot = (target) => {
   if (target.startsWith('@')) {
     target = 'att:' + target.substr(1)
   }
@@ -201,12 +213,12 @@ module.exports = {
   buidlWatchCallbackLine,
   buildEventCallback,
   expandConverter,
-  expandProperty,
-  expandShorthand,
+  parseWatchedValueSlot,
+  expandPrefix,
   getWatchQueryCallBack,
   getLookupArgs,
   isNestedView,
-  parseTarget,
+  parseWatchTargetSlot,
   splitter,
   watchArgs
 }

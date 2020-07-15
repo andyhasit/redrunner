@@ -10,7 +10,7 @@ class TestView extends View {
   	<div>
     	<span :watch="name||text"></span>
       <span :watch=".name||text"></span>
-      <span :watch="..getName()||text"></span>
+      <span :watch="..getName?||text"></span>
     </div>
   `
   init() {

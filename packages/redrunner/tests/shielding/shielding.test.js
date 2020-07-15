@@ -4,7 +4,7 @@ class TestView extends View {
   __html__ = `
     <div>
       <div :show="show">
-        <div :watch="*|message|text"/>
+        <div :watch="*|message.|text"/>
       </div>
     </div>
   `

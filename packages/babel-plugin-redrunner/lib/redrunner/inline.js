@@ -56,6 +56,11 @@ function splitInlineText(rawStr) {
 function buildInlineWatch(target, inlineCallDetails) {
 	let raw
 	let {property, convert, before, after} = inlineCallDetails
+  /*
+  before and after is any text found before or after the brackets.
+  raw is the raw javascript code that will be generated.
+
+  */
 	convert = convert ? expandConverter(convert) : 'n'
 	if (before && after) {
 		raw = `"${before}" + ${convert} + "${after}"`
@@ -103,14 +108,14 @@ function extractInlineWatches(node, config) {
 		return false
 	}
 
-	// extract from node text
+	// extract from node's text
 	if (isLeafNode(node)) {
   	if (addInlineWatches(node.rawText, 'text')) {
   		node.childNodes = []
   	}
   }
 
-	// extract from node attributes
+	// extract from node's attributes
   for (let [key, value] of Object.entries(atts)) {
   	if (value && !restrictedAtts.includes(key)) {
   		if (addInlineWatches(value, `@${key}`)) {

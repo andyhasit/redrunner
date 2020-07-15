@@ -8,7 +8,6 @@ class TestView extends View {
   __html__ = `
     <div>
       <button :onclick=".clicked">Go</button>
-      <button onclick="ddd">Go</button>
     </div>
   `
   clicked() {
