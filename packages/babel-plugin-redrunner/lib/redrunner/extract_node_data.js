@@ -40,6 +40,7 @@ function extractNodeData(node, config) {
 				}
 	  		nodeData.processDirective(key, directive, value)
 	  		hasData = true
+	  		removeAtt(node, key)
 	  	}
 	  }
 	}

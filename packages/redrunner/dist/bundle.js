@@ -21,6 +21,313 @@ var isStr = function isStr(x) {
   return typeof x === 'string';
 };
 
+/**
+ * A wrapper around a DOM element.
+ * All transformative methods return this (except transitions as they return promises)
+ * This means those methods can be chained.
+ */
+
+function Wrapper(element) {
+  this.e = element;
+  this._keys = undefined;
+  this._cache = undefined;
+}
+var proto = Wrapper.prototype;
+/**
+ * Get element as 'e' from item, else return text node.
+ */
+
+proto.__ge = function (item) {
+  return item.e || doc.createTextNode(item);
+};
+/**
+ * Gets the element's value. Cannot be chained.
+ */
+
+
+proto.getValue = function () {
+  /* Returns the value of the element */
+  return this.e.value;
+};
+/**
+ * Returns a promise which resolves after a transition.
+ * Saves having to know times of transitions.
+ */
+
+
+proto.transition = function (fn) {
+  var _this = this;
+
+  return new Promise(function (resolve) {
+    fn();
+
+    var transitionEnded = function transitionEnded(e) {
+      _this.e.removeEventListener('transitionend', transitionEnded);
+
+      resolve();
+    };
+
+    _this.e.addEventListener('transitionend', transitionEnded);
+  });
+};
+/* Every method below must return 'this' so it can be chained */
+
+
+proto.append = function (item) {
+  this.e.appendChild(this.__ge(item));
+  return this;
+};
+
+proto.att = function (name, value) {
+  this.e.setAttribute(name, value);
+  return this;
+};
+
+proto.atts = function (atts) {
+  for (var name in atts) {
+    this.att(name, atts[name]);
+  }
+
+  return this;
+};
+
+proto.cache = function (cache) {
+  this._cache = cache;
+  this._keys = [];
+  return this;
+};
+
+proto.clear = function () {
+  this.e.innerHTML = '';
+  this.e.textContent = '';
+  this.e.value = '';
+  return this;
+};
+
+proto.checked = function (value) {
+  this.e.checked = value;
+  return this;
+};
+
+proto.child = function (wrapper) {
+  this.e.innerHTML = '';
+  this.e.appendChild(wrapper.e);
+  return this;
+};
+
+proto.css = function (style) {
+  this.e.className = style;
+  return this;
+};
+
+proto.cssAdd = function (style) {
+  this.e.classList.add(style);
+  return this;
+};
+
+proto.cssAddTrans = function (style) {
+  var _this2 = this;
+
+  return this.transition(function (_) {
+    return _this2.e.classList.add(style);
+  });
+};
+
+proto.cssRemove = function (style) {
+  this.e.classList.remove(style);
+  return this;
+};
+
+proto.cssRemoveTrans = function (style) {
+  var _this3 = this;
+
+  return this.transition(function (_) {
+    return _this3.e.classList.remove(style);
+  });
+};
+
+proto.cssToggle = function (style) {
+  this.e.classList.toggle(style);
+  return this;
+};
+
+proto.href = function (value) {
+  return this.att('href', value);
+};
+
+proto.html = function (html) {
+  this.e.innerHTML = html;
+  return this;
+};
+
+proto.id = function (value) {
+  return this.att('id', value);
+};
+/*
+ * Set inner as individual item or array. Not optimised.
+ */
+
+
+proto.inner = function (items) {
+  if (!Array.isArray(items)) {
+    items = [items];
+  }
+
+  var e = this.e;
+  e.innerHTML = '';
+
+  for (var i = 0, il = items.length; i < il; i++) {
+    e.appendChild(this.__ge(items[i]));
+  }
+
+  return this;
+};
+/*
+ * Set items from cache.
+ */
+
+
+proto.items = function (items) {
+  var e = this.e;
+  var childNodes = e.childNodes;
+  var cache = this._cache;
+  var oldKeys = this._keys;
+  var newKeys = [];
+  var itemsLength = items.length;
+  var canAddNow = oldKeys.length - 1;
+  cache.reset();
+  /*
+   * We loop over the newKeys and pull Elements forward.
+   * oldKeys will be edited in place to look like newKeys, but may have trailing
+   * keys which represent the items to be removed.
+   */
+
+  for (var i = 0; i < itemsLength; i++) {
+    var item = items[i];
+
+    var _this$_cache$getOne = this._cache.getOne(item),
+        view = _this$_cache$getOne.view,
+        key = _this$_cache$getOne.key;
+
+    newKeys.push(key);
+
+    if (i > canAddNow) {
+      e.appendChild(view.e, this);
+    } else if (key !== oldKeys[i]) {
+      /*
+       * Note: insertBefore removes the element from the DOM if attached
+       * elsewhere, which should either only be further down in the
+       * childNodes, or in case of a shared cache, somewhere we don't
+       * care about removing it from, so its OK.
+       */
+      e.insertBefore(view.e, childNodes[i]);
+    }
+  }
+
+  var lastIndex = childNodes.length - 1;
+  var keepIndex = itemsLength - 1;
+
+  for (var _i = lastIndex; _i > keepIndex; _i--) {
+    e.removeChild(childNodes[_i]);
+  }
+
+  this._keys = newKeys;
+  return this;
+};
+
+proto.on = function (event, callback) {
+  var _this4 = this;
+
+  this.e.addEventListener(event, function (e) {
+    return callback(e, _this4);
+  });
+  return this;
+};
+
+proto.replace = function (el) {
+  this.e.parentNode.replaceChild(el, this.e);
+  return this;
+};
+
+proto.src = function (value) {
+  return this.att('src', value);
+};
+
+proto.style = function (name, value) {
+  this.e.style[name] = value;
+  return this;
+};
+
+proto.text = function (value) {
+  this.e.textContent = value;
+  return this;
+};
+
+proto.visible = function (visible) {
+  return this.style('visibility', visible ? 'visible' : 'hidden');
+};
+
+proto.value = function (value) {
+  return this.att('value', value);
+};
+
+/**
+ * Creates and mounts a view onto an element.
+ *
+ * @param {unsure} elementOrId Either a string representing an id, or an element.
+ * @param {class} cls The class of View to create
+ * @param {object} props The props to pass to the view (optional)
+ * @param {object} parent The parent view (optional)
+ */
+
+function mount(elementOrId, cls, props, parent) {
+  var view = createView(cls, parent, props);
+  var nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId;
+  nodeToReplace.parentNode.replaceChild(view.e, nodeToReplace);
+  return view;
+}
+/**
+ * Creates a view and initialises it.
+ *
+ * @param {class} cls The class of View to create
+ * @param {object} parent The parent view (optional)
+ * @param {object} props The props to pass to the view (optional)
+ */
+
+function createView(cls, parent, props) {
+  var view = buildView(cls, parent);
+  view.props = props;
+  view.init();
+  view.update();
+  return view;
+}
+/**
+ * Builds a view.
+ */
+
+function buildView(cls, parent) {
+  var view = new cls(parent);
+
+  view.__bv(view, cls.prototype);
+
+  return view;
+}
+/**
+ * Creates a wrapper from an HTML string.
+ */
+
+function wrap(html) {
+  return new Wrapper(makeEl(html));
+}
+/**
+ * Creates a wrapper of type tag and sets inner.
+ * TODO: allow class in tag?
+ */
+
+function h(tag, inner) {
+  return new Wrapper(doc.createElement(tag)).inner(inner);
+}
+
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -100,350 +407,6 @@ function _nonIterableRest() {
 }
 
 /**
- * A wrapper around a DOM element.
- * All transformative methods return this (except transitions as they return promises)
- * This means those methods can be chained.
- */
-
-var Wrapper = /*#__PURE__*/function () {
-  function Wrapper(element) {
-    _classCallCheck(this, Wrapper);
-
-    this.e = element;
-    this._keys = undefined;
-    this._cache = undefined;
-  }
-  /**
-   * Get element as 'e' from item, else return text node.
-   */
-
-
-  _createClass(Wrapper, [{
-    key: "__ge",
-    value: function __ge(item) {
-      return item.e || doc.createTextNode(item);
-    }
-    /**
-     * Gets the element's value. Cannot be chained.
-     */
-
-  }, {
-    key: "getValue",
-    value: function getValue() {
-      /* Returns the value of the element */
-      return this.e.value;
-    }
-    /**
-     * Returns a promise which resolves after a transition.
-     * Saves having to know times of transitions.
-     */
-
-  }, {
-    key: "transition",
-    value: function transition(fn) {
-      var _this = this;
-
-      return new Promise(function (resolve) {
-        fn();
-
-        var transitionEnded = function transitionEnded(e) {
-          _this.e.removeEventListener('transitionend', transitionEnded);
-
-          resolve();
-        };
-
-        _this.e.addEventListener('transitionend', transitionEnded);
-      });
-    }
-    /* Every method below must return 'this' so it can be chained */
-
-  }, {
-    key: "append",
-    value: function append(item) {
-      this.e.appendChild(this.__ge(item));
-      return this;
-    }
-  }, {
-    key: "att",
-    value: function att(name, value) {
-      this.e.setAttribute(name, value);
-      return this;
-    }
-  }, {
-    key: "atts",
-    value: function atts(_atts) {
-      for (var name in _atts) {
-        this.att(name, _atts[name]);
-      }
-
-      return this;
-    }
-  }, {
-    key: "cache",
-    value: function cache(_cache) {
-      this._cache = _cache;
-      this._keys = [];
-      return this;
-    }
-  }, {
-    key: "clear",
-    value: function clear() {
-      this.e.innerHTML = '';
-      this.e.textContent = '';
-      this.e.value = '';
-      return this;
-    }
-  }, {
-    key: "checked",
-    value: function checked(value) {
-      this.e.checked = value;
-      return this;
-    }
-  }, {
-    key: "child",
-    value: function child(wrapper) {
-      this.e.innerHTML = '';
-      this.e.appendChild(wrapper.e);
-      return this;
-    }
-  }, {
-    key: "css",
-    value: function css(style) {
-      this.e.className = style;
-      return this;
-    }
-  }, {
-    key: "cssAdd",
-    value: function cssAdd(style) {
-      this.e.classList.add(style);
-      return this;
-    }
-  }, {
-    key: "cssAddTrans",
-    value: function cssAddTrans(style) {
-      var _this2 = this;
-
-      return this.transition(function (_) {
-        return _this2.e.classList.add(style);
-      });
-    }
-  }, {
-    key: "cssRemove",
-    value: function cssRemove(style) {
-      this.e.classList.remove(style);
-      return this;
-    }
-  }, {
-    key: "cssRemoveTrans",
-    value: function cssRemoveTrans(style) {
-      var _this3 = this;
-
-      return this.transition(function (_) {
-        return _this3.e.classList.remove(style);
-      });
-    }
-  }, {
-    key: "cssToggle",
-    value: function cssToggle(style) {
-      this.e.classList.toggle(style);
-      return this;
-    }
-  }, {
-    key: "href",
-    value: function href(value) {
-      return this.att('href', value);
-    }
-  }, {
-    key: "html",
-    value: function html(_html) {
-      this.e.innerHTML = _html;
-      return this;
-    }
-  }, {
-    key: "id",
-    value: function id(value) {
-      return this.att('id', value);
-    }
-    /*
-     * Set inner as individual item or array. Not optimised.
-     */
-
-  }, {
-    key: "inner",
-    value: function inner(items) {
-      if (!Array.isArray(items)) {
-        items = [items];
-      }
-
-      var e = this.e;
-      e.innerHTML = '';
-
-      for (var i = 0, il = items.length; i < il; i++) {
-        e.appendChild(this.__ge(items[i]));
-      }
-
-      return this;
-    }
-    /*
-     * Set items from cache.
-     */
-
-  }, {
-    key: "items",
-    value: function items(_items) {
-      var e = this.e;
-      var childNodes = e.childNodes;
-      var cache = this._cache;
-      var oldKeys = this._keys;
-      var newKeys = [];
-      var itemsLength = _items.length;
-      var canAddNow = oldKeys.length - 1;
-      cache.reset();
-      var start = performance.now();
-      /*
-       * We loop over the newKeys and pull Elements forward.
-       * oldKeys will be edited in place to look like newKeys, but may have trailing
-       * keys which represent the items to be removed.
-       */
-
-      for (var i = 0; i < itemsLength; i++) {
-        var item = _items[i];
-
-        var _this$_cache$getOne = this._cache.getOne(item),
-            view = _this$_cache$getOne.view,
-            key = _this$_cache$getOne.key;
-
-        newKeys.push(key);
-
-        if (i > canAddNow) {
-          e.appendChild(view.e, this);
-        } else if (key !== oldKeys[i]) {
-          /*
-           * Note: insertBefore removes the element from the DOM if attached
-           * elsewhere, which should either only be further down in the
-           * childNodes, or in case of a shared cache, somewhere we don't
-           * care about removing it from, so its OK.
-           */
-          e.insertBefore(view.e, childNodes[i]);
-        }
-      }
-
-      var lastIndex = childNodes.length - 1;
-      var keepIndex = itemsLength - 1;
-
-      for (var _i = lastIndex; _i > keepIndex; _i--) {
-        e.removeChild(childNodes[_i]);
-      }
-
-      this._keys = newKeys;
-      return this;
-    }
-  }, {
-    key: "on",
-    value: function on(event, callback) {
-      var _this4 = this;
-
-      this.e.addEventListener(event, function (e) {
-        return callback(e, _this4);
-      });
-      return this;
-    }
-  }, {
-    key: "replace",
-    value: function replace(el) {
-      this.e.parentNode.replaceChild(el, this.e);
-      return this;
-    }
-  }, {
-    key: "src",
-    value: function src(value) {
-      return this.att('src', value);
-    }
-  }, {
-    key: "style",
-    value: function style(name, value) {
-      this.e.style[name] = value;
-      return this;
-    }
-  }, {
-    key: "text",
-    value: function text(value) {
-      this.e.textContent = value;
-      return this;
-    }
-  }, {
-    key: "visible",
-    value: function visible(_visible) {
-      return this.style('visibility', _visible ? 'visible' : 'hidden');
-    }
-  }, {
-    key: "value",
-    value: function value(_value) {
-      return this.att('value', _value);
-    }
-  }]);
-
-  return Wrapper;
-}();
-
-/**
- * Creates and mounts a view onto an element.
- *
- * @param {unsure} elementOrId Either a string representing an id, or an element.
- * @param {class} cls The class of View to create
- * @param {object} props The props to pass to the view (optional)
- * @param {object} parent The parent view (optional)
- */
-
-function mount(elementOrId, cls, props, parent) {
-  var view = createView(cls, parent, props);
-  var nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId;
-  nodeToReplace.parentNode.replaceChild(view.e, nodeToReplace);
-  return view;
-}
-/**
- * Creates a view and initialises it.
- *
- * @param {class} cls The class of View to create
- * @param {object} parent The parent view (optional)
- * @param {object} props The props to pass to the view (optional)
- */
-
-function createView(cls, parent, props) {
-  var view = buildView(cls, parent);
-  view.props = props;
-  view.init();
-  view.update();
-  return view;
-}
-/**
- * Builds a view.
- */
-
-function buildView(cls, parent) {
-  var view = new cls(parent);
-
-  view.__bv(view, cls.prototype);
-
-  return view;
-}
-/**
- * Creates a wrapper from an HTML string.
- */
-
-function wrap(html) {
-  return new Wrapper(makeEl(html));
-}
-/**
- * Creates a wrapper of type tag and sets inner.
- * TODO: allow class in tag?
- */
-
-function h(tag, inner) {
-  return new Wrapper(doc.createElement(tag)).inner(inner);
-}
-
-/**
  * An object which caches and returns views of a same type, using a key Function
  * to retrieve views.
  */
@@ -477,7 +440,7 @@ var KeyedCache = /*#__PURE__*/function () {
       });
     }
     /**
-     * Gets a view, potentially from cache
+     * Gets a view, potentially from cache.
      */
 
   }, {
@@ -530,7 +493,7 @@ var SequentialCache = /*#__PURE__*/function () {
     this._seq = 0;
   }
   /**
-   * Gets a view, potentially from cache
+   * Gets a view, potentially from cache.
    */
 
 
@@ -596,65 +559,42 @@ var mountie = {
 };
 
 /**
- * Used internally.
- * Represents a watch on an element.
+ * Used internally. Represents a watch on an element.
  */
-var Watch = /*#__PURE__*/function () {
-  function Watch(el, shieldQuery, reverseShield, shieldCount, callbacks) {
-    _classCallCheck(this, Watch);
+function Watch(el, shieldQuery, reverseShield, shieldCount, callbacks) {
+  this.el = el; // The name of the saved element.
 
-    this.el = el; // The name of the saved element.
+  this.shieldQuery = shieldQuery; // The shield query key -
 
-    this.shieldQuery = shieldQuery; // The shield query key -
+  this.reverseShield = reverseShield; // whether shieldQuery should be flipped
 
-    this.reverseShield = reverseShield; // whether shieldQuery should be flipped
+  this.shieldCount = shieldCount; // The number of items to shield
 
-    this.shieldCount = shieldCount; // The number of items to shield
+  this.callbacks = callbacks; // Callbacks - object
+}
+var proto$1 = Watch.prototype;
 
-    this.callbacks = callbacks; // Callbacks - object
+proto$1.appyCallbacks = function (view) {
+  for (var _i = 0, _Object$entries = Object.entries(this.callbacks); _i < _Object$entries.length; _i++) {
+    var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+        key = _Object$entries$_i[0],
+        callback = _Object$entries$_i[1];
+
+    if (key === '*') {
+      callback.apply(view);
+    } else {
+      // means: {new, old, changed}
+      var _view$lookup = view.lookup(key),
+          n = _view$lookup.n,
+          o = _view$lookup.o,
+          c = _view$lookup.c;
+
+      if (c) {
+        callback.apply(view, [n, o]);
+      }
+    }
   }
-
-  _createClass(Watch, [{
-    key: "shieldFor",
-    value: function shieldFor(view, watch, queryCache) {
-      if (this.shieldQuery) {
-        var _queryCache$get = queryCache.get(view, this.shieldQuery),
-            n = _queryCache$get.n;
-
-        var visible = this.reverseShield ? n : !n;
-        view.dom[watch.el].visible(visible);
-        return visible ? 0 : this.shieldCount;
-      }
-
-      return 0;
-    }
-  }, {
-    key: "appyCallbacks",
-    value: function appyCallbacks(view, queryCache) {
-      for (var _i = 0, _Object$entries = Object.entries(this.callbacks); _i < _Object$entries.length; _i++) {
-        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-            key = _Object$entries$_i[0],
-            callback = _Object$entries$_i[1];
-
-        if (key === '*') {
-          callback.apply(view);
-        } else {
-          // means: {new, old, changed}
-          var _queryCache$get2 = queryCache.get(view, key),
-              n = _queryCache$get2.n,
-              o = _queryCache$get2.o,
-              c = _queryCache$get2.c;
-
-          if (c) {
-            callback.apply(view, [n, o]);
-          }
-        }
-      }
-    }
-  }]);
-
-  return Watch;
-}();
+};
 
 /**
  * Used internally.
@@ -662,53 +602,36 @@ var Watch = /*#__PURE__*/function () {
  * Intended to be shared between instances of a view.
  * Must call reset() on every update.
  */
-var QueryCollection = /*#__PURE__*/function () {
-  function QueryCollection(queryCallbacks) {
-    _classCallCheck(this, QueryCollection);
+function QueryCollection(queryCallbacks) {
+  this.qc = queryCallbacks;
+  this.run = {};
+}
+var proto$2 = QueryCollection.prototype;
 
-    this.qc = queryCallbacks;
-    this.run = {};
+proto$2.reset = function () {
+  this.run = {};
+};
 
-    for (var key in queryCallbacks) {
-      this.run[key] = undefined;
-    }
+proto$2.get = function (view, key) {
+  var run = this.run;
+
+  if (run[key] === undefined) {
+    // Verbose but efficient way as it avoids lookups?
+    var o = view.__ov[key];
+    var n = this.qc[key].apply(view);
+    var c = n !== o;
+    view.__ov[key] = n;
+    var rtn = {
+      n: n,
+      o: o,
+      c: c
+    };
+    run[key] = rtn;
+    return rtn;
   }
 
-  _createClass(QueryCollection, [{
-    key: "reset",
-    value: function reset() {
-      var run = this.run;
-
-      for (var key in run) {
-        run[key] = undefined;
-      }
-    }
-  }, {
-    key: "get",
-    value: function get(view, key) {
-      var run = this.run;
-
-      if (run[key] === undefined) {
-        // Verbose but efficient way as it avoids lookups?
-        var o = view.__ov[key];
-        var n = this.qc[key].apply(view);
-        var c = n !== o;
-        view.__ov[key] = n;
-        var rtn = {
-          n: n,
-          o: o,
-          c: c
-        };
-        run[key] = rtn;
-        return rtn;
-      } else {
-        return run[key];
-      }
-    }
-  }]);
-
-  return QueryCollection;
-}();
+  return run[key];
+};
 
 /*
  * Public members:
@@ -732,8 +655,8 @@ var QueryCollection = /*#__PURE__*/function () {
  *  __nv (NestedViews)
  *  __ov (OldValues)
  *  __rn (ReplaceNode)
- *  __un (Update Nested Views)
- *  __uw (Update Watches)
+ *  updateNested (Update Nested Views)
+ *  updateSelf (Update Watches)
  *  __wc (Watcher Callbacks)
  *
  */
@@ -746,17 +669,16 @@ var View = /*#__PURE__*/function () {
     s.parent = parent; // The parent view
 
     s.props = undefined; // The props passed to the view. May be changed.
-    // Internal state objects
-
-    s.__nv = []; // Array of nested views
-    // These relate to watchers
-
-    s.__ov = {}; // The old values for watches to compare against
     // These will be set during build
 
     s.e = null; // the element
 
     s.dom = null; // the named wrappers
+    // Internal state objects
+
+    s.__nv = []; // Nested views
+
+    s.__ov = {}; // The old values for watches to compare against
   }
   /**
    * Gets called once immediately after building.
@@ -776,23 +698,24 @@ var View = /*#__PURE__*/function () {
         view.init();
       }
     }
-  }, {
-    key: "trackMounting",
-    value: function trackMounting() {
-      this.__mt.track(this);
-    }
     /**
-     * Updates the view.
+     * Was intended as a way to bubble events up the tree. Not sure if needed.
      */
 
   }, {
-    key: "update",
-    value: function update() {
-      this.__uw();
+    key: "emit",
+    value: function emit(name, args) {
+      var target = this;
 
-      this.__ui();
+      while (!und(target)) {
+        var handlers = target._handlers_;
 
-      this.__un();
+        if (name in handlers) {
+          return handlers[name].apply(target, args);
+        }
+
+        target = target.parent;
+      }
     }
     /**
      * Move the view to new parent.
@@ -822,52 +745,29 @@ var View = /*#__PURE__*/function () {
       return child;
     }
     /**
-     * Was intended as a way to bubble events up the tree. Not sure if needed.
+     * Lookup a watched value during update. Returns an object with {o, n, c}
+     * (oldValue, newValue, changed).
+     * You must call this.resetLookups before calling this during an update.
+     * The point is to cache the result so it doesn't have to be repeated.
      */
 
   }, {
-    key: "emit",
-    value: function emit(name, args) {
-      var target = this;
-
-      while (!und(target)) {
-        var handlers = target._handlers_;
-
-        if (name in handlers) {
-          return handlers[name].apply(target, args);
-        }
-
-        target = target.parent;
-      }
+    key: "lookup",
+    value: function lookup(query) {
+      return this.__qc.get(this, query);
     }
     /**
-     * Returns the old value of a watch. Must use shorthand notation e.g. "..items"
+     * Resets the lookups, muct be called before calling this.lookup() during an update.
      */
 
   }, {
-    key: "old",
-    value: function old(name) {
-      return this.__ov[name];
-    }
-    /**
-     * Calls the callback if the value has changed (
-     */
-
-  }, {
-    key: "changed",
-    value: function changed(name, callback) {
-      var n = this.__ov[name];
-      var o = this.props[name];
-
-      if (n !== o) {
-        callback(n, o);
-      }
+    key: "resetLookups",
+    value: function resetLookups() {
+      this.__qc.reset();
     }
     /**
      * Sets the props and updates the view.
-     * @props -- new props, else it keeps its old (which is fine)
      */
-    //TODO: rename to not camel case.
 
   }, {
     key: "setProps",
@@ -876,6 +776,110 @@ var View = /*#__PURE__*/function () {
       this.update();
       return this;
     }
+    /**
+     * Call this if you want to get mount() and unmount() callbacks.
+     */
+
+  }, {
+    key: "trackMounting",
+    value: function trackMounting() {
+      this.__mt.track(this);
+    }
+    /**
+     * Updates the view.
+     */
+
+  }, {
+    key: "update",
+    value: function update() {
+      this.resetLookups();
+      this.updateSelf();
+      this.updateNested();
+    }
+    /**
+     * UpdateSelf
+     *
+     * Loops over watches skipping shielded watches if elements are hidden.
+     */
+
+  }, {
+    key: "updateSelf",
+    value: function updateSelf() {
+      var i = 0,
+          watch,
+          shieldCount,
+          shieldQueryBooleanResult,
+          shouldBeVisible;
+      var watches = this.__wc;
+
+      if (!watches) {
+        return;
+      }
+
+      var il = watches.length; //c.log(watches)
+
+      while (i < il) {
+        watch = watches[i];
+        i++;
+        shouldBeVisible = true;
+
+        if (watch.shieldQuery) {
+          // Get the newValue for shieldQuery using lookup
+          shieldQueryBooleanResult = this.lookup(watch.shieldQuery).n; // Determine if shouldBeVisible based on reverseShield
+          // i.e. whether "shieldQuery==true" means show or hide.
+
+          shouldBeVisible = watch.reverseShield ? shieldQueryBooleanResult : !shieldQueryBooleanResult; // The number of watches to skip if this element is not visible
+
+          shieldCount = shouldBeVisible ? 0 : watch.shieldCount; // Set the element visibility
+
+          this.dom[watch.el].visible(shouldBeVisible);
+          i += shieldCount;
+        }
+
+        if (shouldBeVisible) {
+          watch.appyCallbacks(this);
+        }
+      }
+    }
+    /**
+     * Update nested views (but not repeat elements).
+     */
+
+  }, {
+    key: "updateNested",
+    value: function updateNested() {
+      // These are user created by calling next()
+      var items = this.__nv;
+
+      for (var i = 0, il = items.length; i < il; i++) {
+        var child = items[i];
+
+        if (child.__ia()) {
+          child.update();
+        }
+      } // These are created with directives, and whose props arguments may need reprocessed.
+
+
+      for (var _i2 = 0, _Object$entries2 = Object.entries(this.__ip); _i2 < _Object$entries2.length; _i2++) {
+        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+            k = _Object$entries2$_i[0],
+            v = _Object$entries2$_i[1];
+
+        var view = this.dom[k];
+        view.setProps(v.apply(this));
+      }
+    }
+    /**
+     * Calls the callback if the value has changed (
+     */
+    // changed(name, callback) {
+    //   const n = this.__ov[name]
+    //   const o = this.props[name]
+    //   if (n !== o) {
+    //     callback(n, o)
+    //   }
+    // }
+
     /**
      * Build the DOM. We pass prototype as local var for speed.
      */
@@ -951,7 +955,7 @@ var View = /*#__PURE__*/function () {
       return new SequentialCache(cls);
     }
     /**
-     * Nest Internal. For building a nested view declare in the html
+     * Nest Internal. For building a nested view declared in the html
      */
 
   }, {
@@ -962,74 +966,6 @@ var View = /*#__PURE__*/function () {
       this.__gw(path).replace(child.e);
 
       return child;
-    }
-    /**
-     * Update internal views.
-     */
-
-  }, {
-    key: "__ui",
-    value: function __ui() {
-      for (var _i2 = 0, _Object$entries2 = Object.entries(this.__ip); _i2 < _Object$entries2.length; _i2++) {
-        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
-            k = _Object$entries2$_i[0],
-            v = _Object$entries2$_i[1];
-
-        var view = this.dom[k];
-        view.setProps(v.apply(this));
-      }
-    }
-    /**
-     * Update nested views.
-     */
-
-  }, {
-    key: "__un",
-    value: function __un() {
-      var items = this.__nv;
-
-      for (var i = 0, il = items.length; i < il; i++) {
-        var child = items[i];
-
-        if (child.__ia()) {
-          child.update();
-        }
-      }
-    }
-    /**
-     * UpdateWatches.
-     *
-     * Calls update on all watches if watched value has changed, skipping shielded watches.
-     */
-
-  }, {
-    key: "__uw",
-    value: function __uw() {
-      var i = 0,
-          watch,
-          shield;
-      var watches = this.__wc;
-
-      if (!watches) {
-        return;
-      }
-
-      var il = watches.length;
-      var queryCollection = this.__qc;
-      queryCollection.reset();
-
-      while (i < il) {
-        watch = watches[i];
-        shield = watch.shieldFor(this, watch, queryCollection);
-
-        if (shield) {
-          i += shield;
-          continue;
-        }
-
-        watch.appyCallbacks(this, queryCollection);
-        i++;
-      }
     }
   }]);
 
