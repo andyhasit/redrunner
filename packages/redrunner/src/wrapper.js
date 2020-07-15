@@ -136,7 +136,6 @@ proto.items = function(items) {
   const itemsLength = items.length
   let canAddNow = oldKeys.length - 1
   cache.reset()
-  const start = performance.now()
   /*
    * We loop over the newKeys and pull Elements forward.
    * oldKeys will be edited in place to look like newKeys, but may have trailing

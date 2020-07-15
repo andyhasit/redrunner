@@ -7,18 +7,12 @@
 export function QueryCollection(queryCallbacks) {
   this.qc = queryCallbacks
   this.run = {}
-  for (let key in queryCallbacks) {
-    this.run[key] = undefined
-  }
 }
 const proto = QueryCollection.prototype
 
 
 proto.reset = function() {
-  const run = this.run
-  for (let key in run) {
-    run[key] = undefined
-  }
+  this.run = {}
 }
 
 
@@ -33,7 +27,6 @@ proto.get = function(view, key) {
     const rtn = {n, o, c}
     run[key] = rtn
     return rtn
-  } else {
-    return run[key]
   }
+  return run[key]
 }

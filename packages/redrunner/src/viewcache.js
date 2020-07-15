@@ -25,7 +25,7 @@ export class KeyedCache {
     return items.map(props => this.getOne(props, parentView))
   }
   /**
-   * Gets a view, potentially from cache
+   * Gets a view, potentially from cache.
    */
   getOne(props, parentView) {
     let view, key = this.keyFn(props)
@@ -60,7 +60,7 @@ export class SequentialCache {
     this._seq = 0
   }
   /**
-   * Gets a view, potentially from cache
+   * Gets a view, potentially from cache.
    */
   getOne(props, parentView) {
     let view

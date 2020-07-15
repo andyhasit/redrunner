@@ -40,15 +40,14 @@ export class View {
     let s = this
     s.parent = parent       // The parent view
     s.props = undefined     // The props passed to the view. May be changed.
-    // Internal state objects
-    s.__nv = []             // Array of nested views
-
-    // These relate to watchers
-    s.__ov = {}             // The old values for watches to compare against
 
     // These will be set during build
     s.e = null              // the element
     s.dom = null            // the named wrappers
+
+    // Internal state objects
+    s.__nv = []             // Nested views
+    s.__ov = {}             // The old values for watches to compare against
   }
   /**
    * Gets called once immediately after building.
@@ -108,7 +107,6 @@ export class View {
   }
   /**
    * Sets the props and updates the view.
-   * @props -- new props, else it keeps its old (which is fine)
    */
   setProps(props) {
     this.props = props
@@ -184,13 +182,6 @@ export class View {
       view.setProps(v.apply(this))
     }
   }
-
-  /**
-   * Returns the old value of a watch. Must use shorthand notation e.g. "..items"
-   */
-  // old(name) {
-  //   return this.__ov[name]
-  // }
   /**
    * Calls the callback if the value has changed (
    */
@@ -252,7 +243,7 @@ export class View {
     return new SequentialCache(cls)
   }
   /**
-   * Nest Internal. For building a nested view declare in the html
+   * Nest Internal. For building a nested view declared in the html
    */
   __ni(path, cls) {
     const child = buildView(cls, this)
