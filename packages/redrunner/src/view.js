@@ -1,39 +1,14 @@
-const c = console;
 import {KeyedCache, SequentialCache} from './viewcache'
 import {buildView, createView} from  './utils'
 import {und, makeEl} from './helpers'
 import mountie from './mountie'
 import {Wrapper} from './wrapper'
 import {Watch} from './watch'
-import {QueryCollection} from './querycollection'
+import {Lookup} from './lookup'
 
 
-/*
- * Public members:
- *
- *  e       -- the root element
- *  nest    -- create a nested view
- *  dom     -- an object containing all the saved wrappers
- *  emit    -- emit an event to be handled by a parent views
- *  handle  -- register a function to handle an event emitted by a nested view
- *  init    -- override to set initial state
- *  parent  -- the parent view
- *  props   -- the props passed to the view
- *  update  -- method which gets called when a view is updated
- *
- * Private members (for internal use) start with __ and are listed here:
- *
- *  __bv (BuildView)  -- is built by babel
- *  __bd (BuildDOM)
- *  __ia (IsAttached)
- *  __gw (GetWrapper) -- returns a wrapper at a specific path
- *  __nv (NestedViews)
- *  __ov (OldValues)
- *  __rn (ReplaceNode)
- *  updateNested (Update Nested Views)
- *  updateSelf (Update Watches)
- *  __wc (Watcher Callbacks)
- *
+/**
+ * Represents a view.
  */
 export class View {
   constructor(parent) {
@@ -73,7 +48,7 @@ export class View {
     }
   }
   /**
-   * Move the view to new parent.
+   * Move the view to new parent. Necessary if sharing a cache.
    */
   move(newParent) {
     if (this.parent && this.parent.__nv) {
@@ -128,8 +103,6 @@ export class View {
     this.updateNested()
   }
   /**
-   * UpdateSelf
-   *
    * Loops over watches skipping shielded watches if elements are hidden.
    */
   updateSelf() {
@@ -261,10 +234,10 @@ View.prototype.__mt = mountie
  * Build utils used by the generated code.
  */
 View.prototype.__bu = {
-  _wt: function(el, shieldQuery, reverseShield, shieldCount, callbacks) {
+  w: function(el, shieldQuery, reverseShield, shieldCount, callbacks) {
     return new Watch(el, shieldQuery, reverseShield, shieldCount, callbacks)
   },
-  _qc: function(callbacks) {
-    return new QueryCollection(callbacks)
+  l: function(callbacks) {
+    return new Lookup(callbacks)
   }
 }

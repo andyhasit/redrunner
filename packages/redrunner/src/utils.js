@@ -40,12 +40,6 @@ export function buildView(cls, parent) {
   return view
 }
 
-/**
- * Creates a wrapper from an HTML string.
- */
-export function wrap(html) {
-  return new Wrapper(makeEl(html))
-}
 
 /**
  * Creates a wrapper of type tag and sets inner.

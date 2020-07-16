@@ -8,10 +8,8 @@ export function Watch (el, shieldQuery, reverseShield, shieldCount, callbacks) {
   this.shieldCount = shieldCount       // The number of items to shield
   this.callbacks = callbacks           // Callbacks - object
 }
-const proto = Watch.prototype
 
-
-proto.appyCallbacks = function(view) {
+Watch.prototype.appyCallbacks = function(view) {
   for (let [key, callback] of Object.entries(this.callbacks)) {
     if (key === '*') {
       callback.apply(view)

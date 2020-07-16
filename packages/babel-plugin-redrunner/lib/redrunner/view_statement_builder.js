@@ -20,9 +20,9 @@ const {
 
 
 const vars = {
-  buildUtils: '__bu__',
-  getWatch: '_wt',
-  getQueryCollection: '_qc',
+  buildUtils: 'b',
+  getWatch: 'w',
+  getLookup: 'l',
 }
 
 /**
@@ -57,8 +57,8 @@ class ViewStatementBuilder {
     this.watches = new ArrayStatement()
     this.queryCallbacks = new ObjectStatement()
     this.nestedViewProps = new ObjectStatement()
-    this.queryCollection = new CallStatement(`${vars.buildUtils}.${vars.getQueryCollection}`)
-    this.queryCollection.add(this.queryCallbacks)
+    this.lookup = new CallStatement(`${vars.buildUtils}.${vars.getLookup}`)
+    this.lookup.add(this.queryCallbacks)
   }
   /**
    * Initiates parsing and returns all the generated statements.
@@ -66,13 +66,13 @@ class ViewStatementBuilder {
   buildStatements() {
   	this.walker.parse()
   	this.postParsing()
-    const protoVar = `_${this.className}Prototype`
+    const protoVar = `p`
 		const statements = [
       `var ${protoVar} = ${this.className}.prototype;`,
       `var ${vars.buildUtils} = ${protoVar}.__bu;`,
 			this.htmlString.buildAssign(`${protoVar}.__ht`),
 			this.watches.buildAssign(`${protoVar}.__wc`),
-			this.queryCollection.buildAssign(`${protoVar}.__qc`),
+			this.lookup.buildAssign(`${protoVar}.__qc`),
       this.nestedViewProps.buildAssign(`${protoVar}.__ip`),
 			this.buildMethod.buildAssign(`${protoVar}.__bv`),
 		]

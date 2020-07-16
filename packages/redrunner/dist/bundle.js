@@ -32,243 +32,216 @@ function Wrapper(element) {
   this._keys = undefined;
   this._cache = undefined;
 }
-var proto = Wrapper.prototype;
-/**
- * Get element as 'e' from item, else return text node.
- */
-
-proto.__ge = function (item) {
-  return item.e || doc.createTextNode(item);
-};
-/**
- * Gets the element's value. Cannot be chained.
- */
-
-
-proto.getValue = function () {
-  /* Returns the value of the element */
-  return this.e.value;
-};
-/**
- * Returns a promise which resolves after a transition.
- * Saves having to know times of transitions.
- */
-
-
-proto.transition = function (fn) {
-  var _this = this;
-
-  return new Promise(function (resolve) {
-    fn();
-
-    var transitionEnded = function transitionEnded(e) {
-      _this.e.removeEventListener('transitionend', transitionEnded);
-
-      resolve();
-    };
-
-    _this.e.addEventListener('transitionend', transitionEnded);
-  });
-};
-/* Every method below must return 'this' so it can be chained */
-
-
-proto.append = function (item) {
-  this.e.appendChild(this.__ge(item));
-  return this;
-};
-
-proto.att = function (name, value) {
-  this.e.setAttribute(name, value);
-  return this;
-};
-
-proto.atts = function (atts) {
-  for (var name in atts) {
-    this.att(name, atts[name]);
-  }
-
-  return this;
-};
-
-proto.cache = function (cache) {
-  this._cache = cache;
-  this._keys = [];
-  return this;
-};
-
-proto.clear = function () {
-  this.e.innerHTML = '';
-  this.e.textContent = '';
-  this.e.value = '';
-  return this;
-};
-
-proto.checked = function (value) {
-  this.e.checked = value;
-  return this;
-};
-
-proto.child = function (wrapper) {
-  this.e.innerHTML = '';
-  this.e.appendChild(wrapper.e);
-  return this;
-};
-
-proto.css = function (style) {
-  this.e.className = style;
-  return this;
-};
-
-proto.cssAdd = function (style) {
-  this.e.classList.add(style);
-  return this;
-};
-
-proto.cssAddTrans = function (style) {
-  var _this2 = this;
-
-  return this.transition(function (_) {
-    return _this2.e.classList.add(style);
-  });
-};
-
-proto.cssRemove = function (style) {
-  this.e.classList.remove(style);
-  return this;
-};
-
-proto.cssRemoveTrans = function (style) {
-  var _this3 = this;
-
-  return this.transition(function (_) {
-    return _this3.e.classList.remove(style);
-  });
-};
-
-proto.cssToggle = function (style) {
-  this.e.classList.toggle(style);
-  return this;
-};
-
-proto.href = function (value) {
-  return this.att('href', value);
-};
-
-proto.html = function (html) {
-  this.e.innerHTML = html;
-  return this;
-};
-
-proto.id = function (value) {
-  return this.att('id', value);
-};
-/*
- * Set inner as individual item or array. Not optimised.
- */
-
-
-proto.inner = function (items) {
-  if (!Array.isArray(items)) {
-    items = [items];
-  }
-
-  var e = this.e;
-  e.innerHTML = '';
-
-  for (var i = 0, il = items.length; i < il; i++) {
-    e.appendChild(this.__ge(items[i]));
-  }
-
-  return this;
-};
-/*
- * Set items from cache.
- */
-
-
-proto.items = function (items) {
-  var e = this.e;
-  var childNodes = e.childNodes;
-  var cache = this._cache;
-  var oldKeys = this._keys;
-  var newKeys = [];
-  var itemsLength = items.length;
-  var canAddNow = oldKeys.length - 1;
-  cache.reset();
-  /*
-   * We loop over the newKeys and pull Elements forward.
-   * oldKeys will be edited in place to look like newKeys, but may have trailing
-   * keys which represent the items to be removed.
+Wrapper.prototype = {
+  /**
+   * Get element as 'e' from item, else return text node.
    */
+  __ge: function __ge(item) {
+    return item.e || doc.createTextNode(item);
+  },
 
-  for (var i = 0; i < itemsLength; i++) {
-    var item = items[i];
+  /**
+   * Gets the element's value. Cannot be chained.
+   */
+  getValue: function getValue() {
+    /* Returns the value of the element */
+    return this.e.value;
+  },
 
-    var _this$_cache$getOne = this._cache.getOne(item),
-        view = _this$_cache$getOne.view,
-        key = _this$_cache$getOne.key;
+  /**
+   * Returns a promise which resolves after a transition.
+   * Saves having to know times of transitions.
+   */
+  transition: function transition(fn) {
+    var _this = this;
 
-    newKeys.push(key);
+    return new Promise(function (resolve) {
+      fn();
 
-    if (i > canAddNow) {
-      e.appendChild(view.e, this);
-    } else if (key !== oldKeys[i]) {
-      /*
-       * Note: insertBefore removes the element from the DOM if attached
-       * elsewhere, which should either only be further down in the
-       * childNodes, or in case of a shared cache, somewhere we don't
-       * care about removing it from, so its OK.
-       */
-      e.insertBefore(view.e, childNodes[i]);
+      var transitionEnded = function transitionEnded(e) {
+        _this.e.removeEventListener('transitionend', transitionEnded);
+
+        resolve();
+      };
+
+      _this.e.addEventListener('transitionend', transitionEnded);
+    });
+  },
+
+  /* Every method below must return 'this' so it can be chained */
+  append: function append(item) {
+    this.e.appendChild(this.__ge(item));
+    return this;
+  },
+  att: function att(name, value) {
+    this.e.setAttribute(name, value);
+    return this;
+  },
+  atts: function atts(_atts) {
+    for (var name in _atts) {
+      this.att(name, _atts[name]);
     }
+
+    return this;
+  },
+  cache: function cache(_cache) {
+    this._cache = _cache;
+    this._keys = [];
+    return this;
+  },
+  clear: function clear() {
+    this.e.innerHTML = '';
+    this.e.textContent = '';
+    this.e.value = '';
+    return this;
+  },
+  checked: function checked(value) {
+    this.e.checked = value;
+    return this;
+  },
+  child: function child(wrapper) {
+    this.e.innerHTML = '';
+    this.e.appendChild(wrapper.e);
+    return this;
+  },
+  css: function css(style) {
+    this.e.className = style;
+    return this;
+  },
+  cssAdd: function cssAdd(style) {
+    this.e.classList.add(style);
+    return this;
+  },
+  cssAddTrans: function cssAddTrans(style) {
+    var _this2 = this;
+
+    return this.transition(function (_) {
+      return _this2.e.classList.add(style);
+    });
+  },
+  cssRemove: function cssRemove(style) {
+    this.e.classList.remove(style);
+    return this;
+  },
+  cssRemoveTrans: function cssRemoveTrans(style) {
+    var _this3 = this;
+
+    return this.transition(function (_) {
+      return _this3.e.classList.remove(style);
+    });
+  },
+  cssToggle: function cssToggle(style) {
+    this.e.classList.toggle(style);
+    return this;
+  },
+  href: function href(value) {
+    return this.att('href', value);
+  },
+  html: function html(_html) {
+    this.e.innerHTML = _html;
+    return this;
+  },
+  id: function id(value) {
+    return this.att('id', value);
+  },
+
+  /*
+   * Set inner as individual item or array. Not optimised.
+   */
+  inner: function inner(items) {
+    if (!Array.isArray(items)) {
+      items = [items];
+    }
+
+    var e = this.e;
+    e.innerHTML = '';
+
+    for (var i = 0, il = items.length; i < il; i++) {
+      e.appendChild(this.__ge(items[i]));
+    }
+
+    return this;
+  },
+
+  /*
+   * Set items from cache.
+   */
+  items: function items(_items) {
+    var e = this.e;
+    var childNodes = e.childNodes;
+    var cache = this._cache;
+    var oldKeys = this._keys;
+    var newKeys = [];
+    var itemsLength = _items.length;
+    var canAddNow = oldKeys.length - 1;
+    cache.reset();
+    /*
+     * We loop over the newKeys and pull Elements forward.
+     * oldKeys will be edited in place to look like newKeys, but may have trailing
+     * keys which represent the items to be removed.
+     */
+
+    for (var i = 0; i < itemsLength; i++) {
+      var item = _items[i];
+
+      var _this$_cache$getOne = this._cache.getOne(item),
+          view = _this$_cache$getOne.view,
+          key = _this$_cache$getOne.key;
+
+      newKeys.push(key);
+
+      if (i > canAddNow) {
+        e.appendChild(view.e, this);
+      } else if (key !== oldKeys[i]) {
+        /*
+         * Note: insertBefore removes the element from the DOM if attached
+         * elsewhere, which should either only be further down in the
+         * childNodes, or in case of a shared cache, somewhere we don't
+         * care about removing it from, so its OK.
+         */
+        e.insertBefore(view.e, childNodes[i]);
+      }
+    }
+
+    var lastIndex = childNodes.length - 1;
+    var keepIndex = itemsLength - 1;
+
+    for (var _i = lastIndex; _i > keepIndex; _i--) {
+      e.removeChild(childNodes[_i]);
+    }
+
+    this._keys = newKeys;
+    return this;
+  },
+  on: function on(event, callback) {
+    var _this4 = this;
+
+    this.e.addEventListener(event, function (e) {
+      return callback(e, _this4);
+    });
+    return this;
+  },
+  replace: function replace(el) {
+    this.e.parentNode.replaceChild(el, this.e);
+    return this;
+  },
+  src: function src(value) {
+    return this.att('src', value);
+  },
+  style: function style(name, value) {
+    this.e.style[name] = value;
+    return this;
+  },
+  text: function text(value) {
+    this.e.textContent = value;
+    return this;
+  },
+  visible: function visible(_visible) {
+    return this.style('visibility', _visible ? 'visible' : 'hidden');
+  },
+  value: function value(_value) {
+    return this.att('value', _value);
   }
-
-  var lastIndex = childNodes.length - 1;
-  var keepIndex = itemsLength - 1;
-
-  for (var _i = lastIndex; _i > keepIndex; _i--) {
-    e.removeChild(childNodes[_i]);
-  }
-
-  this._keys = newKeys;
-  return this;
-};
-
-proto.on = function (event, callback) {
-  var _this4 = this;
-
-  this.e.addEventListener(event, function (e) {
-    return callback(e, _this4);
-  });
-  return this;
-};
-
-proto.replace = function (el) {
-  this.e.parentNode.replaceChild(el, this.e);
-  return this;
-};
-
-proto.src = function (value) {
-  return this.att('src', value);
-};
-
-proto.style = function (name, value) {
-  this.e.style[name] = value;
-  return this;
-};
-
-proto.text = function (value) {
-  this.e.textContent = value;
-  return this;
-};
-
-proto.visible = function (visible) {
-  return this.style('visibility', visible ? 'visible' : 'hidden');
-};
-
-proto.value = function (value) {
-  return this.att('value', value);
 };
 
 /**
@@ -311,13 +284,6 @@ function buildView(cls, parent) {
   view.__bv(view, cls.prototype);
 
   return view;
-}
-/**
- * Creates a wrapper from an HTML string.
- */
-
-function wrap(html) {
-  return new Wrapper(makeEl(html));
 }
 /**
  * Creates a wrapper of type tag and sets inner.
@@ -409,127 +375,85 @@ function _nonIterableRest() {
 /**
  * An object which caches and returns views of a same type, using a key Function
  * to retrieve views.
+ * @param {class} cls The class of View to create
+ * @param {function} keyFn A function which obtains the key to cache by
  */
 
 
-var KeyedCache = /*#__PURE__*/function () {
-  /**
-   * @param {class} cls The class of View to create
-   * @param {function} keyFn A function which obtains the key to cache by
-   */
-  function KeyedCache(cls, keyFn) {
-    _classCallCheck(this, KeyedCache);
-
-    this.cls = cls;
-    this.cache = {};
-    this.keyFn = keyFn;
-    this._seq = 0;
-  }
-
-  _createClass(KeyedCache, [{
-    key: "getMany",
-    value: function getMany(items, parentView, reset) {
-      var _this = this;
-
-      if (reset) {
-        this.reset();
-      }
-
-      return items.map(function (props) {
-        return _this.getOne(props, parentView);
-      });
-    }
-    /**
-     * Gets a view, potentially from cache.
-     */
-
-  }, {
-    key: "getOne",
-    value: function getOne(props, parentView) {
-      var view,
-          key = this.keyFn(props);
-
-      if (this.cache.hasOwnProperty(key)) {
-        view = this.cache[key];
-
-        if (parentView !== view.parent) {
-          view.move(parentView);
-        }
-
-        view.setProps(props);
-      } else {
-        view = createView(this.cls, parentView, props);
-        this.cache[key] = view;
-      }
-
-      this._seq += 1;
-      return {
-        view: view,
-        key: key
-      };
-    }
-  }, {
-    key: "reset",
-    value: function reset() {
-      this._seq = 0;
-    }
-  }]);
-
-  return KeyedCache;
-}();
-/**
- * An object which caches and returns views of a same type, caching by sequence.
- */
-
-var SequentialCache = /*#__PURE__*/function () {
-  /**
-   * @param {class} cls The class of View to create.
-   */
-  function SequentialCache(cls) {
-    _classCallCheck(this, SequentialCache);
-
-    this.cls = cls;
-    this.cache = [];
-    this._seq = 0;
-  }
+function KeyedCache(cls, keyFn) {
+  this.cls = cls;
+  this.cache = {};
+  this.keyFn = keyFn;
+  this._seq = 0;
+}
+KeyedCache.prototype = {
   /**
    * Gets a view, potentially from cache.
    */
+  getOne: function getOne(props, parentView) {
+    var view,
+        key = this.keyFn(props);
 
+    if (this.cache.hasOwnProperty(key)) {
+      view = this.cache[key];
 
-  _createClass(SequentialCache, [{
-    key: "getOne",
-    value: function getOne(props, parentView) {
-      var view;
-
-      if (this._seq < this.cache.length) {
-        view = this.cache[this._seq];
-
-        if (parentView !== view.parent) {
-          view.move(parentView);
-        }
-
-        view.setProps(props);
-      } else {
-        view = createView(this.cls, parentView, props);
-        this.cache.push(view);
+      if (parentView !== view.parent) {
+        view.move(parentView);
       }
 
-      this._seq += 1;
-      return {
-        view: view,
-        key: this._seq
-      };
+      view.setProps(props);
+    } else {
+      view = createView(this.cls, parentView, props);
+      this.cache[key] = view;
     }
-  }, {
-    key: "reset",
-    value: function reset() {
-      this._seq = 0;
-    }
-  }]);
 
-  return SequentialCache;
-}();
+    this._seq += 1;
+    return {
+      view: view,
+      key: key
+    };
+  },
+  reset: function reset() {
+    this._seq = 0;
+  }
+};
+/**
+ * An object which caches and returns views of a same type, caching by sequence.
+ * @param {class} cls The class of View to create.
+ */
+
+function SequentialCache(cls) {
+  this.cls = cls;
+  this.cache = [];
+  this._seq = 0;
+}
+SequentialCache.prototype = {
+  getOne: function getOne(props, parentView) {
+    var view;
+
+    if (this._seq < this.cache.length) {
+      view = this.cache[this._seq];
+
+      if (parentView !== view.parent) {
+        view.move(parentView);
+      }
+
+      view.setProps(props);
+    } else {
+      view = createView(this.cls, parentView, props);
+      this.cache.push(view);
+    }
+
+    this._seq += 1;
+    return {
+      view: view,
+      key: this._seq
+    };
+  },
+  reset: function reset() {
+    this._seq = 0;
+  }
+};
 
 /**
  * RedRunner's crude way of tracking mounting and unmounting.
@@ -572,9 +496,8 @@ function Watch(el, shieldQuery, reverseShield, shieldCount, callbacks) {
 
   this.callbacks = callbacks; // Callbacks - object
 }
-var proto$1 = Watch.prototype;
 
-proto$1.appyCallbacks = function (view) {
+Watch.prototype.appyCallbacks = function (view) {
   for (var _i = 0, _Object$entries = Object.entries(this.callbacks); _i < _Object$entries.length; _i++) {
     var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
         key = _Object$entries$_i[0],
@@ -602,63 +525,38 @@ proto$1.appyCallbacks = function (view) {
  * Intended to be shared between instances of a view.
  * Must call reset() on every update.
  */
-function QueryCollection(queryCallbacks) {
-  this.qc = queryCallbacks;
+function Lookup(callbacks) {
+  this.callbacks = callbacks;
   this.run = {};
 }
-var proto$2 = QueryCollection.prototype;
+Lookup.prototype = {
+  get: function get(view, key) {
+    var run = this.run;
 
-proto$2.reset = function () {
-  this.run = {};
-};
+    if (run[key] === undefined) {
+      // Verbose but efficient way as it avoids lookups?
+      var o = view.__ov[key];
+      var n = this.callbacks[key].apply(view);
+      var c = n !== o;
+      view.__ov[key] = n;
+      var rtn = {
+        n: n,
+        o: o,
+        c: c
+      };
+      run[key] = rtn;
+      return rtn;
+    }
 
-proto$2.get = function (view, key) {
-  var run = this.run;
-
-  if (run[key] === undefined) {
-    // Verbose but efficient way as it avoids lookups?
-    var o = view.__ov[key];
-    var n = this.qc[key].apply(view);
-    var c = n !== o;
-    view.__ov[key] = n;
-    var rtn = {
-      n: n,
-      o: o,
-      c: c
-    };
-    run[key] = rtn;
-    return rtn;
+    return run[key];
+  },
+  reset: function reset() {
+    this.run = {};
   }
-
-  return run[key];
 };
 
-/*
- * Public members:
- *
- *  e       -- the root element
- *  nest    -- create a nested view
- *  dom     -- an object containing all the saved wrappers
- *  emit    -- emit an event to be handled by a parent views
- *  handle  -- register a function to handle an event emitted by a nested view
- *  init    -- override to set initial state
- *  parent  -- the parent view
- *  props   -- the props passed to the view
- *  update  -- method which gets called when a view is updated
- *
- * Private members (for internal use) start with __ and are listed here:
- *
- *  __bv (BuildView)  -- is built by babel
- *  __bd (BuildDOM)
- *  __ia (IsAttached)
- *  __gw (GetWrapper) -- returns a wrapper at a specific path
- *  __nv (NestedViews)
- *  __ov (OldValues)
- *  __rn (ReplaceNode)
- *  updateNested (Update Nested Views)
- *  updateSelf (Update Watches)
- *  __wc (Watcher Callbacks)
- *
+/**
+ * Represents a view.
  */
 
 var View = /*#__PURE__*/function () {
@@ -718,7 +616,7 @@ var View = /*#__PURE__*/function () {
       }
     }
     /**
-     * Move the view to new parent.
+     * Move the view to new parent. Necessary if sharing a cache.
      */
 
   }, {
@@ -797,8 +695,6 @@ var View = /*#__PURE__*/function () {
       this.updateNested();
     }
     /**
-     * UpdateSelf
-     *
      * Loops over watches skipping shielded watches if elements are hidden.
      */
 
@@ -981,11 +877,11 @@ View.prototype.__mt = mountie;
  */
 
 View.prototype.__bu = {
-  _wt: function _wt(el, shieldQuery, reverseShield, shieldCount, callbacks) {
+  w: function w(el, shieldQuery, reverseShield, shieldCount, callbacks) {
     return new Watch(el, shieldQuery, reverseShield, shieldCount, callbacks);
   },
-  _qc: function _qc(callbacks) {
-    return new QueryCollection(callbacks);
+  l: function l(callbacks) {
+    return new Lookup(callbacks);
   }
 };
 
@@ -997,6 +893,5 @@ module.exports = {
   isStr: isStr,
   SequentialCache: SequentialCache,
   View: View,
-  Wrapper: Wrapper,
-  wrap: wrap
+  Wrapper: Wrapper
 };
