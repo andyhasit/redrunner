@@ -3,14 +3,17 @@
  */
 export function Watch (el, shieldQuery, reverseShield, shieldCount, callbacks) {
   this.el = el                         // The name of the saved element.
-  this.shieldQuery = shieldQuery       // The shield query key -
-  this.reverseShield = reverseShield   // whether shieldQuery should be flipped
-  this.shieldCount = shieldCount       // The number of items to shield
-  this.callbacks = callbacks           // Callbacks - object
+  this.sq = shieldQuery       // The shield query key -
+  this.rv = reverseShield   // whether shieldQuery should be flipped
+  this.sc = shieldCount       // The number of items to shield
+  this.cb = callbacks           // Callbacks - object
 }
 
-Watch.prototype.appyCallbacks = function(view) {
-  for (let [key, callback] of Object.entries(this.callbacks)) {
+/**
+ * Applies the callbacks.
+ */
+Watch.prototype.go = function(view) {
+  for (let [key, callback] of Object.entries(this.cb)) {
     if (key === '*') {
       callback.apply(view)
     } else {

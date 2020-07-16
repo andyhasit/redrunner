@@ -106,7 +106,7 @@ export class View {
    * Loops over watches skipping shielded watches if elements are hidden.
    */
   updateSelf() {
-    let i = 0, watch, shieldCount, shieldQueryBooleanResult, shouldBeVisible
+    let i = 0, watch, shieldCount, shieldQueryResult, shouldBeVisible
     const watches = this.__wc
     if (!watches) {
       return
@@ -117,23 +117,23 @@ export class View {
       watch = watches[i]
       i ++
       shouldBeVisible = true
-      if (watch.shieldQuery) {
+      if (watch.sq) {
         // Get the newValue for shieldQuery using lookup
-        shieldQueryBooleanResult = this.lookup(watch.shieldQuery).n
+        shieldQueryResult = this.lookup(watch.sq).n
 
         // Determine if shouldBeVisible based on reverseShield
         // i.e. whether "shieldQuery==true" means show or hide.
-        shouldBeVisible = watch.reverseShield ? shieldQueryBooleanResult : !shieldQueryBooleanResult
+        shouldBeVisible = watch.rv ? shieldQueryResult : !shieldQueryResult
 
         // The number of watches to skip if this element is not visible
-        shieldCount = shouldBeVisible ? 0 : watch.shieldCount
+        shieldCount = shouldBeVisible ? 0 : watch.sc
 
         // Set the element visibility
         this.dom[watch.el].visible(shouldBeVisible)
         i += shieldCount
       }
       if (shouldBeVisible) {
-        watch.appyCallbacks(this)
+        watch.go(this)
       }
     }
   }
@@ -165,79 +165,91 @@ export class View {
   //     callback(n, o)
   //   }
   // }
-
-  /**
-   * Build the DOM. We pass prototype as local var for speed.
-   */
-  __bd(prototype, clone) {
-    if (clone && !prototype.__cn) {
-      prototype.__cn = makeEl(prototype.__ht)
-    }
-    this.e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht)
-  }
-  /**
-   * Returns a regular wrapper around element at path, where path is an array of indices.
-   * This is used by the babel plugin.
-   */
-  __gw(path) {
-    return new Wrapper(this.__lu(path))
-  }
-  /**
-   * Returns an element at specified path, where path is an array of indices.
-   * This is used by the babel plugin.
-   */
-  __lu(path) {
-    return path.reduce((acc, index) => acc.childNodes[index], this.e)
-  }
-  /**
-   * Is Attached.
-   * Determines whether this view is attached to the DOM.
-   */
-  __ia() {
-    let e = this.e
-    while (e) {
-      if (e === document) {
-        return true
-      }
-      e = e.parentNode
-    }
-    return false
-  }
-  __kc(cls, keyFn) {
-    return new KeyedCache(cls, keyFn)
-  }
-  /**
-   * Replace node at path.
-   */
-  __rn(path, view) {
-    this.__gw(path).replace(view.e)
-  }
-  __sc(cls) {
-    return new SequentialCache(cls)
-  }
-  /**
-   * Nest Internal. For building a nested view declared in the html
-   */
-  __ni(path, cls) {
-    const child = buildView(cls, this)
-    this.__gw(path).replace(child.e)
-    return child
-  }
 }
+
+var proto = View.prototype
 
 /**
  * The global mount tracker.
  */
-View.prototype.__mt = mountie
+proto.__mt = mountie
 
 /**
- * Build utils used by the generated code.
+ * Nest Internal. For building a nested view declared in the html.
  */
-View.prototype.__bu = {
-  w: function(el, shieldQuery, reverseShield, shieldCount, callbacks) {
-    return new Watch(el, shieldQuery, reverseShield, shieldCount, callbacks)
-  },
-  l: function(callbacks) {
-    return new Lookup(callbacks)
+proto.__ni = function(path, cls) {
+  const child = buildView(cls, this)
+  this.__gw(path).replace(child.e)
+  return child
+}
+/**
+ * Replace node at path.
+ */
+proto.__rn = function(path, view) {
+  this.__gw(path).replace(view.e)
+}
+
+/**
+ * Create caches.
+ */
+proto.__kc = function(cls, keyFn) {
+  return new KeyedCache(cls, keyFn)
+}
+proto.__sc = function(cls) {
+  return new SequentialCache(cls)
+}
+
+/**
+ * Build the DOM. We pass prototype as local var for speed.
+ */
+proto.__bd = function(prototype, clone) {
+  if (clone && !prototype.__cn) {
+    prototype.__cn = makeEl(prototype.__ht)
   }
+  this.e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht)
+}
+
+/**
+ * Returns a regular wrapper around element at path, where path is an array of indices.
+ * This is used by the babel plugin.
+ */
+proto.__gw =  function(path) {
+  return new Wrapper(this.__fe(path))
+}
+
+/**
+ * Finds an element at specified path, where path is an array of indices.
+ * This is used by the babel plugin.
+ */
+proto.__fe = function(path) {
+  return path.reduce((acc, index) => acc.childNodes[index], this.e)
+}
+
+/**
+ * Is Attached.
+ * Determines whether this view is attached to the DOM.
+ */
+proto.__ia = function() {
+  let e = this.e
+  while (e) {
+    if (e === document) {
+      return true
+    }
+    e = e.parentNode
+  }
+  return false
+}
+
+/**
+ * Creates a watch.
+ */
+proto.__wa = function(el, shieldQuery, reverseShield, shieldCount, callbacks) {
+  return new Watch(el, shieldQuery, reverseShield, shieldCount, callbacks)
+}
+
+/**
+ * Creates a lookup.
+ */
+proto.__lu= function(callbacks) {
+  return new Lookup(callbacks)
 }

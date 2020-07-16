@@ -17,6 +17,6 @@ MyView.prototype.__ht = '<div></div>';
 MyView.prototype.__bv = function (view, prototype) {
   view.__bd(prototype, false);
   view.dom = {
-    main: new SpecialWrapper(view.__lu([]))
+    main: new SpecialWrapper(view.__fe([]))
   };
 };

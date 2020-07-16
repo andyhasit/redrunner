@@ -45,7 +45,7 @@ const config = {
       params: 'property',
       handle: function(property) {
         this.shieldQuery = property
-        this.reverseShield = true
+        this.reverseShield = 1
       }
     },
     ':watch': {

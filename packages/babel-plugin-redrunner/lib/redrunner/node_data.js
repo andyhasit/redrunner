@@ -17,7 +17,7 @@ class NodeData {
     this.customWrapperArgs = undefined
     this.props = undefined
     this.shieldQuery = undefined
-    this.reverseShield = false
+    this.reverseShield = 0
     this.chainedCalls = []
     this.watches = []
     this.beforeSave = []
@@ -42,7 +42,7 @@ class NodeData {
       return this.wrapperOverride
     } else if (this.customWrapperClass) {
       const args = this.customWrapperArgs ? ',' + this.customWrapperArgs : ''
-      return `new ${this.customWrapperClass}(view.__lu(${path})${args})`
+      return `new ${this.customWrapperClass}(view.__fe(${path})${args})`
     }
     return `view.__gw(${path})`
   }

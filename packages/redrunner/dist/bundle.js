@@ -237,7 +237,7 @@ Wrapper.prototype = {
     return this;
   },
   visible: function visible(_visible) {
-    return this.style('visibility', _visible ? 'visible' : 'hidden');
+    return this.style('display', _visible ? 'unset' : 'none');
   },
   value: function value(_value) {
     return this.att('value', _value);
@@ -488,17 +488,20 @@ var mountie = {
 function Watch(el, shieldQuery, reverseShield, shieldCount, callbacks) {
   this.el = el; // The name of the saved element.
 
-  this.shieldQuery = shieldQuery; // The shield query key -
+  this.sq = shieldQuery; // The shield query key -
 
-  this.reverseShield = reverseShield; // whether shieldQuery should be flipped
+  this.rv = reverseShield; // whether shieldQuery should be flipped
 
-  this.shieldCount = shieldCount; // The number of items to shield
+  this.sc = shieldCount; // The number of items to shield
 
-  this.callbacks = callbacks; // Callbacks - object
+  this.cb = callbacks; // Callbacks - object
 }
+/**
+ * Applies the callbacks.
+ */
 
-Watch.prototype.appyCallbacks = function (view) {
-  for (var _i = 0, _Object$entries = Object.entries(this.callbacks); _i < _Object$entries.length; _i++) {
+Watch.prototype.go = function (view) {
+  for (var _i = 0, _Object$entries = Object.entries(this.cb); _i < _Object$entries.length; _i++) {
     var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
         key = _Object$entries$_i[0],
         callback = _Object$entries$_i[1];
@@ -704,7 +707,7 @@ var View = /*#__PURE__*/function () {
       var i = 0,
           watch,
           shieldCount,
-          shieldQueryBooleanResult,
+          shieldQueryResult,
           shouldBeVisible;
       var watches = this.__wc;
 
@@ -719,21 +722,21 @@ var View = /*#__PURE__*/function () {
         i++;
         shouldBeVisible = true;
 
-        if (watch.shieldQuery) {
+        if (watch.sq) {
           // Get the newValue for shieldQuery using lookup
-          shieldQueryBooleanResult = this.lookup(watch.shieldQuery).n; // Determine if shouldBeVisible based on reverseShield
+          shieldQueryResult = this.lookup(watch.sq).n; // Determine if shouldBeVisible based on reverseShield
           // i.e. whether "shieldQuery==true" means show or hide.
 
-          shouldBeVisible = watch.reverseShield ? shieldQueryBooleanResult : !shieldQueryBooleanResult; // The number of watches to skip if this element is not visible
+          shouldBeVisible = watch.rv ? shieldQueryResult : !shieldQueryResult; // The number of watches to skip if this element is not visible
 
-          shieldCount = shouldBeVisible ? 0 : watch.shieldCount; // Set the element visibility
+          shieldCount = shouldBeVisible ? 0 : watch.sc; // Set the element visibility
 
           this.dom[watch.el].visible(shouldBeVisible);
           i += shieldCount;
         }
 
         if (shouldBeVisible) {
-          watch.appyCallbacks(this);
+          watch.go(this);
         }
       }
     }
@@ -776,113 +779,113 @@ var View = /*#__PURE__*/function () {
     //   }
     // }
 
-    /**
-     * Build the DOM. We pass prototype as local var for speed.
-     */
-
-  }, {
-    key: "__bd",
-    value: function __bd(prototype, clone) {
-      if (clone && !prototype.__cn) {
-        prototype.__cn = makeEl(prototype.__ht);
-      }
-
-      this.e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht);
-    }
-    /**
-     * Returns a regular wrapper around element at path, where path is an array of indices.
-     * This is used by the babel plugin.
-     */
-
-  }, {
-    key: "__gw",
-    value: function __gw(path) {
-      return new Wrapper(this.__lu(path));
-    }
-    /**
-     * Returns an element at specified path, where path is an array of indices.
-     * This is used by the babel plugin.
-     */
-
-  }, {
-    key: "__lu",
-    value: function __lu(path) {
-      return path.reduce(function (acc, index) {
-        return acc.childNodes[index];
-      }, this.e);
-    }
-    /**
-     * Is Attached.
-     * Determines whether this view is attached to the DOM.
-     */
-
-  }, {
-    key: "__ia",
-    value: function __ia() {
-      var e = this.e;
-
-      while (e) {
-        if (e === document) {
-          return true;
-        }
-
-        e = e.parentNode;
-      }
-
-      return false;
-    }
-  }, {
-    key: "__kc",
-    value: function __kc(cls, keyFn) {
-      return new KeyedCache(cls, keyFn);
-    }
-    /**
-     * Replace node at path.
-     */
-
-  }, {
-    key: "__rn",
-    value: function __rn(path, view) {
-      this.__gw(path).replace(view.e);
-    }
-  }, {
-    key: "__sc",
-    value: function __sc(cls) {
-      return new SequentialCache(cls);
-    }
-    /**
-     * Nest Internal. For building a nested view declared in the html
-     */
-
-  }, {
-    key: "__ni",
-    value: function __ni(path, cls) {
-      var child = buildView(cls, this);
-
-      this.__gw(path).replace(child.e);
-
-      return child;
-    }
   }]);
 
   return View;
 }();
+var proto = View.prototype;
 /**
  * The global mount tracker.
  */
 
-View.prototype.__mt = mountie;
+proto.__mt = mountie;
 /**
- * Build utils used by the generated code.
+ * Nest Internal. For building a nested view declared in the html.
  */
 
-View.prototype.__bu = {
-  w: function w(el, shieldQuery, reverseShield, shieldCount, callbacks) {
-    return new Watch(el, shieldQuery, reverseShield, shieldCount, callbacks);
-  },
-  l: function l(callbacks) {
-    return new Lookup(callbacks);
+proto.__ni = function (path, cls) {
+  var child = buildView(cls, this);
+
+  this.__gw(path).replace(child.e);
+
+  return child;
+};
+/**
+ * Replace node at path.
+ */
+
+
+proto.__rn = function (path, view) {
+  this.__gw(path).replace(view.e);
+};
+/**
+ * Create caches.
+ */
+
+
+proto.__kc = function (cls, keyFn) {
+  return new KeyedCache(cls, keyFn);
+};
+
+proto.__sc = function (cls) {
+  return new SequentialCache(cls);
+};
+/**
+ * Build the DOM. We pass prototype as local var for speed.
+ */
+
+
+proto.__bd = function (prototype, clone) {
+  if (clone && !prototype.__cn) {
+    prototype.__cn = makeEl(prototype.__ht);
   }
+
+  this.e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht);
+};
+/**
+ * Returns a regular wrapper around element at path, where path is an array of indices.
+ * This is used by the babel plugin.
+ */
+
+
+proto.__gw = function (path) {
+  return new Wrapper(this.__fe(path));
+};
+/**
+ * Finds an element at specified path, where path is an array of indices.
+ * This is used by the babel plugin.
+ */
+
+
+proto.__fe = function (path) {
+  return path.reduce(function (acc, index) {
+    return acc.childNodes[index];
+  }, this.e);
+};
+/**
+ * Is Attached.
+ * Determines whether this view is attached to the DOM.
+ */
+
+
+proto.__ia = function () {
+  var e = this.e;
+
+  while (e) {
+    if (e === document) {
+      return true;
+    }
+
+    e = e.parentNode;
+  }
+
+  return false;
+};
+/**
+ * Creates a watch.
+ */
+
+
+proto.__wa = function (el, shieldQuery, reverseShield, shieldCount, callbacks) {
+  return new Watch(el, shieldQuery, reverseShield, shieldCount, callbacks);
+};
+/**
+ * Creates a lookup.
+ */
+
+
+proto.__lu = function (callbacks) {
+  return new Lookup(callbacks);
 };
 
 module.exports = {

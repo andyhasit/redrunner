@@ -20,9 +20,9 @@ const {
 
 
 const vars = {
-  buildUtils: 'b',
-  getWatch: 'w',
-  getLookup: 'l',
+  prototypeVariable: 'p',
+  getWatch: '__wa',
+  getLookup: '__lu',
 }
 
 /**
@@ -57,7 +57,7 @@ class ViewStatementBuilder {
     this.watches = new ArrayStatement()
     this.queryCallbacks = new ObjectStatement()
     this.nestedViewProps = new ObjectStatement()
-    this.lookup = new CallStatement(`${vars.buildUtils}.${vars.getLookup}`)
+    this.lookup = new CallStatement(`${vars.prototypeVariable}.${vars.getLookup}`)
     this.lookup.add(this.queryCallbacks)
   }
   /**
@@ -66,18 +66,16 @@ class ViewStatementBuilder {
   buildStatements() {
   	this.walker.parse()
   	this.postParsing()
-    const protoVar = `p`
 		const statements = [
-      `var ${protoVar} = ${this.className}.prototype;`,
-      `var ${vars.buildUtils} = ${protoVar}.__bu;`,
-			this.htmlString.buildAssign(`${protoVar}.__ht`),
-			this.watches.buildAssign(`${protoVar}.__wc`),
-			this.lookup.buildAssign(`${protoVar}.__qc`),
-      this.nestedViewProps.buildAssign(`${protoVar}.__ip`),
-			this.buildMethod.buildAssign(`${protoVar}.__bv`),
+      `var ${vars.prototypeVariable} = ${this.className}.prototype;`,
+			this.htmlString.buildAssign(`${vars.prototypeVariable}.__ht`),
+			this.watches.buildAssign(`${vars.prototypeVariable}.__wc`),
+			this.lookup.buildAssign(`${vars.prototypeVariable}.__qc`),
+      this.nestedViewProps.buildAssign(`${vars.prototypeVariable}.__ip`),
+			this.buildMethod.buildAssign(`${vars.prototypeVariable}.__bv`),
 		]
 		if (this.clone) {
-			statements.push(new ValueStatement('undefined').buildAssign(`${protoVar}.__cn`))
+			statements.push(new ValueStatement('undefined').buildAssign(`${vars.prototypeVariable}.__cn`))
 		}
 		return statements.reverse()
 	}
@@ -138,8 +136,8 @@ class ViewStatementBuilder {
       if (shieldQuery) {
         this.addWatchQueryCallback(shieldQuery)
       }
-      // Use the shieldQuery supplied, undefined (must set as string here)
-      shieldQuery = shieldQuery ? `'${shieldQuery}'` : 'undefined'
+      // Use the shieldQuery supplied, 0 (must set as string here)
+      shieldQuery = shieldQuery ? `'${shieldQuery}'` : '0'
 
       // Squash array to object
       watches = groupArray(watches, 'property', watch => {
@@ -171,7 +169,7 @@ class ViewStatementBuilder {
       // Must slice the nodePath!
       this.saveWatchCallArgs(nodePath.slice(), watchCallArgs)
 
-      const watchCall = new CallStatement(`${vars.buildUtils}.${vars.getWatch}`, watchCallArgs)
+      const watchCall = new CallStatement(`${vars.prototypeVariable}.${vars.getWatch}`, watchCallArgs)
       this.watches.add(watchCall)
     } else if (isNestedView(nodeInfo)) {
       this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, view.nest(${tagName}));`)
