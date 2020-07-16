@@ -24,7 +24,7 @@ test("The :show directive stops its own element from updating.", () => {
   // Run some sanity checks first...
   expect(div).toShow(`
   	<div>
-      <div style="visibility: visible;">
+      <div style="display: unset;">
         <div>1</div>
         <div>2</div>
         <div>3</div>
@@ -35,7 +35,7 @@ test("The :show directive stops its own element from updating.", () => {
   div.update()
   expect(div).toShow(`
     <div>
-      <div style="visibility: hidden;">
+      <div style="display: none;">
         <div>1</div>
         <div>2</div>
         <div>3</div>
@@ -50,7 +50,7 @@ test("The :show directive stops its own element from updating.", () => {
   div.update()
   expect(div).toShow(`
     <div>
-      <div style="visibility: hidden;">
+      <div style="display: none;">
         <div>1</div>
         <div>2</div>
         <div>3</div>
@@ -62,7 +62,7 @@ test("The :show directive stops its own element from updating.", () => {
   div.update()
   expect(div).toShow(`
     <div>
-      <div style="visibility: visible;">
+      <div style="display: unset;">
         <div>4</div>
         <div>5</div>
       </div>
