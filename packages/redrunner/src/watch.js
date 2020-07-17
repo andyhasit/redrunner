@@ -1,12 +1,12 @@
 /**
  * Used internally. Represents a watch on an element.
  */
-export function Watch (el, shieldQuery, reverseShield, shieldCount, callbacks) {
-  this.el = el                         // The name of the saved element.
-  this.sq = shieldQuery       // The shield query key -
-  this.rv = reverseShield   // whether shieldQuery should be flipped
-  this.sc = shieldCount       // The number of items to shield
-  this.cb = callbacks           // Callbacks - object
+export function Watch (wrapperKey, shieldQuery, reverseShield, shieldCount, callbacks) {
+  this.wk = wrapperKey       // The key of the corresponding wrapper.
+  this.sq = shieldQuery      // The shield query key
+  this.rv = reverseShield    // whether shieldQuery should be flipped
+  this.sc = shieldCount      // The number of items to shield
+  this.cb = callbacks        // Callbacks - object
 }
 
 /**

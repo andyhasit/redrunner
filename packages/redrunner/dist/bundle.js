@@ -485,10 +485,10 @@ var mountie = {
 /**
  * Used internally. Represents a watch on an element.
  */
-function Watch(el, shieldQuery, reverseShield, shieldCount, callbacks) {
-  this.el = el; // The name of the saved element.
+function Watch(wrapperKey, shieldQuery, reverseShield, shieldCount, callbacks) {
+  this.wk = wrapperKey; // The key of the corresponding wrapper.
 
-  this.sq = shieldQuery; // The shield query key -
+  this.sq = shieldQuery; // The shield query key
 
   this.rv = reverseShield; // whether shieldQuery should be flipped
 
@@ -731,7 +731,7 @@ var View = /*#__PURE__*/function () {
 
           shieldCount = shouldBeVisible ? 0 : watch.sc; // Set the element visibility
 
-          this.dom[watch.el].visible(shouldBeVisible);
+          this.dom[watch.wk].visible(shouldBeVisible);
           i += shieldCount;
         }
 
@@ -757,6 +757,7 @@ var View = /*#__PURE__*/function () {
           child.update();
         }
       } // These are created with directives, and whose props arguments may need reprocessed.
+      // TODO improve this, maybe drop for of
 
 
       for (var _i2 = 0, _Object$entries2 = Object.entries(this.__ip); _i2 < _Object$entries2.length; _i2++) {

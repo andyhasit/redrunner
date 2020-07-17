@@ -6,7 +6,7 @@ import {smoothiesService} from '../services/smoothies'
 export class SmoothieDetail extends View {
   __html__ = `
     <div>
-      <button :on="click|.toggle?">X</button>
+      <button :onClick=".toggle">X</button>
       <span>{{name}}</span>
     </div>
   `

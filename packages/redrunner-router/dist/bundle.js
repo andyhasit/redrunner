@@ -389,14 +389,14 @@ var Router = /*#__PURE__*/function (_View) {
  * value is passed as data to the view. routeData is {args, params, url}
  */
 
-var _RouterPrototype = Router.prototype;
-var __bu__ = _RouterPrototype.__bu;
-_RouterPrototype.__ht = '<div></div>';
-_RouterPrototype.__wc = [];
-_RouterPrototype.__qc = __bu__._qc({});
-_RouterPrototype.__ip = {};
+var p = Router.prototype;
+var b = p.__bu;
+p.__ht = '<div></div>';
+p.__wc = [];
+p.__qc = b.l({});
+p.__ip = {};
 
-_RouterPrototype.__bv = function (view, prototype) {
+p.__bv = function (view, prototype) {
   view.__bd(prototype, false);
 
   view.dom = {};

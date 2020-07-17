@@ -6,7 +6,7 @@ import {smoothiesService} from '../services/smoothies'
 export class SmoothieListing extends View {
   __html__ = `
     <div>
-      <div class="smoothie-list" :items="*|..smoothiesService.items|SmoothieListItem"></div>
+      <div class="smoothie-list" :items="*|..smoothiesService.items.|SmoothieListItem"></div>
     </div>
   `
   init() {
@@ -19,7 +19,7 @@ class SmoothieListItem extends View {
   __html__ = `
     <div>
       <h2>{{name}}</h2>
-      <div class="contents" :items="*|.contents?|Fruit"></div>
+      <div class="contents" :items="*|.contents|Fruit"></div>
       <a class="button" href="{{.link?}}">edit</a>
     </div>
   `
@@ -39,7 +39,7 @@ class SmoothieListItem extends View {
 
 class Fruit extends View {
   __html__ = `
-    <div class="fruit" :watch="color|.applyColor?|atts">
+    <div class="fruit" :watch="color|.applyColor|atts">
       <span class="emoji">{{emoji}}</span>
       <span>&nbsp;x&nbsp;</span>
       <span>{{qty}}</span>
