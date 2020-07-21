@@ -1,31 +1,40 @@
 const babel = require('@babel/core')
-const {getNodeHtmlString, removeProperty} = require('./utils/babel')
+const {getNodeHtmlString, getNodeObjectValue, removeProperty} = require('./utils/babel')
 const {generateStatements} = require('./redrunner/generate_statements')
+const {viewTemplates} = require('./redrunner/view_templates')
 const {config} = require('./redrunner/config')
 
-let viewCount = 0
 
 module.exports = () => {
   return {
     visitor: {
       Class(path, state) {
         if (path.type == 'ClassDeclaration') {
-          let requiresGeneratedStatements = false
-          let viewData = {className: path.node.id.name, config:config}
+          let foundHtmFieldInClass = false
+          let className = path.node.id.name
+          let viewData = {className, config}
 
           // Iterate over class nodes to find ones we care about
           for (let node of path.node.body.body) {
             let propName = node.key.name
             if (propName == '__html__' || propName == '__clone__') {
               viewData.clone = (propName == '__clone__')
-              requiresGeneratedStatements = true
+              foundHtmFieldInClass = true
               viewData.html = getNodeHtmlString(node)
               removeProperty(path)
             }
           }
 
-          if (requiresGeneratedStatements) {
-            viewCount ++
+          // Check views.html for any templates.
+          if (!foundHtmFieldInClass) {
+            let templateFromHtmlFile = viewTemplates.getHtml(state.filename, className)
+            if (templateFromHtmlFile) {
+              viewData.html = templateFromHtmlFile
+              console.log(templateFromHtmlFile)
+            }
+          }
+
+          if (viewData.html) {
             const statements = generateStatements(viewData)
             statements.forEach(statement =>
               path.insertAfter(babel.template.ast(statement))
