@@ -390,10 +390,9 @@ var Router = /*#__PURE__*/function (_View) {
  */
 
 var p = Router.prototype;
-var b = p.__bu;
 p.__ht = '<div></div>';
 p.__wc = [];
-p.__qc = b.l({});
+p.__qc = p.__lu({});
 p.__ip = {};
 
 p.__bv = function (view, prototype) {

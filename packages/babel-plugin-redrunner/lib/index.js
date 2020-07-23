@@ -30,7 +30,6 @@ module.exports = () => {
             let templateFromHtmlFile = viewTemplates.getHtml(state.filename, className)
             if (templateFromHtmlFile) {
               viewData.html = templateFromHtmlFile
-              console.log(templateFromHtmlFile)
             }
           }
 

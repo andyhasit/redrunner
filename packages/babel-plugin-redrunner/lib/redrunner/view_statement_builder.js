@@ -64,33 +64,34 @@ class ViewStatementBuilder {
    * Initiates parsing and returns all the generated statements.
    */
   buildStatements() {
-  	this.walker.parse()
-  	this.postParsing()
-		const statements = [
+    this.walker.parse()
+    this.postParsing()
+    const statements = [
       `var ${vars.prototypeVariable} = ${this.className}.prototype;`,
-			this.htmlString.buildAssign(`${vars.prototypeVariable}.__ht`),
-			this.watches.buildAssign(`${vars.prototypeVariable}.__wc`),
-			this.lookup.buildAssign(`${vars.prototypeVariable}.__qc`),
+      this.htmlString.buildAssign(`${vars.prototypeVariable}.__ht`),
+      this.watches.buildAssign(`${vars.prototypeVariable}.__wc`),
+      this.lookup.buildAssign(`${vars.prototypeVariable}.__qc`),
       this.nestedViewProps.buildAssign(`${vars.prototypeVariable}.__ip`),
-			this.buildMethod.buildAssign(`${vars.prototypeVariable}.__bv`),
-		]
-		if (this.clone) {
-			statements.push(new ValueStatement('undefined').buildAssign(`${vars.prototypeVariable}.__cn`))
-		}
-		return statements.reverse()
-	}
-	/**
-	 * Consolidates various bits after parsing.
-	 */
-	postParsing() {
+      this.buildMethod.buildAssign(`${vars.prototypeVariable}.__bv`),
+    ]
+    if (this.clone) {
+      statements.push(new ValueStatement('undefined').buildAssign(`${vars.prototypeVariable}.__cn`))
+    }
+    return statements.reverse()
+  }
+  /**
+   * Consolidates various bits after parsing.
+   */
+  postParsing() {
     this.setShieldCounts()
-		this.buildMethod.add(`view.__bd(prototype, ${this.clone})`)
-		this.beforeSave.forEach(i => this.buildMethod.add(i))
-		this.buildMethod.add(this.savedElements.buildAssign('view.dom'))
-		this.afterSave.forEach(i => this.buildMethod.add(i))
-		// We do this at the end as the dom has been changed
-		this.htmlString.set(`'${stripHtml(this.walker.dom.toString())}'`)
-	}
+    this.buildMethod.add(`view.__bd(prototype, ${this.clone})`)
+    this.beforeSave.forEach(i => this.buildMethod.add(i))
+    this.buildMethod.add(this.savedElements.buildAssign('view.dom'))
+    this.afterSave.forEach(i => this.buildMethod.add(i))
+    // We do this at the end as the dom has been changed
+    const strippedHTML = stripHtml(this.walker.dom.toString()).replace("'", "\\'")
+    this.htmlString.set(`'${strippedHTML}'`)
+  }
   /**
    * Sets the shieldCounts, which has to be done after parsing as nodes
    * can't know how many child nodes they will have at point of being
@@ -116,7 +117,7 @@ class ViewStatementBuilder {
    * Gets passed to the DomWalker, which calls this for every node.
    */
   processNode(nodeInfo) {
-  	const {nodePath, node, tagName} = nodeInfo
+    const {nodePath, node, tagName} = nodeInfo
     const nodeData = extractNodeData(node, this.config, this.walker)
     if (nodeData) {
       let {afterSave, beforeSave, saveAs, props, shieldQuery, reverseShield, watches} = nodeData
@@ -141,16 +142,16 @@ class ViewStatementBuilder {
 
       // Squash array to object
       watches = groupArray(watches, 'property', watch => {
-      	let {converter, target, raw} = watch
-      	return buidlWatchCallbackLine(saveAs, converter, target, raw) // TODO: extract this
+        let {converter, target, raw} = watch
+        return buidlWatchCallbackLine(saveAs, converter, target, raw) // TODO: extract this
       })
 
       // Group statements into single function
       const allCallbacks = new ObjectStatement()
       for (let [property, statements] of Object.entries(watches)) {
-      	this.addWatchQueryCallback(property)
-      	let callback = new FunctionStatement('n, o')
-      	statements.forEach(s => callback.add(s))
+        this.addWatchQueryCallback(property)
+        let callback = new FunctionStatement('n, o')
+        statements.forEach(s => callback.add(s))
         allCallbacks.add(property, callback)
       }
 
@@ -198,11 +199,11 @@ class ViewStatementBuilder {
     this.savedElements.add(saveAs, `${initCall}${chainedCallStatement}`)
   }
   addWatchQueryCallback(property) {
-  	const callback = getWatchQueryCallBack(property)
-  	if (callback) {
+    const callback = getWatchQueryCallBack(property)
+    if (callback) {
       this.queryCallbacks.add(property, callback)
     }
-  	// TODO: also initiate the previous values object?
+    // TODO: also initiate the previous values object?
   }
   /**
    * Gets next name for saving elements.
