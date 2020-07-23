@@ -19,8 +19,17 @@ function removeProperty(path){
  *    string uses quasi quotes instead of normal quotes)
  */
 function getNodeHtmlString(node) {
-  let rawText = node.value.quasis ? node.value.quasis[0].value.raw : node.value.value
-  return rawText
+  const nodeValue = node.value
+  const type = nodeValue.type
+  if (type == 'TemplateLiteral') {
+    return nodeValue.quasis[0].value.raw
+  } else if (type == 'TaggedTemplateExpression') {
+    return nodeValue.quasi.quasis[0].value.raw
+  } else if (type == 'StringLiteral') {
+    return nodeValue.value
+  }
+  throw new Error(`HTML template value ${node.key.name} must be a TemplateLiteral\
+    TaggedTemplateExpression, or StringLiteral (found ${type}).`)
 }
 
 /**
