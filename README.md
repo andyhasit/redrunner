@@ -6,53 +6,11 @@ A small JavaScript framework with legs.
 
 RedRunner is a JavaScript framework for building dynamic pages and apps.
 
-It is component-based (like [React](https://reactjs.org/) or [Vue](https://vuejs.org/)) and heavily compiled (like [Svelte](https://svelte.dev/)) however it works quite differently to all of those. 
-
-Here are some of its features:
-
-#### Performance
-
-RedRunner is *very* fast: local testing with [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) puts it ahead of most other major frameworks on almost all benchmarks (some exceptions, and all still to be officially confirmed). 
-
-#### Size
-
-RedRunner itself is just *2.86kB* gzipped, but what really matters is bundle size.
-
-The sample app for [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) comes out at *4.8kB* compared to *39kB* for React (both sizes gzipped).
-
-#### Clarity
-
-RedRunner doesn't use *logic* in the HTML, only simple statements, meaning your HTML remains a clean visual representation of your the DOM structure (as it should be). 
-
-You can also keep CSS out of your HTML in case you're using a library which puts long lists of class names in your tags rather than a specific class (which necessarily isn't a bad thing, see [tailwindcss](https://tailwindcss.com/)).
-
-#### Control
-
-You can take progressively more control of several aspects of any view, including:
-
-* Detecting data change.
-* Deciding whether to update the DOM (far more granular than `shouldComponentUpdate`).
-* Deciding whether to do the calculations before you even get to that point.
-* DOM reuse strategies.
-* The actual DOM updates (using wrappers, which have very neat syntax trick).
-
-You mostly use this for quick and easy performance improvements, or to get out of tight spots.
-
-#### Power
-
-When you get really stuck in a framework, sometimes the only viable option is to step out of it and manipulate the DOM directly. But that is sometimes risky and always ugly.
-
-If you need to step out of RedRunner then it makes sense to use the wrappers for DOM manipulation, as they're already there and nice to work with. And if you're responding to data changes then you might as well tap into the view's existing mechanism as its easy. And if you're reusing DOM, then the same cache classes used by RedRunner are just the tool you need.
-
-Its also very clear which DOM elements are controlled by RedRunner and which aren't, so you can do your changes safely side by side. You can even inter-mesh (e.g. your code sets the element's visibility but use RedRunner for it's value) without risk.
-
-And of course, you'll be familiar with these elements control long before you reach this point from all those times you wanted a little bit more control.
-
-In fact, it may be hard to tell from your code whether you stepped out of the framework and landed back in it, or whether you stayed in the framework but took progressively more control. Maybe they're the same thing?
+It is in early development and not ready to use. The current version is being trialed on a large project to see how it fares. Things are changing rapidly, and a lot of the information below may be out of date.
 
 ## 2. Demo
 
-There is currently just one demo app, which you can run like so:
+There is a very minimal demo app, which you can run like so:
 
 ```
 cd demo
