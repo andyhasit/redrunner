@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`__clone__ instead of __html__ 1`] = `
+"class MyView extends View {}
+
+var _MyViewPrototype = MyView.prototype;
+var __bu__ = _MyViewPrototype.__bu;
+_MyViewPrototype.__ht = '<div></div>';
+_MyViewPrototype.__wc = [];
+_MyViewPrototype.__qc = __bu__._qc({});
+_MyViewPrototype.__ip = {};
+
+_MyViewPrototype.__bv = function (view, prototype) {
+  view.__bd(prototype, true);
+
+  view.dom = {};
+};
+
+_MyViewPrototype.__cn = undefined;"
+`;
+
+exports[`Empty div created correct HTML 1`] = `
+"class MyView extends View {}
+
+var _MyViewPrototype = MyView.prototype;
+var __bu__ = _MyViewPrototype.__bu;
+_MyViewPrototype.__ht = '<div></div>';
+_MyViewPrototype.__wc = [];
+_MyViewPrototype.__qc = __bu__._qc({});
+_MyViewPrototype.__ip = {};
+
+_MyViewPrototype.__bv = function (view, prototype) {
+  view.__bd(prototype, false);
+
+  view.dom = {};
+};"
+`;

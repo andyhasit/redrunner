@@ -1,0 +1,41 @@
+{
+  "name": "redrunner-router",
+  "version": "0.3.0",
+  "description": "A router for RedRunner",
+  "scripts": {
+    "prepublish": "npm run build",
+    "build": "NODE_ENV=production rollup -c",
+    "test": "jest"
+  },
+  "author": "Andrew Buchan",
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ],
+    "plugins": [
+      "babel-plugin-redrunner",
+      "@babel/plugin-proposal-class-properties"
+    ]
+  },
+  "files": [
+    "lib",
+    "src"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andyhasit/redrunner"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.10.2",
+    "@rollup/plugin-babel": "^5.0.3",
+    "babel-core": "^7.0.0-bridge.0",
+    "html": "^1.0.0",
+    "jest": "^26.0.1"
+  },
+  "dependencies": {
+    "babel-plugin-redrunner": "^0.3.0"
+  }
+}

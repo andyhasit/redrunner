@@ -1,0 +1,100 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Inline leaves atts alone 1`] = `
+"class MyView extends View {}
+
+var _MyViewPrototype = MyView.prototype;
+var __bu__ = _MyViewPrototype.__bu;
+_MyViewPrototype.__ht = '<div><span></span><span id=\\"hey\\" ></span></div>';
+_MyViewPrototype.__wc = [__bu__._wt('_1_', undefined, false, 0, {
+  'name': function (n, o) {
+    this.dom._1_.text(this.getName(n, o));
+  }
+}), __bu__._wt('_2_', undefined, false, 0, {
+  'style': function (n, o) {
+    this.dom._2_.att('class', \\"my-style \\" + n);
+  }
+})];
+_MyViewPrototype.__qc = __bu__._qc({
+  'name': function () {
+    return this.props.name;
+  },
+  'style': function () {
+    return this.props.style;
+  }
+});
+_MyViewPrototype.__ip = {};
+
+_MyViewPrototype.__bv = function (view, prototype) {
+  view.__bd(prototype, false);
+
+  view.dom = {
+    '_1_': view.__gw([0]),
+    '_2_': view.__gw([1])
+  };
+};"
+`;
+
+exports[`Inline with different endings 1`] = `
+"class MyView extends View {}
+
+var _MyViewPrototype = MyView.prototype;
+var __bu__ = _MyViewPrototype.__bu;
+_MyViewPrototype.__ht = '<div><span></span><span></span><span></span></div>';
+_MyViewPrototype.__wc = [__bu__._wt('_1_', undefined, false, 0, {
+  'name': function (n, o) {
+    this.dom._1_.text(this.getName(n, o));
+  }
+}), __bu__._wt('_2_', undefined, false, 0, {
+  'name': function (n, o) {
+    this.dom._2_.text(this.getName(n, o));
+  }
+}), __bu__._wt('_3_', undefined, false, 0, {
+  'name': function (n, o) {
+    this.dom._3_.text(this.getName());
+  }
+})];
+_MyViewPrototype.__qc = __bu__._qc({
+  'name': function () {
+    return this.props.name;
+  }
+});
+_MyViewPrototype.__ip = {};
+
+_MyViewPrototype.__bv = function (view, prototype) {
+  view.__bd(prototype, false);
+
+  view.dom = {
+    '_1_': view.__gw([0]),
+    '_2_': view.__gw([1]),
+    '_3_': view.__gw([2])
+  };
+};"
+`;
+
+exports[`Simple inline 1`] = `
+"class MyView extends View {}
+
+var _MyViewPrototype = MyView.prototype;
+var __bu__ = _MyViewPrototype.__bu;
+_MyViewPrototype.__ht = '<div><span></span></div>';
+_MyViewPrototype.__wc = [__bu__._wt('_1_', undefined, false, 0, {
+  'name': function (n, o) {
+    this.dom._1_.text(n);
+  }
+})];
+_MyViewPrototype.__qc = __bu__._qc({
+  'name': function () {
+    return this.props.name;
+  }
+});
+_MyViewPrototype.__ip = {};
+
+_MyViewPrototype.__bv = function (view, prototype) {
+  view.__bd(prototype, false);
+
+  view.dom = {
+    '_1_': view.__gw([0])
+  };
+};"
+`;

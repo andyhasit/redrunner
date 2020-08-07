@@ -1,0 +1,89 @@
+body {
+  /*background: #FFEB3B;*/
+}
+
+h1, h2, h3, h4 {
+  font-family: "Times New Roman", Times, serif;
+  font-style: italic;
+}
+
+.homepage h1 {
+  padding: 15px 0 4px;
+  font-size: 2.8em;
+}
+
+.homepage hr {
+  width: 30%;
+  margin-top: 40px;
+  border: 1px solid black;
+}
+
+.splash-wrapper {
+  padding: 25px;
+  margin: 20px auto 40px;
+  width: 150px;
+  height: 120px;
+}
+
+.homepage-logo {
+  font-size: 110px;
+  transition: all 0.7s;
+}
+
+
+.button {
+color: white;
+  background-color: #000;
+  border-radius: 10px;
+  padding: 8px 14px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 20px;
+  margin: 4px 2px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+
+.demo-component {
+  float: left;
+  max-width: 220px;
+  border: 1px solid black;
+  border-radius: 14px;
+  padding: 0 15px 20px;
+}
+
+.demo-component.h4 {
+  margin: 12px 0;
+}
+
+.click-counter {
+  padding: 10px 0;
+}
+
+h4 {
+  margin: 12px 0;
+}
+
+
+.smoothie-list {
+  text-align: center;
+}
+
+.fruit {
+
+  font-size: 16px;
+  display: inline-block;
+  margin: 0 5px;
+}
+
+.fruit .emoji {
+  font-weight: 900;
+  font-size: 20px;
+}
+
+
+.form-field {
+
+}

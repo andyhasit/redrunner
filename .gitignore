@@ -1,4 +1,5 @@
-demos/.cache/
-demos/dist/
-demos/old/
+.cache/
+coverage/
 node_modules/
+demo/dist/
+lerna-debug.log

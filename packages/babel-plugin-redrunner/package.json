@@ -1,0 +1,38 @@
+{
+  "name": "babel-plugin-redrunner",
+  "version": "0.3.0",
+  "description": "The babel plugin for RedRunner",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ]
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "files": [
+    "lib"
+  ],
+  "author": "Andrew Buchan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andyhasit/redrunner"
+  },
+  "dependencies": {
+    "@babel/core": "^7.8.7",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-syntax-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.10.2",
+    "jsdom": "^16.2.2",
+    "node-html-parser": "^1.2.8"
+  },
+  "devDependencies": {
+    "jest": "^26.0.1",
+    "print-diff": "^1.0.0"
+  }
+}
