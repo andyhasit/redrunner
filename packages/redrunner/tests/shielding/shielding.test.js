@@ -23,7 +23,7 @@ test("The :show directive stops shielded elements from updating.", () => {
   // Run some sanity checks first...
   expect(div).toShow(`
     <div>
-      <div style="display: unset;">
+      <div>
         <div>hello</div>
       </div>
     </div>
@@ -32,7 +32,7 @@ test("The :show directive stops shielded elements from updating.", () => {
   div.update()
   expect(div).toShow(`
     <div>
-      <div style="display: none;">
+      <div class="hidden">
         <div>hello</div>
       </div>
     </div>
@@ -44,7 +44,7 @@ test("The :show directive stops shielded elements from updating.", () => {
   div.update()
   expect(div).toShow(`
     <div>
-      <div style="display: none;">
+      <div class="hidden">
         <div>hello</div>
       </div>
     </div>
@@ -55,7 +55,7 @@ test("The :show directive stops shielded elements from updating.", () => {
   div.update()
   expect(div).toShow(`
     <div>
-      <div style="display: unset;">
+      <div class="">
         <div>goodbye</div>
       </div>
     </div>

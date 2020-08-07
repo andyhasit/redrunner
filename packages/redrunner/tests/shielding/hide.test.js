@@ -22,7 +22,7 @@ test("Hide masks", () => {
   const div = load(TestView, props)
   expect(div).toShow(`
   	<div>
-      <div style="display: unset;">
+      <div>
         <div>1</div>
         <div>2</div>
         <div>3</div>
@@ -33,7 +33,7 @@ test("Hide masks", () => {
   div.update()
   expect(div).toShow(`
     <div>
-      <div style="display: none;">
+      <div class="hidden">
         <div>1</div>
         <div>2</div>
         <div>3</div>
@@ -46,7 +46,7 @@ test("Hide masks", () => {
   // Nothing should change
   expect(div).toShow(`
     <div>
-      <div style="display: none;">
+      <div class="hidden">
         <div>1</div>
         <div>2</div>
         <div>3</div>
@@ -59,7 +59,7 @@ test("Hide masks", () => {
   //
   expect(div).toShow(`
     <div>
-      <div style="display: unset;">
+      <div class="">
         <div>4</div>
         <div>5</div>
       </div>

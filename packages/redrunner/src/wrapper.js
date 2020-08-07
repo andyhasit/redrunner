@@ -184,7 +184,8 @@ Wrapper.prototype = {
     return this
   },
   visible: function(visible) {
-    return this.style('display', visible? 'unset' : 'none')
+    this.e.classList.toggle('hidden', !visible)
+    return this
   },
   value: function(value) {
     return this.att('value', value)
