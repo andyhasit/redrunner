@@ -26,6 +26,7 @@ export class View {
   }
   /**
    * Gets called once immediately after building.
+   * Sets initial props extracted from __html__.
    */
   init() {
     for (let [k, v] of Object.entries(this.__ip)) {
@@ -251,6 +252,6 @@ proto.__wa = function(el, shieldQuery, reverseShield, shieldCount, callbacks) {
 /**
  * Creates a lookup.
  */
-proto.__lu= function(callbacks) {
+proto.__lu = function(callbacks) {
   return new Lookup(callbacks)
 }
