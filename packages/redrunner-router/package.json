@@ -18,11 +18,11 @@
     ]
   },
   "files": [
-    "lib",
-    "src"
+    "src",
+    "dist"
   ],
   "license": "MIT",
-  "main": "lib/index.js",
+  "main": "dist/bundle.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/andyhasit/redrunner"

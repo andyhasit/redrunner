@@ -171,6 +171,7 @@ export class Route {
       paramStr.join('').split('&').forEach(e => {
         let k, v;
         [k,v] = e.split('=')
+        v = decodeURIComponent(v).split('+').join(' ');
         if (this.params.hasOwnProperty(k)) {
           params[k] = this.params[k].convert(v)
         } else {

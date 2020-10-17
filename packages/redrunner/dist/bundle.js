@@ -237,7 +237,8 @@ Wrapper.prototype = {
     return this;
   },
   visible: function visible(_visible) {
-    return this.style('display', _visible ? 'unset' : 'none');
+    this.e.classList.toggle('hidden', !_visible);
+    return this;
   },
   value: function value(_value) {
     return this.att('value', _value);
@@ -583,6 +584,7 @@ var View = /*#__PURE__*/function () {
   }
   /**
    * Gets called once immediately after building.
+   * Sets initial props extracted from __html__.
    */
 
 
