@@ -144,8 +144,13 @@ const parseWatchedValueSlot = (property) => {
  *   field    >  this.props.field
  *   .field   >  this.field
  *   ..field  >  field
+ * 
+ * If convertToCall is true then field ending with ? is replaced with ()
  */
-const expandPrefix = (field) => {
+const expandPrefix = (field, convertToCall=false) => {
+  if (convertToCall && field.endsWith('?')) {
+    field = field.slice(0, -1) + '()'
+  }
   if (field.startsWith('..')) {
     return field.substr(2)
   } else if (field.startsWith('.')) {

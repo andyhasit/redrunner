@@ -48,6 +48,15 @@ const config = {
         this.reverseShield = 1
       }
     },
+    ':replace': {
+      params: 'viewCls, props?',
+      handle: function(viewCls, props) {
+        this.replaceWith = this.expandPrefix(viewCls, true)
+        if (props) {
+          this.props = this.expandPrefix(props)
+        }
+      }
+    },
     ':watch': {
       params: 'property, converter, target?',
       handle: function(property, converter, target) {

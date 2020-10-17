@@ -120,13 +120,13 @@ class ViewStatementBuilder {
     const {nodePath, node, tagName} = nodeInfo
     const nodeData = extractNodeData(node, this.config, this.walker)
     if (nodeData) {
-      let {afterSave, beforeSave, saveAs, props, shieldQuery, reverseShield, watches} = nodeData
+      let {afterSave, beforeSave, saveAs, props, shieldQuery, reverseShield, watches, replaceWith} = nodeData
 
       // Use the saveAs supplied, or get a sequential one
       saveAs = saveAs ? saveAs : this.getNextElementRef()
 
-      if (isNestedView(nodeInfo)) {
-        this.saveNestedView(nodePath, saveAs, nodeData, tagName, props)
+      if (isNestedView(nodeInfo) || replaceWith) {
+        this.saveNestedView(nodePath, saveAs, nodeData, tagName, props, replaceWith)
       } else {
         this.saveWrapper(nodePath, saveAs, nodeData)
       }
@@ -173,6 +173,7 @@ class ViewStatementBuilder {
       const watchCall = new CallStatement(`${vars.prototypeVariable}.${vars.getWatch}`, watchCallArgs)
       this.watches.add(watchCall)
     } else if (isNestedView(nodeInfo)) {
+      // TODO maybe do __ni?
       this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, view.nest(${tagName}));`)
     }
   }
@@ -182,7 +183,8 @@ class ViewStatementBuilder {
   saveWrapper(nodePath, saveAs, nodeData) {
     this.saveElement(saveAs, nodeData.wrapperInit(nodePath), nodeData.chainedCalls)
   }
-  saveNestedView(nodePath, saveAs, nodeData, tagName, props) {
+  saveNestedView(nodePath, saveAs, nodeData, tagName, props, replaceWith) {
+    const nestedViewClass = replaceWith || tagName
     this.nestedViewProps.add(saveAs, new FunctionStatement('', [`return ${props}`]))
     // let constructorStr =  `view.nest(${tagName})`
     // // Save as local variable, just use "saveAs" as a variable name.
@@ -190,7 +192,7 @@ class ViewStatementBuilder {
     // // Replace the node
     // this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, ${saveAs});`)
 
-    const initCall = `view.__ni(${getLookupArgs(nodePath)}, ${tagName})`
+    const initCall = `view.__ni(${getLookupArgs(nodePath)}, ${replaceWith})`
     // Save element
     this.saveElement(saveAs, initCall, nodeData.chainedCalls)
   }
