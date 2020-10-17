@@ -523,6 +523,7 @@ var Route = /*#__PURE__*/function () {
 
           k = _e$split2[0];
           v = _e$split2[1];
+          v = decodeURIComponent(v).split('+').join(' ');
 
           if (_this5.params.hasOwnProperty(k)) {
             params[k] = _this5.params[k].convert(v);
