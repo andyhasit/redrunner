@@ -184,12 +184,6 @@ proto.__ni = function(path, cls) {
   this.__gw(path).replace(child.e)
   return child
 }
-/**
- * Replace node at path.
- */
-proto.__rn = function(path, view) {
-  this.__gw(path).replace(view.e)
-}
 
 /**
  * Create caches.
