@@ -1,6 +1,6 @@
 {
   "name": "redrunner-router",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "A router for RedRunner",
   "scripts": {
     "prepublish": "npm run build",
@@ -36,7 +36,7 @@
     "jest": "^26.0.1"
   },
   "dependencies": {
-    "babel-plugin-redrunner": "^0.3.2"
+    "babel-plugin-redrunner": "^0.3.3"
   },
   "gitHead": "1c3df1d6f45a1dac675c11e4cef91b618a127560"
 }
