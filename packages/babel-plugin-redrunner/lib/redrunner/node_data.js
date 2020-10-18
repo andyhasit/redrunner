@@ -18,6 +18,7 @@ class NodeData {
     this.props = undefined
     this.shieldQuery = undefined
     this.reverseShield = 0
+    this.replaceWith = undefined
     this.chainedCalls = []
     this.watches = []
     this.beforeSave = []

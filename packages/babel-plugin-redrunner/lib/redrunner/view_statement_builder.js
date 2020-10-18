@@ -89,8 +89,14 @@ class ViewStatementBuilder {
     this.buildMethod.add(this.savedElements.buildAssign('view.dom'))
     this.afterSave.forEach(i => this.buildMethod.add(i))
     // We do this at the end as the dom has been changed
-    const strippedHTML = stripHtml(this.walker.dom.toString()).replace("'", "\\'")
-    this.htmlString.set(`'${strippedHTML}'`)
+    const convertedHTML = this.buildHtmlString(this.walker.dom.toString())
+    this.htmlString.set(`'${convertedHTML}'`)
+  }
+  /**
+   * Converts the raw HTML text from the DOM
+   */
+  buildHtmlString(rawHtml) {
+    return stripHtml(rawHtml).replace("'", "\\'")
   }
   /**
    * Sets the shieldCounts, which has to be done after parsing as nodes
@@ -120,13 +126,13 @@ class ViewStatementBuilder {
     const {nodePath, node, tagName} = nodeInfo
     const nodeData = extractNodeData(node, this.config, this.walker)
     if (nodeData) {
-      let {afterSave, beforeSave, saveAs, props, shieldQuery, reverseShield, watches} = nodeData
+      let {afterSave, beforeSave, saveAs, props, shieldQuery, reverseShield, watches, replaceWith} = nodeData
 
       // Use the saveAs supplied, or get a sequential one
       saveAs = saveAs ? saveAs : this.getNextElementRef()
 
-      if (isNestedView(nodeInfo)) {
-        this.saveNestedView(nodePath, saveAs, nodeData, tagName, props)
+      if (isNestedView(nodeInfo) || replaceWith) {
+        this.saveNestedView(nodePath, saveAs, nodeData, tagName, props, replaceWith)
       } else {
         this.saveWrapper(nodePath, saveAs, nodeData)
       }
@@ -173,7 +179,7 @@ class ViewStatementBuilder {
       const watchCall = new CallStatement(`${vars.prototypeVariable}.${vars.getWatch}`, watchCallArgs)
       this.watches.add(watchCall)
     } else if (isNestedView(nodeInfo)) {
-      this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, view.nest(${tagName}));`)
+      this.beforeSave.push(`view.__ni(${getLookupArgs(nodePath)}, ${tagName});`)
     }
   }
   /**
@@ -182,16 +188,10 @@ class ViewStatementBuilder {
   saveWrapper(nodePath, saveAs, nodeData) {
     this.saveElement(saveAs, nodeData.wrapperInit(nodePath), nodeData.chainedCalls)
   }
-  saveNestedView(nodePath, saveAs, nodeData, tagName, props) {
+  saveNestedView(nodePath, saveAs, nodeData, tagName, props, replaceWith) {
+    const nestedViewClass = replaceWith || tagName
     this.nestedViewProps.add(saveAs, new FunctionStatement('', [`return ${props}`]))
-    // let constructorStr =  `view.nest(${tagName})`
-    // // Save as local variable, just use "saveAs" as a variable name.
-    // this.beforeSave.push(`var ${saveAs} = ${constructorStr};`)
-    // // Replace the node
-    // this.beforeSave.push(`view.__rn(${getLookupArgs(nodePath)}, ${saveAs});`)
-
-    const initCall = `view.__ni(${getLookupArgs(nodePath)}, ${tagName})`
-    // Save element
+    const initCall = `view.__ni(${getLookupArgs(nodePath)}, ${nestedViewClass})`
     this.saveElement(saveAs, initCall, nodeData.chainedCalls)
   }
   saveElement(saveAs, initCall, chainedCalls) {
