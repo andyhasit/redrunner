@@ -256,41 +256,11 @@ proto.__lu = function(callbacks) {
  */
 proto.__av = function() {
 
-  // function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-  // function _createSuper(Derived) { 
-  //   var hasNativeReflectConstruct = _isNativeReflectConstruct(); 
-  //   return function () { 
-  //     var Super = _getPrototypeOf(Derived), result; 
-  //     if (hasNativeReflectConstruct) { 
-  //       var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); 
-  //     } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-  // function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
-
-  // function _inherits(subClass, superClass) { 
-  //    subClass.prototype = Object.create(
-  //      superClass && superClass.prototype, 
-  //      { constructor: { value: subClass, writable: true, configurable: true } }
-  //     ); 
-  //     if (superClass) _setPrototypeOf(subClass, superClass); 
-  //   }
-
-
-
-  // var AnonymousView = /*#__PURE__*/function (_view) {
-  //   _inherits(AnonymousView, _view);
-  //   var _super = _createSuper(AnonymousView);
-  //   function AnonymousView() {
-  //     return _super.apply(this, arguments);
-  //   }
-  //   return AnonymousView;
-  // }(View);
-
   const AnonymousView = function(parent) {
     View.apply(this, parent)
   }
-  AnonymousView.prototype = proto
+  //AnonymousView.prototype = proto
+  AnonymousView.prototype = new View()
   return AnonymousView
 
 }

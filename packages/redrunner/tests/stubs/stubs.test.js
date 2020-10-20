@@ -28,3 +28,16 @@ test("CustomModal shows correct content", () => {
     </div>
   `)
 })
+
+/**
+ * This test is required to ensure that View.prototype.__av (which gets an anonymous view)
+ * doesn't accidentally add stuff to the View.prototype, which it did in previous commit.
+ */
+
+class JustChecking extends View {}
+
+test("We haven't broken View prototype", () => {
+  const v = new JustChecking()
+  expect(v.__ht).toBe(undefined)
+  expect(v.__qc).toBe(undefined)
+})
