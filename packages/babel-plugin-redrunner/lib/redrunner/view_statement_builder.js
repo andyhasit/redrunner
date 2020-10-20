@@ -18,6 +18,7 @@ const {
   ValueStatement
 } = require('../utils/statement_builders')
 
+const re_lnu = /^\w+$/; // letters_numbers_underscores
 
 const vars = {
   prototypeVariable: 'p',
@@ -124,6 +125,10 @@ class ViewStatementBuilder {
    */
   processNode(nodeInfo) {
     const {nodePath, node, tagName} = nodeInfo
+    if (tagName.startsWith('stub:')) {
+      this.saveStub(tagName, nodePath)
+      return
+    }
     const nodeData = extractNodeData(node, this.config, this.walker)
     if (nodeData) {
       let {afterSave, beforeSave, saveAs, props, shieldQuery, reverseShield, watches, replaceWith} = nodeData
@@ -193,6 +198,16 @@ class ViewStatementBuilder {
     this.nestedViewProps.add(saveAs, new FunctionStatement('', [`return ${props}`]))
     const initCall = `view.__ni(${getLookupArgs(nodePath)}, ${nestedViewClass})`
     this.saveElement(saveAs, initCall, nodeData.chainedCalls)
+  }
+  saveStub(tagName, nodePath) {
+    const stubName = tagName.substr(5)
+    if (!re_lnu.test(stubName)) {
+      this.walker.throw('Stub name may only contain letters numbers and underscores')
+    }
+    const saveAs = this.getNextElementRef()
+    this.nestedViewProps.add(saveAs, new FunctionStatement('', ['return this.props']))
+    const initCall = `view.__ni(${getLookupArgs(nodePath)}, this.__stubs__${stubName})`
+    this.saveElement(saveAs, initCall, [])
   }
   saveElement(saveAs, initCall, chainedCalls) {
     const chainedCallStatement = chainedCalls.length ? '.' + chainedCalls.join('.') : ''

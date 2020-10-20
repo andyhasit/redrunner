@@ -1,5 +1,5 @@
 const babel = require('@babel/core')
-const {getNodeHtmlString, getNodeObjectValue, removeProperty} = require('./utils/babel')
+const {getNodeHtmlString, getNodeHtmlStringDict, removeProperty} = require('./utils/babel')
 const {generateStatements} = require('./redrunner/generate_statements')
 const {viewTemplates} = require('./redrunner/view_templates')
 const {config} = require('./redrunner/config')
@@ -22,6 +22,9 @@ module.exports = () => {
               foundHtmFieldInClass = true
               viewData.html = getNodeHtmlString(node)
               removeProperty(path)
+            } else if (propName == '__stubs__') {
+              viewData.stubs = getNodeHtmlStringDict(node)
+              removeProperty(path)
             }
           }
 
@@ -33,9 +36,27 @@ module.exports = () => {
             }
           }
 
+          // Process stub views
+          if (viewData.stubs) {
+            for (const [stubName, stubHtml] of Object.entries(viewData.stubs)) {
+              let anonymousCls = 'qq1'
+              let stubViewData = {
+                config: config,
+                className: anonymousCls, 
+                clone: viewData.clone, 
+                html: stubHtml,
+                stub: true
+              }
+              generateStatements(stubViewData).forEach(statement =>
+                path.insertAfter(babel.template.ast(statement))
+              )
+              path.insertAfter(babel.template.ast(`${viewData.className}.prototype.__stubs__${stubName} = ${anonymousCls};`))
+              path.insertAfter(babel.template.ast(`var ${anonymousCls} = ${viewData.className}.prototype.__av();`))
+            }
+          }
+
           if (viewData.html) {
-            const statements = generateStatements(viewData)
-            statements.forEach(statement =>
+            generateStatements(viewData).forEach(statement =>
               path.insertAfter(babel.template.ast(statement))
             )
           }
