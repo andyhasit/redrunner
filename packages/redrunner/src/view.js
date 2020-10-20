@@ -12,7 +12,7 @@ import {Lookup} from './lookup'
  */
 export class View {
   constructor(parent) {
-    let s = this
+    const s = this
     s.parent = parent       // The parent view
     s.props = undefined     // The props passed to the view. May be changed.
 
@@ -29,7 +29,7 @@ export class View {
    * Sets initial props extracted from __html__.
    */
   init() {
-    for (let [k, v] of Object.entries(this.__ip)) {
+    for (const [k, v] of Object.entries(this.__ip)) {
       let view = this.dom[k]
       view.props = v.apply(this)
       view.init()
@@ -62,7 +62,7 @@ export class View {
    * Builds a nested view of the specified class. Its up to you how you use it.
    */
   nest(cls, props) {
-    let child = createView(cls, this, props)
+    const child = createView(cls, this, props)
     this.__nv.push(child)
     return child
   }
@@ -144,7 +144,7 @@ export class View {
   updateNested() {
     // These are user created by calling next()
     const items = this.__nv
-    for (let i=0, il=items.length; i<il; i++) {
+    for (const i=0, il=items.length; i<il; i++) {
       let child = items[i]
       if (child.__ia()) {
         child.update()
@@ -152,7 +152,7 @@ export class View {
     }
     // These are created with directives, and whose props arguments may need reprocessed.
     // TODO improve this, maybe drop for of
-    for (let [k, v] of Object.entries(this.__ip)) {
+    for (const [k, v] of Object.entries(this.__ip)) {
       let view = this.dom[k]
       view.setProps(v.apply(this))
     }
@@ -255,13 +255,10 @@ proto.__lu = function(callbacks) {
  * Creates an anonymous view class for stubs.
  */
 proto.__av = function() {
-
-  const AnonymousView = function(parent) {
+  const cls = function(parent) {
     View.apply(this, parent)
   }
-  //AnonymousView.prototype = proto
-  AnonymousView.prototype = new View()
-  return AnonymousView
-
+  cls.prototype = new View()
+  return cls
 }
 

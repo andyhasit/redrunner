@@ -39,7 +39,7 @@ module.exports = () => {
           // Process stub views
           if (viewData.stubs) {
             for (const [stubName, stubHtml] of Object.entries(viewData.stubs)) {
-              let anonymousCls = 'qq1'
+              let anonymousCls = path.scope.generateUidIdentifier("avc").name
               let stubViewData = {
                 config: config,
                 className: anonymousCls, 
