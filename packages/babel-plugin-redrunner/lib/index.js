@@ -1,8 +1,9 @@
 const babel = require('@babel/core')
-const {getNodeHtmlString, getNodeHtmlStringDict, removeProperty} = require('./utils/babel')
+const {getNodeHtmlString, getNodeHtmlStringDict, removeRedrunnerDefs} = require('./utils/babel')
 const {generateStatements} = require('./redrunner/generate_statements')
 const {viewTemplates} = require('./redrunner/view_templates')
 const {config} = require('./redrunner/config')
+const { c } = require('./utils/constants')
 
 
 module.exports = () => {
@@ -21,12 +22,11 @@ module.exports = () => {
               viewData.clone = (propName == '__clone__')
               foundHtmFieldInClass = true
               viewData.html = getNodeHtmlString(node)
-              removeProperty(path)
             } else if (propName == '__stubs__') {
               viewData.stubs = getNodeHtmlStringDict(node)
-              removeProperty(path)
             }
           }
+          removeRedrunnerDefs(path)
 
           // Check views.html for any templates.
           if (!foundHtmFieldInClass) {

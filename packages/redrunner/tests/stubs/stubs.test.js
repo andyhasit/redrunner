@@ -1,8 +1,4 @@
-import {c, h, load, View} from '../utils'
-
-
-const caps = (n, o) => n.toUpperCase()
-const person = {name: 'Hortense'}
+import {load, View} from '../utils'
 
 class BaseModal extends View {
   __html__ = `
@@ -19,7 +15,7 @@ class CustomModal extends BaseModal {
   }
 }
 
-test("CustomModal shows correct content", () => {
+test("CustomModal uses parent props", () => {
   const div = load(CustomModal, {title: 'Confirm', content: 'Really?'})
   expect(div).toShow(`
     <div>

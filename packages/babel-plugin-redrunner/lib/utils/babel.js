@@ -1,16 +1,21 @@
+const { c } = require("./constants")
+
+const redrunnerDefs = ['__html__', '__clone__', '__stubs__']
 /**
  * A visitor which removes a property, because that's Babel wants you to do it.
  */
 const RemoveClassPropertyVisitor = {
   ClassProperty(path) {
-    path.remove()
+    if (redrunnerDefs.includes(path.node.key.name)) {
+      path.remove()
+    }
   }
 }
 
 /**
  * Convenience function for removing a property from the visited class.
  */
-function removeProperty(path){
+function removeRedrunnerDefs(path){
   path.traverse(RemoveClassPropertyVisitor)
 }
 
@@ -51,5 +56,5 @@ module.exports = {
   getNodeHtmlString,
   getNodeObjectValue,
   getNodeHtmlStringDict,
-  removeProperty
+  removeRedrunnerDefs
 }
