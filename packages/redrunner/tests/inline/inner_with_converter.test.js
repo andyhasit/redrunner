@@ -13,14 +13,14 @@ function foo(n) {
 
 class TestView extends View {
   __html__ = `
-  	<div>
-    	<span>{{name|foo}}</span>
+    <div>
+      <span>{{name|foo}}</span>
       <span>{{name|.foo}}</span>
       <span>{{name|..foo}}</span>
     </div>
   `
   foo(n) {
-  	return `${n} from this`
+    return `${n} from this`
   }
 }
 
@@ -28,8 +28,8 @@ class TestView extends View {
 test('Convert functions called on load', () => {
   const div = load(TestView, props)
   expect(div).toShow(`
-  	<div>
-	    <span>bob from props</span>
+    <div>
+      <span>bob from props</span>
       <span>bob from this</span>
       <span>bob from global</span>
     </div>

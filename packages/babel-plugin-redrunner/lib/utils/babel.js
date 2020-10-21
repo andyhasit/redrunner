@@ -3,7 +3,7 @@
  */
 const RemoveClassPropertyVisitor = {
   ClassProperty(path) {
-  	path.remove()
+    path.remove()
   }
 }
 

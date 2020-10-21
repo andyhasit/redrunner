@@ -5,12 +5,12 @@ import {KeyedCache, SequentialCache} from './viewcache'
 import {Wrapper} from './wrapper'
 
 module.exports = {
-	createView,
-	h,
-	mount,
-	KeyedCache,
-	isStr,
-	SequentialCache,
-	View,
-	Wrapper
+  createView,
+  h,
+  mount,
+  KeyedCache,
+  isStr,
+  SequentialCache,
+  View,
+  Wrapper
 }

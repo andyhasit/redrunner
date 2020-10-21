@@ -3,14 +3,14 @@ import {c, load, View} from '../utils'
 
 class TestView extends View {
   __html__ = `
-  	<div>
-    	<span>{{name}}</span>
+    <div>
+      <span>{{name}}</span>
       <span>{{.name}}</span>
       <span>{{..service.name}}</span>
     </div>
   `
   init() {
-  	this.name = 'joe'
+    this.name = 'joe'
   }
 }
 
@@ -20,9 +20,9 @@ const service = {name: 'jane'}
 test('Inner display correct initial values', () => {
   const div = load(TestView, props)
   expect(div).toShow(`
-  	<div>
-	    <span>bob</span>
-	    <span>joe</span>
+    <div>
+      <span>bob</span>
+      <span>joe</span>
       <span>jane</span>
     </div>
   `)

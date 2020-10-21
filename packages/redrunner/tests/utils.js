@@ -8,7 +8,7 @@ import {h, createView, mount, View, Wrapper} from '../src/index'
  * Returns a new div appended to the document body.
  */
 function getDiv() {
-	const div = document.createElement('div')
+  const div = document.createElement('div')
   document.body.appendChild(div)
   return div
 }
@@ -18,21 +18,21 @@ function getDiv() {
  */
 class TestMount {
   constructor(cls, props) {
-  	this.view = mount(getDiv(), cls, props)
+    this.view = mount(getDiv(), cls, props)
     this.el = this.view.e
-  	this.html = undefined
-  	this.setHtml()
+    this.html = undefined
+    this.setHtml()
   }
   setProps(props) {
-  	this.view.setProps(props)
+    this.view.setProps(props)
     this.setHtml()
   }
   update() {
     this.view.update()
-  	this.setHtml()
+    this.setHtml()
   }
   setHtml() {
-  	this.html = tidy(this.el.outerHTML)
+    this.html = tidy(this.el.outerHTML)
   }
 }
 
@@ -86,10 +86,10 @@ expect.extend({
 });
 
 module.exports = {
-	c,
+  c,
   createView,
   h,
-	load,
-	View,
+  load,
+  View,
   Wrapper
 }

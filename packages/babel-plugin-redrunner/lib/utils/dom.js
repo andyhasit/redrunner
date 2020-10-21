@@ -57,12 +57,16 @@ function extractAtts(node) {
 /**
  * Extracts the whole attribute (e.g. "as=me" from rawAttrs
  * Note that it does not allow spaces around the = sign!
+ * 
+ * It also ignores case in the search (but returns with case unmodified)
+ * which is to enable us to delete onclick as well as onClick, so add tests
+ * if changing this.
  */
 function getAttDefinition(attStr, attName) {
   if (attStr) {
-    let withEqualSign = attName + '='
+    let withEqualSign = attName.toLowerCase() + '='
     let valueStartIndex = withEqualSign.length + 1
-    let start = attStr.search(withEqualSign)
+    let start = attStr.toLowerCase().search(withEqualSign)
     if (start >= 0) {
       attStr = attStr.substr(start)
       let quoteSymbol = attStr[valueStartIndex - 1]
