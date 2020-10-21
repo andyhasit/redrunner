@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - :replace
 
 ## [0.3.3] - 2020-10-18
+
 ###Changed
 
 - Froze node-html-parser @ 1.2.20 in babel plugin because 1.2.21 has major breaking change
