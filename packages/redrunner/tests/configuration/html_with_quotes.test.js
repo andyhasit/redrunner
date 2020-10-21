@@ -8,6 +8,6 @@ class TestView extends View {
 test('Quotes are handled correctly', () => {
   const div = load(TestView)
   expect(div).toShow(`
-  	<div>Hi! my name's "Dave"</div>
+    <div>Hi! my name's "Dave"</div>
   `)
 })

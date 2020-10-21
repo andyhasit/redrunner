@@ -14,9 +14,9 @@ const {expandConverter, splitter} = require('./syntax')
  * Returns undefined if string is only whitespace, else the original string.
  */
 function clearIfEmpty(str) {
-	if (str.trim().length > 0) {
-		return str
-	}
+  if (str.trim().length > 0) {
+    return str
+  }
 }
 
 /**
@@ -36,42 +36,42 @@ function clearIfEmpty(str) {
  *
  */
 function splitInlineText(rawStr) {
-	let end = 0
-	let start = rawStr.indexOf('{{')
-	if (start >= 0) {
-		end = rawStr.indexOf('}}')
-		if (end > start) {
-			const inline = rawStr.substring(start + 2, end)
-			let before = clearIfEmpty(rawStr.substr(0, start).trimStart())
-			let after = clearIfEmpty(rawStr.substr(end + 2).trimEnd())
-			const [property, convert] = inline.split(splitter).map(s => s.trim())
-			return {property, convert, before, after}
-		}
-	}
+  let end = 0
+  let start = rawStr.indexOf('{{')
+  if (start >= 0) {
+    end = rawStr.indexOf('}}')
+    if (end > start) {
+      const inline = rawStr.substring(start + 2, end)
+      let before = clearIfEmpty(rawStr.substr(0, start).trimStart())
+      let after = clearIfEmpty(rawStr.substr(end + 2).trimEnd())
+      const [property, convert] = inline.split(splitter).map(s => s.trim())
+      return {property, convert, before, after}
+    }
+  }
 }
 
 /**
  * Builds the watch object.
  */
 function buildInlineWatch(target, inlineCallDetails) {
-	let raw
-	let {property, convert, before, after} = inlineCallDetails
+  let raw
+  let {property, convert, before, after} = inlineCallDetails
   /*
   before and after is any text found before or after the brackets.
   raw is the raw javascript code that will be generated.
 
   */
-	convert = convert ? expandConverter(convert) : 'n'
-	if (before && after) {
-		raw = `"${before}" + ${convert} + "${after}"`
-	} else if (before && !after) {
-		raw = `"${before}" + ${convert}`
-	} else if (!before && after) {
-		raw = `${convert} + "${after}"`
-	} else {
-		raw = convert
-	}
-	return {property, raw, target}
+  convert = convert ? expandConverter(convert) : 'n'
+  if (before && after) {
+    raw = `"${before}" + ${convert} + "${after}"`
+  } else if (before && !after) {
+    raw = `"${before}" + ${convert}`
+  } else if (!before && after) {
+    raw = `${convert} + "${after}"`
+  } else {
+    raw = convert
+  }
+  return {property, raw, target}
 }
 
 /**
@@ -90,7 +90,7 @@ function buildInlineWatch(target, inlineCallDetails) {
  * @return {number} An array of watch objects as [{name, convert, target}...]
  */
 function extractInlineWatches(node, config) {
-	const watches = []
+  const watches = []
   const atts = extractAtts(node)
   const restrictedAtts = Object.values(config.directives)
 
@@ -98,31 +98,31 @@ function extractInlineWatches(node, config) {
    * Adds a watch if it detects an inline call. Returns true if one was found,
    * else false. Bad practice but will do for now.
    */
-	function addInlineWatches(rawStr, target) {
-		const inlineCallDetails = splitInlineText(rawStr)
-		if (inlineCallDetails) {
-			let watch = buildInlineWatch(target, inlineCallDetails)
-			watches.push(watch)
-			return true
-		}
-		return false
-	}
-
-	// extract from node's text
-	if (isLeafNode(node)) {
-  	if (addInlineWatches(node.rawText, 'text')) {
-  		node.childNodes = []
-  	}
+  function addInlineWatches(rawStr, target) {
+    const inlineCallDetails = splitInlineText(rawStr)
+    if (inlineCallDetails) {
+      let watch = buildInlineWatch(target, inlineCallDetails)
+      watches.push(watch)
+      return true
+    }
+    return false
   }
 
-	// extract from node's attributes
+  // extract from node's text
+  if (isLeafNode(node)) {
+    if (addInlineWatches(node.rawText, 'text')) {
+      node.childNodes = []
+    }
+  }
+
+  // extract from node's attributes
   for (let [key, value] of Object.entries(atts)) {
-  	if (value && !restrictedAtts.includes(key)) {
-  		if (addInlineWatches(value, `@${key}`)) {
-  			removeAtt(node, key)
-  		}
-  	}
-	}
+    if (value && !restrictedAtts.includes(key)) {
+      if (addInlineWatches(value, `@${key}`)) {
+        removeAtt(node, key)
+      }
+    }
+  }
   return watches
 }
 

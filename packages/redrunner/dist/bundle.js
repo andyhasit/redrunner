@@ -317,6 +317,10 @@ function _createClass(Constructor, protoProps, staticProps) {
   return Constructor;
 }
 
+function _readOnlyError(name) {
+  throw new Error("\"" + name + "\" is read-only");
+}
+
 function _slicedToArray(arr, i) {
   return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
 }
@@ -752,7 +756,7 @@ var View = /*#__PURE__*/function () {
       // These are user created by calling next()
       var items = this.__nv;
 
-      for (var i = 0, il = items.length; i < il; i++) {
+      for (var i = 0, il = items.length; i < il; _readOnlyError("i"), i++) {
         var child = items[i];
 
         if (child.__ia()) {
@@ -802,14 +806,6 @@ proto.__ni = function (path, cls) {
   this.__gw(path).replace(child.e);
 
   return child;
-};
-/**
- * Replace node at path.
- */
-
-
-proto.__rn = function (path, view) {
-  this.__gw(path).replace(view.e);
 };
 /**
  * Create caches.
@@ -889,6 +885,19 @@ proto.__wa = function (el, shieldQuery, reverseShield, shieldCount, callbacks) {
 
 proto.__lu = function (callbacks) {
   return new Lookup(callbacks);
+};
+/**
+ * Creates an anonymous view class for stubs.
+ */
+
+
+proto.__av = function () {
+  var cls = function cls(parent) {
+    View.apply(this, parent);
+  };
+
+  cls.prototype = new View();
+  return cls;
 };
 
 module.exports = {

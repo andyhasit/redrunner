@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-redrunner",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "The babel plugin for RedRunner",
   "main": "lib/index.js",
   "directories": {
@@ -35,5 +35,9 @@
     "jest": "^26.0.1",
     "print-diff": "^1.0.0"
   },
+<<<<<<< HEAD
   "gitHead": "1c3df1d6f45a1dac675c11e4cef91b618a127560"
+=======
+  "gitHead": "d0b7e57549514d9141b4bcf3109269c9ad43a484"
+>>>>>>> october-changes
 }

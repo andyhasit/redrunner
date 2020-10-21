@@ -19,28 +19,28 @@ const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1)
  * out: {a: [...], b: [...]}
  */
 const groupArray = (ar, key, f) => {
-	const obj = {}
-	ar.forEach(i => {
-		let k = i[key]
-		if (!obj.hasOwnProperty(k)) {
+  const obj = {}
+  ar.forEach(i => {
+    let k = i[key]
+    if (!obj.hasOwnProperty(k)) {
       obj[k] = []
     }
     obj[k].push(f(i))
-	})
-	return obj
+  })
+  return obj
 }
 
 
 const arrayStartsWith = (origin, test) => {
-	if (test.length <= origin.length) {
-		return false
-	}
-	for (const [i, v] of origin.entries()) {
-		if (test[i] !== v) {
-			return false
-		}
-	}
-	return true
+  if (test.length <= origin.length) {
+    return false
+  }
+  for (const [i, v] of origin.entries()) {
+    if (test[i] !== v) {
+      return false
+    }
+  }
+  return true
 }
 
 
@@ -61,25 +61,25 @@ const arrayStartsWith = (origin, test) => {
  *
  */
 const extractShieldCounts = (paths) => {
-	const processedPaths = []
+  const processedPaths = []
 
-	paths.forEach(path => {
-		processedPaths.forEach(processed => {
-			if (arrayStartsWith(processed.path, path)) {
-				processed.count ++
-			}
-		})
-		processedPaths.push({path: path, count: 0})
-	})
-	return processedPaths.map(i => i.count)
+  paths.forEach(path => {
+    processedPaths.forEach(processed => {
+      if (arrayStartsWith(processed.path, path)) {
+        processed.count ++
+      }
+    })
+    processedPaths.push({path: path, count: 0})
+  })
+  return processedPaths.map(i => i.count)
 }
 
 module.exports = {
-	arrayStartsWith,
-	capitalize,
-	extractShieldCounts,
-	groupArray,
-	isFunc,
-	isUnd,
-	splitTrim
+  arrayStartsWith,
+  capitalize,
+  extractShieldCounts,
+  groupArray,
+  isFunc,
+  isUnd,
+  splitTrim
 }

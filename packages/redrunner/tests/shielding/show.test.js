@@ -23,7 +23,7 @@ test("The :show directive stops its own element from updating.", () => {
 
   // Run some sanity checks first...
   expect(div).toShow(`
-  	<div>
+    <div>
       <div>
         <div>1</div>
         <div>2</div>

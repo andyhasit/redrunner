@@ -21,8 +21,8 @@ const service = {
 
 class TestView extends View {
   __html__ = `
-  	<div>
-    	<span>{{getName()}}</span>
+    <div>
+      <span>{{getName()}}</span>
       <span>{{.getName?}}</span>
       <span>{{..getName()}}</span>
       <span>{{..service.getName?}}</span>
@@ -32,7 +32,7 @@ class TestView extends View {
     this.name = 'lisa'
   }
   getName() {
-  	return this.name
+    return this.name
   }
 }
 
@@ -40,9 +40,9 @@ class TestView extends View {
 test('Inline functions called on load', () => {
   const div = load(TestView, props)
   expect(div).toShow(`
-  	<div>
-	    <span>bob</span>
-	    <span>lisa</span>
+    <div>
+      <span>bob</span>
+      <span>lisa</span>
       <span>joe</span>
       <span>jane</span>
     </div>

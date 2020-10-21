@@ -6,46 +6,46 @@ const {NodeData} = require('./node_data')
 
 
 function extractNodeData(node, config) {
-	const nodeAtts = node.rawAttrs
-	const nodeData = new NodeData(node)
+  const nodeAtts = node.rawAttrs
+  const nodeData = new NodeData(node)
 
-	// Check inline calls
+  // Check inline calls
   const inlines = extractInlineWatches(node, config)
-	let hasData = inlines.length > 0
+  let hasData = inlines.length > 0
   inlines.forEach(w => nodeData.watches.push(w))
 
-	// Check attributes for directives
-	if (nodeAtts && nodeAtts !== '') {
-		for (let [directiveName, directive] of Object.entries(config.directives)) {
-	  	let attVal = getAttVal(nodeAtts, directiveName)
-	  	if (attVal) {
-	  		hasData = true
-	  		nodeData.processDirective(directiveName, directive, attVal)
-	  		removeAtt(node, directiveName)
-	  	}
-		}
-	}
+  // Check attributes for directives
+  if (nodeAtts && nodeAtts !== '') {
+    for (let [directiveName, directive] of Object.entries(config.directives)) {
+      let attVal = getAttVal(nodeAtts, directiveName)
+      if (attVal) {
+        hasData = true
+        nodeData.processDirective(directiveName, directive, attVal)
+        removeAtt(node, directiveName)
+      }
+    }
+  }
 
-	// Process event attributes
+  // Process event attributes
   const remainingAtts = extractAtts(node)
   if (remainingAtts) {
-	  for (let [key, value] of Object.entries(remainingAtts)) {
-	  	if (key.toLowerCase().startsWith(':on')) {
-	  		let event = key.substr(3)
-	  		let directive = {
-				  params: 'callbackStr',
-				  handle: function(callbackStr) {
-				    this.addEventListener(event, callbackStr)
-				  }
-				}
-	  		nodeData.processDirective(key, directive, value)
-	  		hasData = true
-	  		removeAtt(node, key)
-	  	}
-	  }
-	}
+    for (let [key, value] of Object.entries(remainingAtts)) {
+      if (key.toLowerCase().startsWith(':on')) {
+        let event = key.substr(3)
+        let directive = {
+          params: 'callbackStr',
+          handle: function(callbackStr) {
+            this.addEventListener(event, callbackStr)
+          }
+        }
+        nodeData.processDirective(key, directive, value)
+        hasData = true
+        removeAtt(node, key)
+      }
+    }
+  }
 
-	return hasData ? nodeData : undefined
+  return hasData ? nodeData : undefined
 }
 
 

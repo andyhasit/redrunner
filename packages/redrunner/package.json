@@ -1,6 +1,6 @@
 {
   "name": "redrunner",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "A tiny framework with legs",
   "scripts": {
     "prepublish": "npm test && npm run build",
@@ -36,7 +36,13 @@
     "jest": "^26.0.1"
   },
   "dependencies": {
+<<<<<<< HEAD
     "babel-plugin-redrunner": "^0.3.3"
   },
   "gitHead": "1c3df1d6f45a1dac675c11e4cef91b618a127560"
+=======
+    "babel-plugin-redrunner": "^0.4.0"
+  },
+  "gitHead": "d0b7e57549514d9141b4bcf3109269c9ad43a484"
+>>>>>>> october-changes
 }

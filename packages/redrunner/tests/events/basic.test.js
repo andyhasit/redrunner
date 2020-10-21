@@ -7,7 +7,7 @@ const data = {
 class TestView extends View {
   __html__ = `
     <div>
-      <button :onclick=".clicked">Go</button>
+      <button :onClick=".clicked">Go</button>
     </div>
   `
   clicked() {

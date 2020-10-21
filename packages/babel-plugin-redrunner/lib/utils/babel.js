@@ -3,7 +3,7 @@
  */
 const RemoveClassPropertyVisitor = {
   ClassProperty(path) {
-  	path.remove()
+    path.remove()
   }
 }
 
@@ -33,15 +33,23 @@ function getNodeHtmlString(node) {
 }
 
 /**
- * Returns the node's HTML as a string (as it is stored differently if the
- *    string uses quasi quotes instead of normal quotes)
+ * Returns the node as an object. Does this even work?
  */
 function getNodeObjectValue(node) {
   return node.value
 }
 
+function getNodeHtmlStringDict(node) {
+  const htmlStrings = {}
+  node.value.properties.forEach(element => {
+    htmlStrings[element.key.name] = getNodeHtmlString(element)
+  })
+  return htmlStrings
+}
+
 module.exports = {
   getNodeHtmlString,
   getNodeObjectValue,
+  getNodeHtmlStringDict,
   removeProperty
 }

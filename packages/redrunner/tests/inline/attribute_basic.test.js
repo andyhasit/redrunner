@@ -3,14 +3,14 @@ import {c, load, View} from '../utils'
 
 class TestView extends View {
   __html__ = `
-  	<div>
-    	<span class="{{style}}"></span>
-    	<span class="{{.style}}"></span>
-    	<span class="{{..service.style}}"></span>
+    <div>
+      <span class="{{style}}"></span>
+      <span class="{{.style}}"></span>
+      <span class="{{..service.style}}"></span>
     </div>
   `
   init() {
-  	this.style = 'warning'
+    this.style = 'warning'
   }
 }
 
@@ -20,9 +20,9 @@ const service = {style: 'danger'}
 test('Attributes display correct initial values', () => {
   const div = load(TestView, props)
   expect(div).toShow(`
-  	<div>
-	    <span class="alert"></span>
-	    <span class="warning"></span>
+    <div>
+      <span class="alert"></span>
+      <span class="warning"></span>
       <span class="danger"></span>
     </div>
   `)

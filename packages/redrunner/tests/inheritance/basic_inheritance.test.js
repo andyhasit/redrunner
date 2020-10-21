@@ -7,7 +7,7 @@ const person = {name: 'Hortense'}
 class ParentView extends View {
   __html__ = `
     <div>
-  	  <div>{{name}}</div>
+      <div>{{name}}</div>
       <div>{{.getHeight?}}</div>
     </div>
   `
@@ -34,8 +34,8 @@ class ChildView2 extends ParentView {
 test("ChildView1 uses parent's generated code", () => {
   const div = load(ChildView1, person)
   expect(div).toShow(`
-  	<div>
-	    <div>Hortense</div>
+    <div>
+      <div>Hortense</div>
       <div>200</div>
     </div>
   `)
