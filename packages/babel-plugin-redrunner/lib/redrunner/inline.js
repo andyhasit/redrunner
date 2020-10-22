@@ -8,7 +8,7 @@
 
 const {c} = require('../utils/constants')
 const {extractAtts, isLeafNode, removeAtt} = require('../utils/dom')
-const {expandConverter, splitter} = require('./syntax')
+const {splitter} = require('./syntax')
 
 /**
  * Returns undefined if string is only whitespace, else the original string.
@@ -61,7 +61,7 @@ function buildInlineWatch(target, inlineCallDetails) {
   raw is the raw javascript code that will be generated.
 
   */
-  convert = convert ? expandConverter(convert) : 'n'
+  convert = convert ? this.expandConverter(convert) : 'n'
   if (before && after) {
     raw = `"${before}" + ${convert} + "${after}"`
   } else if (before && !after) {
@@ -89,7 +89,8 @@ function buildInlineWatch(target, inlineCallDetails) {
  *
  * @return {number} An array of watch objects as [{name, convert, target}...]
  */
-function extractInlineWatches(node, config) {
+function processInlineWatches(node, config) {
+  const nodeData = this
   const watches = []
   const atts = extractAtts(node)
   const restrictedAtts = Object.values(config.directives)
@@ -101,7 +102,7 @@ function extractInlineWatches(node, config) {
   function addInlineWatches(rawStr, target) {
     const inlineCallDetails = splitInlineText(rawStr)
     if (inlineCallDetails) {
-      let watch = buildInlineWatch(target, inlineCallDetails)
+      let watch = nodeData.buildInlineWatch(target, inlineCallDetails)
       watches.push(watch)
       return true
     }
@@ -126,4 +127,4 @@ function extractInlineWatches(node, config) {
   return watches
 }
 
-module.exports = {extractInlineWatches}
+module.exports = {processInlineWatches, buildInlineWatch}

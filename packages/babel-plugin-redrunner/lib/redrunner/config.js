@@ -1,5 +1,9 @@
-const {c} = require('../utils/constants')
-const {capitalize} = require('../utils/misc')
+/**
+ * The object which holds the directive definitions.
+ * 
+ * A directive definition's handler's "this" is a NodeData instance.
+ */
+
 
 const config = {
   directives: {

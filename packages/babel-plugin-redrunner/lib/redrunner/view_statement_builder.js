@@ -5,9 +5,7 @@ const {extractShieldCounts, groupArray} = require('../utils/misc')
 const {DomWalker} = require('./dom_walker.js')
 const {extractNodeData} = require('./extract_node_data')
 const {
-  buidlWatchCallbackLine,
   getLookupArgs,
-  getWatchQueryCallBack,
   isNestedView
 } = require('./syntax')
 const {
@@ -43,6 +41,7 @@ class ViewStatementBuilder {
     this.className = viewData.className
 
     this.clone = viewData.clone
+    this.stub = viewData.stub
     this.config = viewData.config
     this.nextElementRefIndex = 0
     this.savedWatchCallArgs = []
@@ -129,7 +128,7 @@ class ViewStatementBuilder {
       this.saveStub(tagName, nodePath)
       return
     }
-    const nodeData = extractNodeData(node, this.config, this.walker)
+    const nodeData = extractNodeData(node, this.config, this.walker, this.stub)
     if (nodeData) {
       let {afterSave, beforeSave, saveAs, props, shieldQuery, reverseShield, watches, replaceWith} = nodeData
 
@@ -146,21 +145,21 @@ class ViewStatementBuilder {
       // This is the query to determine whether the wrappers should shield
       // nested wrappers
       if (shieldQuery) {
-        this.addWatchQueryCallback(shieldQuery)
+        this.addWatchQueryCallback(nodeData, shieldQuery)
       }
       // Use the shieldQuery supplied, 0 (must set as string here)
       shieldQuery = shieldQuery ? `'${shieldQuery}'` : '0'
 
       // Squash array to object
-      watches = groupArray(watches, 'property', watch => {
+      watches = groupArray(watches, 'property', function(watch) {
         let {converter, target, raw} = watch
-        return buidlWatchCallbackLine(saveAs, converter, target, raw) // TODO: extract this
+        return nodeData.buildWatchCallbackLine(saveAs, converter, target, raw) // TODO: extract this
       })
 
       // Group statements into single function
       const allCallbacks = new ObjectStatement()
       for (let [property, statements] of Object.entries(watches)) {
-        this.addWatchQueryCallback(property)
+        this.addWatchQueryCallback(nodeData, property)
         let callback = new FunctionStatement('n, o')
         statements.forEach(s => callback.add(s))
         allCallbacks.add(property, callback)
@@ -213,8 +212,8 @@ class ViewStatementBuilder {
     const chainedCallStatement = chainedCalls.length ? '.' + chainedCalls.join('.') : ''
     this.savedElements.add(saveAs, `${initCall}${chainedCallStatement}`)
   }
-  addWatchQueryCallback(property) {
-    const callback = getWatchQueryCallBack(property)
+  addWatchQueryCallback(nodeData, property) {
+    const callback = nodeData.getWatchQueryCallBack(property)
     if (callback) {
       this.queryCallbacks.add(property, callback)
     }

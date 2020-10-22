@@ -3,15 +3,19 @@ const {isFunc, isUnd, splitTrim} = require('../utils/misc')
 const {
   buildCacheInit,
   buildEventCallback,
+  buildWatchCallbackLine,
   expandPrefix,
-  parseWatchedValueSlot,
-  getLookupArgs
+  expandConverter,
+  getLookupArgs,
+  getWatchQueryCallBack,
+  parseWatchedValueSlot
 } = require('./syntax')
-
+const {buildInlineWatch, processInlineWatches} = require('./inline')
 
 class NodeData {
-  constructor(node) {
+  constructor(node, stub) {
     this.node = node
+    this.stub = stub
     this.saveAs = undefined
     this.customWrapperClass = undefined
     this.customWrapperArgs = undefined
@@ -48,7 +52,7 @@ class NodeData {
     return `view.__gw(${path})`
   }
   addEventListener(event, callbackStr) {
-    const callback = buildEventCallback(callbackStr)
+    const callback = this.buildEventCallback(callbackStr)
     this.chainedCalls.push(`on('${event}', ${callback})`)
   }
   processDirective(directiveName, directive, attVal) {
@@ -93,9 +97,14 @@ class NodeData {
 // Util methods that we may want to use in config:
 
 NodeData.prototype.buildCacheInit = buildCacheInit
+NodeData.prototype.buildWatchCallbackLine = buildWatchCallbackLine
 NodeData.prototype.buildEventCallback = buildEventCallback
-NodeData.prototype.parseWatchedValueSlot = parseWatchedValueSlot
+NodeData.prototype.expandConverter = expandConverter
 NodeData.prototype.expandPrefix = expandPrefix
+NodeData.prototype.processInlineWatches = processInlineWatches
+NodeData.prototype.buildInlineWatch = buildInlineWatch
 NodeData.prototype.getLookupArgs = getLookupArgs
+NodeData.prototype.getWatchQueryCallBack = getWatchQueryCallBack
+NodeData.prototype.parseWatchedValueSlot = parseWatchedValueSlot
 
 module.exports = {NodeData}

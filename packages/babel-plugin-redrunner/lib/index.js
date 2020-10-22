@@ -39,7 +39,7 @@ module.exports = () => {
           // Process stub views
           if (viewData.stubs) {
             for (const [stubName, stubHtml] of Object.entries(viewData.stubs)) {
-              let anonymousCls = path.scope.generateUidIdentifier("avc").name
+              let anonymousCls = path.scope.generateUidIdentifier("sv").name
               let stubViewData = {
                 config: config,
                 className: anonymousCls, 
@@ -51,7 +51,7 @@ module.exports = () => {
                 path.insertAfter(babel.template.ast(statement))
               )
               path.insertAfter(babel.template.ast(`${viewData.className}.prototype.__stubs__${stubName} = ${anonymousCls};`))
-              path.insertAfter(babel.template.ast(`var ${anonymousCls} = ${viewData.className}.prototype.__av();`))
+              path.insertAfter(babel.template.ast(`var ${anonymousCls} = ${viewData.className}.prototype.__sv();`))
             }
           }
 

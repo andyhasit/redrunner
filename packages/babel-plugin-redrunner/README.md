@@ -33,7 +33,7 @@ MyView.prototype.build = function () {...};
 
 ## Compatibility
 
-You *must* match the minor version to the version of RedRunner you are using.
+You *must* match the exact version to the version of RedRunner you are using.
 
 ## Tests
 

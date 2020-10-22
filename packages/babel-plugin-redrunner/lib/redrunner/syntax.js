@@ -19,9 +19,9 @@ const adjustName = (name) => {
 /**
  * Builds the call to create a cache.
  */
-const buildCacheInit = (cacheDef, cacheKey) => {
+function buildCacheInit (cacheDef, cacheKey){
   if (cacheDef.startsWith('@')) {
-    let cacheStatement = parseWatchedValueSlot(cacheDef.substr(1))
+    let cacheStatement = this.parseWatchedValueSlot(cacheDef.substr(1))
   } else {
     if (cacheKey) {
       const keyFn = `function(props) {return props.${cacheKey}}`
@@ -37,9 +37,9 @@ const buildCacheInit = (cacheDef, cacheKey) => {
 /**
  * Builds callback statement for a watch.
  */
-const buidlWatchCallbackLine = (saveAs, convert, target, raw) => {
+function buildWatchCallbackLine(saveAs, convert, target, raw) {
   let callbackBody, wrapper = `this.dom.${saveAs}`
-  convert = convert ? expandConverter(convert) : ''
+  convert = convert ? this.expandConverter(convert) : ''
   if (target) {
     const targetString = parseWatchTargetSlot(target)
     if (raw) {
@@ -67,8 +67,8 @@ const buidlWatchCallbackLine = (saveAs, convert, target, raw) => {
 /**
  * Builds the callback function for an event listener.
  */
-const buildEventCallback = (statement) => {
-  let text = expandPrefix(statement.trim())
+function buildEventCallback(statement) {
+  let text = this.expandPrefix(statement.trim())
   // Cater for '?' ending
   text = text.endsWith('?') ? text.slice(0, -1) : text
   const extra = text.endsWith(')') ? '' : '(e, w)'
@@ -91,20 +91,19 @@ const buildEventCallback = (statement) => {
  *   foo(x, 2)  >  this.props.foo(x, 2)
  *
  */
-const expandConverter = (convert) => {
+function expandConverter(convert) {
   if (convert && (convert !== '')) {
 
     // If it ends with ) then we treat it as raw function call.
     if (convert.endsWith(')')) {
-      return expandPrefix(convert)
+      return this.expandPrefix(convert)
     }
 
     // Remove ? because it's just the user explicity marking this a function
     convert = convert.endsWith('?') ? convert.slice(0, -1) : convert
-
     // If ends with . then treat as field, else turn it into a call with the watch args
     convert = convert.endsWith('.') ? convert.slice(0, -1) : `${convert}${watchArgs}`
-    return expandPrefix(convert)
+    return this.expandPrefix(convert)
   }
 }
 
@@ -122,7 +121,7 @@ const expandConverter = (convert) => {
  *   ..foo      >  foo
  *
  */
-const parseWatchedValueSlot = (property) => {
+function parseWatchedValueSlot(property) {
   if (property == '*') {
     return '*'
   }
@@ -133,7 +132,7 @@ const parseWatchedValueSlot = (property) => {
   // Remove ! because it's just the user explicity marking this a field
   property = property.endsWith('!') ? property.slice(0, -1) : property
 
-  const expanded = expandPrefix(property)
+  const expanded = this.expandPrefix(property)
   return property.endsWith('?') ? expanded.slice(0, -1) + '()' : expanded
 }
 
@@ -147,16 +146,16 @@ const parseWatchedValueSlot = (property) => {
  * 
  * If convertToCall is true then field ending with ? is replaced with ()
  */
-const expandPrefix = (field, convertToCall=false) => {
+function expandPrefix(field, convertToCall=false) {
   if (convertToCall && field.endsWith('?')) {
     field = field.slice(0, -1) + '()'
   }
   if (field.startsWith('..')) {
     return field.substr(2)
   } else if (field.startsWith('.')) {
-    return 'this.' + field.substr(1)
+    return this.stub ? 'this.parent.' + field.substr(1) : 'this.' + field.substr(1)
   }
-  return 'this.props.' + field
+  return this.stub ? 'this.parent.props.' + field : 'this.props.' + field
 }
 
 
@@ -173,23 +172,23 @@ const getLookupArgs = (nodePath) => {
 /**
  * Returns the callback for the watch query, or undefined.
  */
-const getWatchQueryCallBack = (property) => {
+function getWatchQueryCallBack(property) {
   if (property !== '*') {
     return (property === '' || property === undefined) ?
       'function() {return null}' :
-      `function() {return ${parseWatchedValueSlot(property)}}`
+      `function() {return ${this.parseWatchedValueSlot(property)}}`
   }
 }
 
 /**
  * Returns true if node represents a nested view, i.e tag starts with uppercase.
  */
-const isNestedView = (nodeInfo) => {
+function isNestedView(nodeInfo){
   const isTagCapitalized = /[A-Z]/.test(nodeInfo.tagName[0])
   return isTagCapitalized
 }
 
-const parseWatchTargetSlot = (target) => {
+function parseWatchTargetSlot(target) {
   if (target.startsWith('@')) {
     target = 'att:' + target.substr(1)
   }
@@ -215,13 +214,13 @@ const watchArgs = '(n, o)'
 module.exports = {
   adjustName,
   buildCacheInit,
-  buidlWatchCallbackLine,
+  buildWatchCallbackLine,
   buildEventCallback,
-  expandConverter,
   parseWatchedValueSlot,
+  expandConverter,
   expandPrefix,
-  getWatchQueryCallBack,
   getLookupArgs,
+  getWatchQueryCallBack,
   isNestedView,
   parseWatchTargetSlot,
   splitter,

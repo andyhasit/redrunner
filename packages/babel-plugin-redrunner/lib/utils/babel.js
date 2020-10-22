@@ -1,6 +1,5 @@
-const { c } = require("./constants")
+const {redrunnerDefs} = require("./constants")
 
-const redrunnerDefs = ['__html__', '__clone__', '__stubs__']
 /**
  * A visitor which removes a property, because that's Babel wants you to do it.
  */

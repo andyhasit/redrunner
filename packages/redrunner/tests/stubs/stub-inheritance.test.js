@@ -12,12 +12,8 @@ class BaseModal extends View {
   __stubs__ = {
     footer: `<span>{{footer}}</span>`
   }
-  yolo = 9
 }
 
-class Meh extends View {
-  yolo = 9
-}
 
 class CustomModal extends BaseModal {
   __stubs__ = {

@@ -1,16 +1,20 @@
 const c = console
 const {extractAtts, getAttVal, removeAtt} = require('../utils/dom')
-const {extractInlineWatches} = require('./inline')
 const {NodeData} = require('./node_data')
 
-
-
-function extractNodeData(node, config) {
+/**
+ * Extracts the relevant data from the HTML node, and removes parts that need removed.
+ * @param {Object} node - a nodeInfo instance from the walker
+ * @param {Object} config - the global config object
+ * @param {DomWalker} walker - the walker itself (just for raising exceptions)
+ * @param {boolean} stub - indicates whether we are processing a stub.
+ */
+function extractNodeData(node, config, walker, stub) {
   const nodeAtts = node.rawAttrs
-  const nodeData = new NodeData(node)
+  const nodeData = new NodeData(node, stub)
 
   // Check inline calls
-  const inlines = extractInlineWatches(node, config)
+  const inlines = nodeData.processInlineWatches(node, config)
   let hasData = inlines.length > 0
   inlines.forEach(w => nodeData.watches.push(w))
 

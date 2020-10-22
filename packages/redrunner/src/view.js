@@ -5,6 +5,7 @@ import mountie from './mountie'
 import {Wrapper} from './wrapper'
 import {Watch} from './watch'
 import {Lookup} from './lookup'
+import { c } from '../../babel-plugin-redrunner/lib/utils/constants'
 
 
 /**
@@ -252,11 +253,11 @@ proto.__lu = function(callbacks) {
 
 
 /**
- * Creates an anonymous view class for stubs.
+ * Creates an anonymous stub view class
  */
-proto.__av = function() {
+proto.__sv = function() {
   const cls = function(parent) {
-    View.apply(this, parent)
+    this.parent = parent
   }
   cls.prototype = new View()
   return cls
