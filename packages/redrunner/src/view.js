@@ -77,7 +77,7 @@ export class View {
     return this.__qc.get(this, query)
   }
   /**
-   * Resets the lookups, muct be called before calling this.lookup() during an update.
+   * Resets the lookups, must be called before calling this.lookup() during an update.
    */
   resetLookups() {
     this.__qc.reset()
@@ -114,7 +114,6 @@ export class View {
       return
     }
     const il = watches.length
-    //c.log(watches)
     while (i < il) {
       watch = watches[i]
       i ++
@@ -143,7 +142,7 @@ export class View {
    * Update nested views (but not repeat elements).
    */
   updateNested() {
-    // These are user created by calling next()
+    // These are user created by calling nest()
     const items = this.__nv
     for (const i=0, il=items.length; i<il; i++) {
       let child = items[i]
@@ -257,7 +256,7 @@ proto.__lu = function(callbacks) {
  */
 proto.__sv = function() {
   const cls = function(parent) {
-    this.parent = parent
+    View.call(this, parent)
   }
   cls.prototype = new View()
   return cls

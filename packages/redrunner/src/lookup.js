@@ -1,7 +1,8 @@
 /**
  * Used internally.
- * An object which caches the results of queries.
- * Intended to be shared between instances of a view.
+ * An object which caches the results of lookup queries so we don't have to
+ * repeat them in the same view.
+ * The Lookup instance will be shared between instances of a view.
  * Must call reset() on every update.
  */
 export function Lookup(callbacks) {

@@ -22,7 +22,18 @@ class CustomModal extends BaseModal {
 }
 
 test("View can use stubs defined in parent", () => {
-  const div = load(CustomModal, {title: 'Confirm', content: 'Really?', footer: 'ok'})
+  let div = load(CustomModal, {title: 'Confirm', content: 'Really?', footer: 'ok'})
+  expect(div).toShow(`
+    <div>
+      <div>Confirm</div>
+      <span>Really?</span>
+      <span>ok</span>
+    </div>
+  `)
+
+  // We must do this a second time to test a regression bug
+
+  div = load(CustomModal, {title: 'Confirm', content: 'Really?', footer: 'ok'})
   expect(div).toShow(`
     <div>
       <div>Confirm</div>
