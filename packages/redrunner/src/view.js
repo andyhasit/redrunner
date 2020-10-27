@@ -144,7 +144,7 @@ export class View {
   updateNested() {
     // These are user created by calling nest()
     const items = this.__nv
-    for (const i=0, il=items.length; i<il; i++) {
+    for (let i=0, il=items.length; i<il; i++) {
       let child = items[i]
       if (child.__ia()) {
         child.update()
