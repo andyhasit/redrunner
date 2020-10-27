@@ -13,11 +13,15 @@ class TestView extends View {
     <div>
       <Child :props="..child1"/>
       <Child :props=".child2"/>
+      <Child :props=".child3?"/>
     </div>
   `
   init() {
     this.child2 = {name: 'alice'}
     super.init()
+  }
+  child3() {
+    return {name: 'jess'}
   }
 }
 
@@ -27,6 +31,7 @@ test('Nest accepts props', () => {
     <div>
       <span>jo</span>
       <span>alice</span>
+      <span>jess</span>
     </div>
   `)
   child1.name = 'ems'
@@ -35,6 +40,7 @@ test('Nest accepts props', () => {
     <div>
       <span>ems</span>
       <span>alice</span>
+      <span>jess</span>
     </div>
   `)
 })

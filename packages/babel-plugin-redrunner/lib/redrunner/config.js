@@ -42,7 +42,7 @@ const config = {
     ':props': {
       params: 'args',
       handle: function(args) {
-        this.props = this.expandPrefix(args)
+        this.props = this.expandPrefix(args, true)
       }
     },
     ':show': {
@@ -57,7 +57,7 @@ const config = {
       handle: function(viewCls, props) {
         this.replaceWith = this.expandPrefix(viewCls, true)
         if (props) {
-          this.props = this.expandPrefix(props)
+          this.props = this.expandPrefix(props, true)
         }
       }
     },
