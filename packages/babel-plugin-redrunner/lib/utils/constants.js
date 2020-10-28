@@ -1,6 +1,13 @@
 const c = console
 const EOL = require('os').EOL
-const htmlparse = require('node-html-parser')
-const redrunnerDefs = ['__html__', '__clone__', '__stubs__']
+const jsdom = require("jsdom");
 
-module.exports = {c, EOL, htmlparse, redrunnerDefs}
+const redrunnerDefs = ['__html__', '__clone__', '__stubs__']
+const { JSDOM } = jsdom;
+
+const parseHTML = function(html) {
+  //`<!DOCTYPE html>` + 
+  return new JSDOM(html).window.document.body.childNodes[0];
+}
+
+module.exports = {c, EOL, parseHTML, redrunnerDefs}

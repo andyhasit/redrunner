@@ -184,8 +184,7 @@ function getWatchQueryCallBack(property) {
  * Returns true if node represents a nested view, i.e tag starts with uppercase.
  */
 function isNestedView(nodeInfo){
-  const isTagCapitalized = /[A-Z]/.test(nodeInfo.tagName[0])
-  return isTagCapitalized
+  return nodeInfo.tagName.toLowerCase().startsWith('nest:')
 }
 
 function parseWatchTargetSlot(target) {

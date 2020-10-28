@@ -1,4 +1,4 @@
-const {c, htmlparse} = require('../utils/constants')
+const {c, parseHTML} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
 
 /**
@@ -17,7 +17,7 @@ class DomWalker {
     this.currentNode = undefined
   }
   parse() {
-    this.dom = htmlparse.parse(this.html)
+    this.dom = parseHTML(this.html)
     const nodePath = []    // The path of current node recursion
 
     /**

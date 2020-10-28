@@ -36,14 +36,16 @@ function getAttVal(attStr, attName) {
  * whether it only contains TextNodes as children (or no children).
  */
 function isLeafNode(node) {
-  return !node.childNodes.filter(n => n.nodeType != 3).length > 0
+  const childNodes = Array.from(node.childNodes)
+  return !childNodes.filter(n => n.nodeType != 3).length > 0
 }
 
 /** Extracts node's atts as an object.
  */
 function extractAtts(node) {
   const throwAway = document.createElement('template')
-  throwAway.innerHTML = node.toString()
+  throwAway.innerHTML = node.outerHTML
+  c.log(throwAway.innerHTML)
   const attributes = throwAway.content.firstChild.attributes
   const obj = {}
   if (attributes) {
