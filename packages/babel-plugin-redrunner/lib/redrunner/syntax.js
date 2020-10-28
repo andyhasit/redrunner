@@ -2,6 +2,7 @@
  * Functionality relating to RedRunner __html__ syntax.
  */
 const {c, EOL} = require('../utils/constants')
+const {findNextClosingTagOrWhiteSpace} = require('../utils/dom')
 
 /**
  * The name of the arg representing the view in the buildView method.
@@ -181,11 +182,28 @@ function getWatchQueryCallBack(property) {
 }
 
 /**
- * Returns true if node represents a nested view, i.e tag starts with uppercase.
+ * Return the tagName as it appears (so not capitalized)
+ * @param {*} nodeInfo 
  */
-function isNestedView(nodeInfo){
-  return nodeInfo.tagName.toLowerCase().startsWith('nest:')
+function rawTagName(nodeInfo) {
+  const html = nodeInfo.outerHTML
+  const end = findNextClosingTagOrWhiteSpace(html)
+  return end.slice(1, end)
 }
+
+function isNestedNode(nodeInfo) {
+  return rawTagName(nodeInfo).startsWith('nest:')
+}
+
+function getNestedName(nodeInfo) {
+  const tagName = rawTagName(nodeInfo)
+  return tagName.substr(tagName.indexOf(':'))
+}
+
+function isStubNode(nodeInfo) {
+  return nodeInfo.tagName.toLowerCase().startsWith('stub:')
+}
+
 
 function parseWatchTargetSlot(target) {
   if (target.startsWith('@')) {
@@ -219,8 +237,10 @@ module.exports = {
   expandConverter,
   expandPrefix,
   getLookupArgs,
+  getNestedName,
   getWatchQueryCallBack,
-  isNestedView,
+  isNestedNode,
+  isStubNode,
   parseWatchTargetSlot,
   splitter,
   watchArgs

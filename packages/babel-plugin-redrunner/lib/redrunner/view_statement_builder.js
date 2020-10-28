@@ -6,7 +6,9 @@ const {DomWalker} = require('./dom_walker.js')
 const {extractNodeData} = require('./extract_node_data')
 const {
   getLookupArgs,
-  isNestedView
+  getNestedName,
+  isNestedNode,
+  isStubNode
 } = require('./syntax')
 const {
   ArrayStatement,
@@ -124,7 +126,7 @@ class ViewStatementBuilder {
    */
   processNode(nodeInfo) {
     const {nodePath, node, tagName} = nodeInfo
-    if (tagName.startsWith('stub:')) {
+    if (isStubNode(nodeInfo)) {
       this.saveStub(tagName, nodePath)
       return
     }
@@ -135,8 +137,8 @@ class ViewStatementBuilder {
       // Use the saveAs supplied, or get a sequential one
       saveAs = saveAs ? saveAs : this.getNextElementRef()
 
-      if (isNestedView(nodeInfo) || replaceWith) {
-        this.saveNestedView(nodePath, saveAs, nodeData, tagName, props, replaceWith)
+      if (isNestedNode(nodeInfo) || replaceWith) {
+        this.saveNestedView(nodePath, saveAs, nodeData, getNestedName(tagName), props, replaceWith)
       } else {
         this.saveWrapper(nodePath, saveAs, nodeData)
       }
@@ -182,8 +184,8 @@ class ViewStatementBuilder {
 
       const watchCall = new CallStatement(`${vars.prototypeVariable}.${vars.getWatch}`, watchCallArgs)
       this.watches.add(watchCall)
-    } else if (isNestedView(nodeInfo)) {
-      this.beforeSave.push(`view.__ni(${getLookupArgs(nodePath)}, ${tagName});`)
+    } else if (isNestedNode(nodeInfo)) {
+      this.beforeSave.push(`view.__ni(${getLookupArgs(nodePath)}, ${getNestedName(tagName)});`)
     }
   }
   /**
@@ -199,7 +201,7 @@ class ViewStatementBuilder {
     this.saveElement(saveAs, initCall, nodeData.chainedCalls)
   }
   saveStub(tagName, nodePath) {
-    const stubName = tagName.substr(5)
+    const stubName = getNestedName(tagName)
     if (!re_lnu.test(stubName)) {
       this.walker.throw('Stub name may only contain letters numbers and underscores')
     }
