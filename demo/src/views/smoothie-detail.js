@@ -6,7 +6,7 @@ class Page extends View {
   __html__ = `
     <div class="page">
       <h3>{{.getTitle?}}</h3>
-      <stub:content />
+      <stub:content>
       <hr>
     </div>
   `

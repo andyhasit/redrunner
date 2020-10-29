@@ -9,11 +9,11 @@ class Child extends View {
 
 
 class TestView extends View {
-  __html__ = `
+  __html__ = html`
     <div>
-      <Child :props="..child1"/>
-      <Child :props=".child2"/>
-      <Child :props=".child3?"/>
+      <use:Child :props="..child1">
+      <use:Child :props=".child2"/>
+      <use=Child :props=".child3?">
     </div>
   `
   init() {

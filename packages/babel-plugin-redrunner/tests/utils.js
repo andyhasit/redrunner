@@ -1,4 +1,4 @@
-import {c, htmlparse} from '../lib/utils/constants'
+import {c, parseHTML} from '../lib/utils/constants'
 import diff from 'jest-diff'
 
 const EOL = require('os').EOL
@@ -9,7 +9,7 @@ const redrunnerPlugin = require('../lib/index')
  * Parses node from html string.
  */
 function getNode(html) {
-  return htmlparse.parse(html).childNodes[0]
+  return parseHTML(html)
 }
 
 /**

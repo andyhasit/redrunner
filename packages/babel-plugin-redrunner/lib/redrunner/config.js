@@ -52,13 +52,28 @@ const config = {
         this.reverseShield = 1
       }
     },
-    ':replace': {
+    ':use': {
+      params: 'viewCls, props?',
+      handle: function(viewCls, props) {
+        this.replaceWith = viewCls
+        if (props) {
+          this.props = this.expandPrefix(props, true)
+        }
+      }
+    },
+    ':replace': {   // DEPRECATE, but maybe replace with a dynamic use.
       params: 'viewCls, props?',
       handle: function(viewCls, props) {
         this.replaceWith = this.expandPrefix(viewCls, true)
         if (props) {
           this.props = this.expandPrefix(props, true)
         }
+      }
+    },
+    ':stub': {
+      params: 'stubName',
+      handle: function(stubName) {
+        this.stubName = stubName
       }
     },
     ':watch': {

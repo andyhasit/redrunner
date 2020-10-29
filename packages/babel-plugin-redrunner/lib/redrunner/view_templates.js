@@ -1,7 +1,11 @@
+/**
+ * This feature is temporarily disabled.
+ */
+
 const fs = require("fs")
 const path = require('path')
-const {stripHtml} = require('../utils/dom')
-const {c, htmlparse} = require('../utils/constants')
+const {parseHTML, stripHtml} = require('../utils/dom')
+const {c} = require('../utils/constants')
 
 /**
  * A cache of view templates by path. These are files, typically called views.html
@@ -24,10 +28,11 @@ class ViewTemplateCache {
   }
   addToCache(templateFile) {
     const contents = fs.readFileSync(templateFile, {encoding:'utf8', flag:'r'})
-    const html = htmlparse.parse(stripHtml(contents)) // Must strip!
+    const dom = parseHTML(stripHtml(contents)) // Must strip!
     const fileCache = {}
-    html.childNodes.forEach(n => {
-      fileCache[n.tagName] = n.childNodes[0].toString()
+    const childNodes = Array.from(dom.childNodes)
+    childNodes.forEach(n => {
+      fileCache[n.tagName] = n.childNodes[0].outerHTML
     })
     this._fileCaches[templateFile] = fileCache
     return fileCache

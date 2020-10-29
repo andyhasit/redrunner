@@ -7,11 +7,10 @@ const {NodeData} = require('./node_data')
  * @param {Object} node - a nodeInfo instance from the walker
  * @param {Object} config - the global config object
  * @param {DomWalker} walker - the walker itself (just for raising exceptions)
- * @param {boolean} stub - indicates whether we are processing a stub.
+ * @param {boolean} asStub - indicates whether we are processing a stub.
  */
-function extractNodeData(node, config, walker, stub) {
-  const nodeAtts = node.rawAttrs
-  const nodeData = new NodeData(node, stub)
+function extractNodeData(node, config, walker, asStub) {
+  const nodeData = new NodeData(node, asStub)
 
   // Check inline calls
   const inlines = nodeData.processInlineWatches(node, config)
@@ -19,9 +18,9 @@ function extractNodeData(node, config, walker, stub) {
   inlines.forEach(w => nodeData.watches.push(w))
 
   // Check attributes for directives
-  if (nodeAtts && nodeAtts !== '') {
+  if (node.attributes.length > 0) {
     for (let [directiveName, directive] of Object.entries(config.directives)) {
-      let attVal = getAttVal(nodeAtts, directiveName)
+      let attVal = getAttVal(node, directiveName)
       if (attVal) {
         hasData = true
         nodeData.processDirective(directiveName, directive, attVal)

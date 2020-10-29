@@ -317,10 +317,6 @@ function _createClass(Constructor, protoProps, staticProps) {
   return Constructor;
 }
 
-function _readOnlyError(name) {
-  throw new Error("\"" + name + "\" is read-only");
-}
-
 function _slicedToArray(arr, i) {
   return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
 }
@@ -529,8 +525,9 @@ Watch.prototype.go = function (view) {
 
 /**
  * Used internally.
- * An object which caches the results of queries.
- * Intended to be shared between instances of a view.
+ * An object which caches the results of lookup queries so we don't have to
+ * repeat them in the same view.
+ * The Lookup instance will be shared between instances of a view.
  * Must call reset() on every update.
  */
 function Lookup(callbacks) {
@@ -561,6 +558,17 @@ Lookup.prototype = {
   reset: function reset() {
     this.run = {};
   }
+};
+
+const c = console;
+
+const EOL = require('os').EOL;
+
+const redrunnerDefs = ['__html__', '__clone__', '__stubs__'];
+module.exports = {
+  c,
+  EOL,
+  redrunnerDefs
 };
 
 /**
@@ -664,7 +672,7 @@ var View = /*#__PURE__*/function () {
       return this.__qc.get(this, query);
     }
     /**
-     * Resets the lookups, muct be called before calling this.lookup() during an update.
+     * Resets the lookups, must be called before calling this.lookup() during an update.
      */
 
   }, {
@@ -721,7 +729,7 @@ var View = /*#__PURE__*/function () {
         return;
       }
 
-      var il = watches.length; //c.log(watches)
+      var il = watches.length;
 
       while (i < il) {
         watch = watches[i];
@@ -753,10 +761,10 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "updateNested",
     value: function updateNested() {
-      // These are user created by calling next()
+      // These are user created by calling nest()
       var items = this.__nv;
 
-      for (var i = 0, il = items.length; i < il; _readOnlyError("i"), i++) {
+      for (var i = 0, il = items.length; i < il; i++) {
         var child = items[i];
 
         if (child.__ia()) {
@@ -887,13 +895,13 @@ proto.__lu = function (callbacks) {
   return new Lookup(callbacks);
 };
 /**
- * Creates an anonymous view class for stubs.
+ * Creates an anonymous stub view class
  */
 
 
-proto.__av = function () {
+proto.__sv = function () {
   var cls = function cls(parent) {
-    View.apply(this, parent);
+    View.call(this, parent);
   };
 
   cls.prototype = new View();

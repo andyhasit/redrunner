@@ -1,6 +1,6 @@
 const babel = require('@babel/core')
 const {getNodeHtmlString, getNodeHtmlStringDict, removeRedrunnerDefs} = require('./utils/babel')
-const {generateStatements} = require('./redrunner/generate_statements')
+const {generateStatements} = require('./redrunner/view_statement_builder')
 const {viewTemplates} = require('./redrunner/view_templates')
 const {config} = require('./redrunner/config')
 const { c } = require('./utils/constants')
@@ -45,7 +45,7 @@ module.exports = () => {
                 className: anonymousCls, 
                 clone: viewData.clone, 
                 html: stubHtml,
-                stub: true
+                asStub: true
               }
               generateStatements(stubViewData).forEach(statement =>
                 path.insertAfter(babel.template.ast(statement))

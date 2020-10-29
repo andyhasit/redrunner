@@ -13,9 +13,10 @@ const {
 const {buildInlineWatch, processInlineWatches} = require('./inline')
 
 class NodeData {
-  constructor(node, stub) {
+  constructor(node, asStub) {
     this.node = node
-    this.stub = stub
+    this.asStub = asStub // whether the whole html declaration is a stub
+    this.stubName = undefined // Whether this node should be a stub
     this.saveAs = undefined
     this.customWrapperClass = undefined
     this.customWrapperArgs = undefined
