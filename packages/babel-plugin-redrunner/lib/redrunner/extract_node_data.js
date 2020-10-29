@@ -10,18 +10,18 @@ const {NodeData} = require('./node_data')
  * @param {boolean} stub - indicates whether we are processing a stub.
  */
 function extractNodeData(node, config, walker, stub) {
-  const nodeAtts = node.rawAttrs
   const nodeData = new NodeData(node, stub)
 
   // Check inline calls
+  //c.log(node)
   const inlines = nodeData.processInlineWatches(node, config)
   let hasData = inlines.length > 0
   inlines.forEach(w => nodeData.watches.push(w))
 
   // Check attributes for directives
-  if (nodeAtts && nodeAtts !== '') {
+  if (node.attributes.length > 0) {
     for (let [directiveName, directive] of Object.entries(config.directives)) {
-      let attVal = getAttVal(nodeAtts, directiveName)
+      let attVal = getAttVal(node, directiveName)
       if (attVal) {
         hasData = true
         nodeData.processDirective(directiveName, directive, attVal)

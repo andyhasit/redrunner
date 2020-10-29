@@ -183,25 +183,25 @@ function getWatchQueryCallBack(property) {
 
 /**
  * Return the tagName as it appears (so not capitalized)
- * @param {*} nodeInfo 
+ * @param {*} node 
  */
-function rawTagName(nodeInfo) {
-  const html = nodeInfo.outerHTML
+function rawTagName(node) {
+  const html = node.outerHTML
   const end = findNextClosingTagOrWhiteSpace(html)
-  return end.slice(1, end)
+  return html.slice(1, end)
 }
 
-function isNestedNode(nodeInfo) {
-  return rawTagName(nodeInfo).startsWith('nest:')
+function isNestedNode(node) {
+  return rawTagName(node).startsWith('nest:')
 }
 
-function getNestedName(nodeInfo) {
-  const tagName = rawTagName(nodeInfo)
-  return tagName.substr(tagName.indexOf(':'))
+function getNestedName(node) {
+  const tagName = rawTagName(node)
+  return tagName.substr(tagName.indexOf(':') + 1)
 }
 
-function isStubNode(nodeInfo) {
-  return nodeInfo.tagName.toLowerCase().startsWith('stub:')
+function isStubNode(node) {
+  return rawTagName(node).startsWith('stub:')
 }
 
 

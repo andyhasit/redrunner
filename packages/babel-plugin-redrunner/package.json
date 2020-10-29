@@ -28,11 +28,11 @@
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/plugin-syntax-class-properties": "^7.8.3",
     "@babel/preset-env": "^7.10.2",
-    "jsdom": "^16.2.2",
-    "node-html-parser": "1.2.20"
+    "jsdom": "^16.2.2"
   },
   "devDependencies": {
     "jest": "^26.0.1",
+    "node-html-parser": "^1.4.2",
     "print-diff": "^1.0.0"
   },
   "gitHead": "d0b7e57549514d9141b4bcf3109269c9ad43a484"

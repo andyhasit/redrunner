@@ -13,7 +13,7 @@ const document = new JSDOM('<!doctype html><html><body></body></html>').window.d
  *
  * Note that it does not allow spaces around the = sign!
  */
-function getAttVal(attStr, attName) {
+function OLDgetAttVal(attStr, attName) {
   if (attStr) {
     let withEqualSign = attName + '='
     let start = attStr.search(withEqualSign)
@@ -31,6 +31,11 @@ function getAttVal(attStr, attName) {
   }
 }
 
+function getAttVal(node, attName) {
+  return node.getAttribute(attName)
+}
+
+
 /**
  * Determines whether a node from node-html-parser is a leaf node, or rather,
  * whether it only contains TextNodes as children (or no children).
@@ -45,7 +50,6 @@ function isLeafNode(node) {
 function extractAtts(node) {
   const throwAway = document.createElement('template')
   throwAway.innerHTML = node.outerHTML
-  c.log(throwAway.innerHTML)
   const attributes = throwAway.content.firstChild.attributes
   const obj = {}
   if (attributes) {
@@ -87,8 +91,7 @@ function getAttDefinition(attStr, attName) {
  * Removes an attribute (in-place)
  */
 function removeAtt(node, att) {
-  const wholeAtt = getAttDefinition(node.rawAttrs, att)
-  node.rawAttrs = node.rawAttrs.replace(wholeAtt, '')
+  node.removeAttribute(att)
 }
 
 /**

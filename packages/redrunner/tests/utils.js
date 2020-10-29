@@ -70,7 +70,7 @@ function tidy(html) {
  */
 expect.extend({
   toShow(testMount, expectedHtml) {
-    const received = tidy(testMount.el.outerHTML)
+    const received = tidy(testMount.html)
     const expected = tidy(expectedHtml)
     const pass = received === expected
     const passMessage = () => 'OK'

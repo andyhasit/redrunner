@@ -27,7 +27,7 @@ class ViewTemplateCache {
     const html = parseHTML(stripHtml(contents)) // Must strip!
     const fileCache = {}
     html.childNodes.forEach(n => {
-      fileCache[n.tagName] = n.childNodes[0].toString()
+      fileCache[n.tagName] = n.childNodes[0].outerHTML
     })
     this._fileCaches[templateFile] = fileCache
     return fileCache

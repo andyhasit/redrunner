@@ -24,13 +24,14 @@ class DomWalker {
      * Called recursively to process each node in the DOM
      */
     const walkNode = (node, i) => {
+      const childNodes = Array.from(node.childNodes)
       this.currentNode = node
       nodePath.push(i)
       const tagName = node.tagName
       if (tagName) {
         this.processNode({nodePath, node, tagName})
       }
-      node.childNodes.forEach(walkNode)
+      childNodes.forEach(walkNode)
       nodePath.pop()
     }
     walkNode(this.dom)

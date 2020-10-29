@@ -91,7 +91,7 @@ class ViewStatementBuilder {
     this.buildMethod.add(this.savedElements.buildAssign('view.dom'))
     this.afterSave.forEach(i => this.buildMethod.add(i))
     // We do this at the end as the dom has been changed
-    const convertedHTML = this.buildHtmlString(this.walker.dom.toString())
+    const convertedHTML = this.buildHtmlString(this.walker.dom.outerHTML)
     this.htmlString.set(`'${convertedHTML}'`)
   }
   /**
@@ -126,8 +126,8 @@ class ViewStatementBuilder {
    */
   processNode(nodeInfo) {
     const {nodePath, node, tagName} = nodeInfo
-    if (isStubNode(nodeInfo)) {
-      this.saveStub(tagName, nodePath)
+    if (isStubNode(node)) {
+      this.saveStub(node, nodePath)
       return
     }
     const nodeData = extractNodeData(node, this.config, this.walker, this.stub)
@@ -137,8 +137,8 @@ class ViewStatementBuilder {
       // Use the saveAs supplied, or get a sequential one
       saveAs = saveAs ? saveAs : this.getNextElementRef()
 
-      if (isNestedNode(nodeInfo) || replaceWith) {
-        this.saveNestedView(nodePath, saveAs, nodeData, getNestedName(tagName), props, replaceWith)
+      if (isNestedNode(node) || replaceWith) {
+        this.saveNestedView(nodePath, saveAs, nodeData, getNestedName(node), props, replaceWith)
       } else {
         this.saveWrapper(nodePath, saveAs, nodeData)
       }
@@ -184,8 +184,8 @@ class ViewStatementBuilder {
 
       const watchCall = new CallStatement(`${vars.prototypeVariable}.${vars.getWatch}`, watchCallArgs)
       this.watches.add(watchCall)
-    } else if (isNestedNode(nodeInfo)) {
-      this.beforeSave.push(`view.__ni(${getLookupArgs(nodePath)}, ${getNestedName(tagName)});`)
+    } else if (isNestedNode(node)) {
+      this.beforeSave.push(`view.__ni(${getLookupArgs(nodePath)}, ${getNestedName(node)});`)
     }
   }
   /**
@@ -200,8 +200,8 @@ class ViewStatementBuilder {
     const initCall = `view.__ni(${getLookupArgs(nodePath)}, ${nestedViewClass})`
     this.saveElement(saveAs, initCall, nodeData.chainedCalls)
   }
-  saveStub(tagName, nodePath) {
-    const stubName = getNestedName(tagName)
+  saveStub(node, nodePath) {
+    const stubName = getNestedName(node)
     if (!re_lnu.test(stubName)) {
       this.walker.throw('Stub name may only contain letters numbers and underscores')
     }

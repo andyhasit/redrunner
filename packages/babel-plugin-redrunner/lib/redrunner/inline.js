@@ -112,7 +112,7 @@ function processInlineWatches(node, config) {
   // extract from node's text
   if (isLeafNode(node)) {
     if (addInlineWatches(node.innerHTML, 'text')) {
-      node.childNodes = []
+      node.innerHTML = ''
     }
   }
 

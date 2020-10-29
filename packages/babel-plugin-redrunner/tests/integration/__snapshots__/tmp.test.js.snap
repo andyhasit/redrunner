@@ -3,18 +3,17 @@
 exports[`__clone__ instead of __html__ 1`] = `
 "class MyView extends View {}
 
-var _MyViewPrototype = MyView.prototype;
-var __bu__ = _MyViewPrototype.__bu;
-_MyViewPrototype.__ht = '<div></div>';
-_MyViewPrototype.__wc = [];
-_MyViewPrototype.__qc = __bu__._qc({});
-_MyViewPrototype.__ip = {};
+var p = MyView.prototype;
+p.__ht = '<div></div>';
+p.__wc = [];
+p.__qc = p.__lu({});
+p.__ip = {};
 
-_MyViewPrototype.__bv = function (view, prototype) {
+p.__bv = function (view, prototype) {
   view.__bd(prototype, true);
 
   view.dom = {};
 };
 
-_MyViewPrototype.__cn = undefined;"
+p.__cn = undefined;"
 `;
