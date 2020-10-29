@@ -154,9 +154,9 @@ function expandPrefix(field, convertToCall=false) {
   if (field.startsWith('..')) {
     return field.substr(2)
   } else if (field.startsWith('.')) {
-    return this.stub ? 'this.parent.' + field.substr(1) : 'this.' + field.substr(1)
+    return this.asStub ? 'this.parent.' + field.substr(1) : 'this.' + field.substr(1)
   }
-  return this.stub ? 'this.parent.props.' + field : 'this.props.' + field
+  return this.asStub ? 'this.parent.props.' + field : 'this.props.' + field
 }
 
 
@@ -180,30 +180,6 @@ function getWatchQueryCallBack(property) {
       `function() {return ${this.parseWatchedValueSlot(property)}}`
   }
 }
-
-/**
- * Return the tagName as it appears (so not capitalized)
- * @param {*} node 
- */
-function rawTagName(node) {
-  const html = node.outerHTML
-  const end = findNextClosingTagOrWhiteSpace(html)
-  return html.slice(1, end)
-}
-
-function isNestedNode(node) {
-  return rawTagName(node).startsWith('use:')
-}
-
-function getNestedName(node) {
-  const tagName = rawTagName(node)
-  return tagName.substr(tagName.indexOf(':') + 1)
-}
-
-function isStubNode(node) {
-  return rawTagName(node).startsWith('stub:')
-}
-
 
 function parseWatchTargetSlot(target) {
   if (target.startsWith('@')) {
@@ -237,10 +213,7 @@ module.exports = {
   expandConverter,
   expandPrefix,
   getLookupArgs,
-  getNestedName,
   getWatchQueryCallBack,
-  isNestedNode,
-  isStubNode,
   parseWatchTargetSlot,
   splitter,
   watchArgs

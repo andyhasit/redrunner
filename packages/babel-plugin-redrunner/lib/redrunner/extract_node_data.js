@@ -7,13 +7,12 @@ const {NodeData} = require('./node_data')
  * @param {Object} node - a nodeInfo instance from the walker
  * @param {Object} config - the global config object
  * @param {DomWalker} walker - the walker itself (just for raising exceptions)
- * @param {boolean} stub - indicates whether we are processing a stub.
+ * @param {boolean} asStub - indicates whether we are processing a stub.
  */
-function extractNodeData(node, config, walker, stub) {
-  const nodeData = new NodeData(node, stub)
+function extractNodeData(node, config, walker, asStub) {
+  const nodeData = new NodeData(node, asStub)
 
   // Check inline calls
-  //c.log(node)
   const inlines = nodeData.processInlineWatches(node, config)
   let hasData = inlines.length > 0
   inlines.forEach(w => nodeData.watches.push(w))

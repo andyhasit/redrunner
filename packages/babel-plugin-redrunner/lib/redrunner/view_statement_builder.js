@@ -6,9 +6,6 @@ const {DomWalker} = require('./dom_walker.js')
 const {extractNodeData} = require('./extract_node_data')
 const {
   getLookupArgs,
-  getNestedName,
-  isNestedNode,
-  isStubNode
 } = require('./syntax')
 const {
   ArrayStatement,
@@ -43,7 +40,7 @@ class ViewStatementBuilder {
     this.className = viewData.className
 
     this.clone = viewData.clone
-    this.stub = viewData.stub
+    this.asStub = viewData.asStub
     this.config = viewData.config
     this.nextElementRefIndex = 0
     this.savedWatchCallArgs = []
@@ -126,19 +123,19 @@ class ViewStatementBuilder {
    */
   processNode(nodeInfo) {
     const {nodePath, node, tagName} = nodeInfo
-    if (isStubNode(node)) {
-      this.saveStub(node, nodePath)
-      return
-    }
-    const nodeData = extractNodeData(node, this.config, this.walker, this.stub)
+    const nodeData = extractNodeData(node, this.config, this.walker, this.asStub)
     if (nodeData) {
-      let {afterSave, beforeSave, saveAs, props, shieldQuery, reverseShield, watches, replaceWith} = nodeData
+      let {afterSave, beforeSave, saveAs, props, shieldQuery, reverseShield, watches, stubName, replaceWith} = nodeData
 
+      if (stubName) {
+        this.saveStub(stubName, nodePath)
+        return
+      }
       // Use the saveAs supplied, or get a sequential one
       saveAs = saveAs ? saveAs : this.getNextElementRef()
 
-      if (isNestedNode(node) || replaceWith) {
-        this.saveNestedView(nodePath, saveAs, nodeData, getNestedName(node), props, replaceWith)
+      if (replaceWith) {
+        this.saveNestedView(nodePath, saveAs, nodeData, replaceWith, props, replaceWith)
       } else {
         this.saveWrapper(nodePath, saveAs, nodeData)
       }
@@ -184,8 +181,6 @@ class ViewStatementBuilder {
 
       const watchCall = new CallStatement(`${vars.prototypeVariable}.${vars.getWatch}`, watchCallArgs)
       this.watches.add(watchCall)
-    } else if (isNestedNode(node)) {
-      this.beforeSave.push(`view.__ni(${getLookupArgs(nodePath)}, ${getNestedName(node)});`)
     }
   }
   /**
@@ -200,8 +195,7 @@ class ViewStatementBuilder {
     const initCall = `view.__ni(${getLookupArgs(nodePath)}, ${nestedViewClass})`
     this.saveElement(saveAs, initCall, nodeData.chainedCalls)
   }
-  saveStub(node, nodePath) {
-    const stubName = getNestedName(node)
+  saveStub(stubName, nodePath) {
     if (!re_lnu.test(stubName)) {
       this.walker.throw('Stub name may only contain letters numbers and underscores')
     }
@@ -230,4 +224,9 @@ class ViewStatementBuilder {
   }
 }
 
-module.exports = {ViewStatementBuilder}
+function generateStatements(viewData) {
+  const builder = new ViewStatementBuilder(viewData)
+  return builder.buildStatements()
+}
+
+module.exports = {ViewStatementBuilder, generateStatements}

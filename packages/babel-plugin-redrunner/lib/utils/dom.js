@@ -6,29 +6,11 @@ const {c, EOL} = require('./constants')
 const {JSDOM} = require("jsdom")
 const document = new JSDOM('<!doctype html><html><body></body></html>').window.document
 
-/** Extracts the args string from rawAttrs e.g.
- *
- *   as=m            >   "m"
- *   args="a, 'b'"   >   "a, 'b'"
- *
- * Note that it does not allow spaces around the = sign!
- */
-function OLDgetAttVal(attStr, attName) {
-  if (attStr) {
-    let withEqualSign = attName + '='
-    let start = attStr.search(withEqualSign)
-    if (start >= 0) {
-      attStr = attStr.substr(start + withEqualSign.length)
-      let quoteSymbol = attStr[0]
-      if (quoteSymbol == '"' || quoteSymbol == "'") {
-        // Its in quotes...
-        return attStr.substr(1, attStr.indexOf(quoteSymbol, 1) - 1)
-      } else {
-        // Not in quotes
-        return attStr.substr(0, findNextClosingTagOrWhiteSpace(attStr, 0))
-      }
-    }
-  }
+
+const parseHTML = function(html) {
+  const throwAway = document.createElement('template')
+  throwAway.innerHTML = stripHtml(html)
+  return throwAway.content.firstChild
 }
 
 function getAttVal(node, attName) {
@@ -138,12 +120,33 @@ function stripHtml(htmlString) {
     .replace(/\>[\t ]+$/g, ">")
 }
 
+/**
+ * A hack to allow the following syntac 
+ * 
+ *    <use:Child/>
+ *    <use=Child/>
+ * 
+ * With the JSDOM parser. It coverts those to:
+ * 
+ *    <br :use=Child/>
+ * 
+ * which will work
+ */
+function preprocessHTML(htmlString) {
+  return htmlString.replace(/<use:/g, "<br :use=")
+    .replace(/<use=/g, "<br :use=")
+    .replace(/<stub:/g, "<br :stub=")
+    .replace(/<stub=/g, "<br :stub=")
+}
+
 module.exports = {
   extractAtts,
   findNextClosingTagOrWhiteSpace,
   getAttVal,
   getAttDefinition,
   isLeafNode,
+  parseHTML,
+  preprocessHTML,
   removeAtt,
   stripHtml
 }
