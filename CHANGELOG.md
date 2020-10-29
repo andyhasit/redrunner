@@ -3,6 +3,36 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.5.0] - 2020-10-29
+
+#### Changed
+
+- Nested class declarations are now `<use:ChildViewClass>` rather than `<ChildViewClass ... >`
+- Feature allowing you to place declarations inside a `views.html` file is currently disabled.
+- Solely use jsdom for parsing
+
+#### Fixed
+
+- Horrible bug which injected the entire contenst of "he" (npm packge) into bundles, because of node-html-parser.
+
+### [0.4.5] - 2020-10-27
+
+#### Fixed
+
+- Issue in nested views
+
+### [0.4.4] - 2020-10-27
+
+#### Fixed
+
+- Bug with specifying props as function
+
+### [0.4.2] - 2020-10-22
+
+#### Fixed
+
+- Issue with stubs constructor prototype
+
 ### [0.4.1] - 2020-10-21
 
 #### Fixed
