@@ -192,7 +192,7 @@ function rawTagName(node) {
 }
 
 function isNestedNode(node) {
-  return rawTagName(node).startsWith('nest:')
+  return rawTagName(node).startsWith('use:')
 }
 
 function getNestedName(node) {

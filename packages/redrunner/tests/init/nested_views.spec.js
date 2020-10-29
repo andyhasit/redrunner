@@ -5,8 +5,8 @@ const names = []
 class ParentView extends View {
   __html__ = `
     <div>
-      <ChildView :props=".child1Props"/>
-      <ChildView :props=".child2Props"/>
+      <div :use=ChildView :props=".child1Props"/>
+      <div :use=ChildView :props=".child2Props"/>
     </div>
   `
   init() {

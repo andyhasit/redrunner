@@ -18,7 +18,7 @@ class DomWalker {
   }
   parse() {
     this.dom = parseHTML(this.html)
-    const nodePath = []    // The path of current node recursion
+    const nodePath = [0]    // The path of current node recursion
 
     /**
      * Called recursively to process each node in the DOM

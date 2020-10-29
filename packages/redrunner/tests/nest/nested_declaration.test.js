@@ -11,9 +11,9 @@ class Child extends View {
 class TestView extends View {
   __html__ = `
     <div>
-      <Child :props="..child1"/>
-      <Child :props=".child2"/>
-      <Child :props=".child3?"/>
+      <div :use=Child :props="..child1"/>
+      <div :use=Child :props=".child2"/>
+      <div :use=Child :props=".child3?"/>
     </div>
   `
   init() {

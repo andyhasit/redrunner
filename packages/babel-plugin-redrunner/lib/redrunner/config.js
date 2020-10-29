@@ -52,6 +52,15 @@ const config = {
         this.reverseShield = 1
       }
     },
+    ':use': {
+      params: 'viewCls, props?',
+      handle: function(viewCls, props) {
+        this.replaceWith = viewCls
+        if (props) {
+          this.props = this.expandPrefix(props, true)
+        }
+      }
+    },
     ':replace': {
       params: 'viewCls, props?',
       handle: function(viewCls, props) {
