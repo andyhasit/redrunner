@@ -1,3 +1,7 @@
+/**
+ * This feature is temporarily disabled.
+ */
+
 const fs = require("fs")
 const path = require('path')
 const {parseHTML, stripHtml} = require('../utils/dom')
