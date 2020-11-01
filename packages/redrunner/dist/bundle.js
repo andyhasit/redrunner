@@ -287,12 +287,11 @@ function buildView(cls, parent) {
   return view;
 }
 /**
- * Creates a wrapper of type tag and sets inner.
- * TODO: allow class in tag?
+ * Creates a wrapper of type tag e.g. h('div')
  */
 
-function h(tag, inner) {
-  return new Wrapper(doc.createElement(tag)).inner(inner);
+function h(tag) {
+  return new Wrapper(doc.createElement(tag));
 }
 
 function _classCallCheck(instance, Constructor) {
@@ -614,19 +613,21 @@ var View = /*#__PURE__*/function () {
       }
     }
     /**
-     * Was intended as a way to bubble events up the tree. Not sure if needed.
+     * Calls a function somewhere up the parent tree.
      */
 
   }, {
-    key: "emit",
-    value: function emit(name, args) {
+    key: "bubble",
+    value: function bubble(name) {
       var target = this;
 
-      while (!und(target)) {
-        var handlers = target._handlers_;
+      for (var _len = arguments.length, rest = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        rest[_key - 1] = arguments[_key];
+      }
 
-        if (name in handlers) {
-          return handlers[name].apply(target, args);
+      while (!und(target)) {
+        if (target[name]) {
+          return target[name].apply(target, rest);
         }
 
         target = target.parent;
@@ -653,7 +654,7 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "nest",
     value: function nest(cls, props) {
-      var child = createView(cls, this, props);
+      var child = createView(cls, this, props || this.props);
 
       this.__nv.push(child);
 

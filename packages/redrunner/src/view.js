@@ -37,14 +37,13 @@ export class View {
     }
   }
   /**
-   * Was intended as a way to bubble events up the tree. Not sure if needed.
+   * Calls a function somewhere up the parent tree.
    */
-  emit(name, args) {
+  bubble(name, ...rest) {
     let target = this
     while (!und(target)) {
-      let handlers = target._handlers_
-      if (name in handlers) {
-        return handlers[name].apply(target, args)
+      if (target[name]) {        
+        return target[name].apply(target, rest)
       }
       target = target.parent
     }
@@ -249,7 +248,6 @@ proto.__wa = function(el, shieldQuery, reverseShield, shieldCount, callbacks) {
 proto.__lu = function(callbacks) {
   return new Lookup(callbacks)
 }
-
 
 /**
  * Creates an anonymous stub view class
