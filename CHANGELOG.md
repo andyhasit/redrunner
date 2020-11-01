@@ -7,9 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Changed
 
-- Nested class declarations are now `<use:ChildViewClass>` rather than `<ChildViewClass ... >`
+- `h` no longer accepts second argument.
+- view automatically gets parent props
+
+### [0.5.0] - 2020-10-29
+
+#### Changed
+
+- Nested class declarations are now `<use:ChildViewClass>` rather than uppercase convention: `<ChildViewClass ... >`
 - Feature allowing you to place declarations inside a `views.html` file is currently disabled.
-- Solely use jsdom for parsing
+- Dropped [node-html-parser](https://github.com/taoqf/node-html-parser) and now use only [jsdom](https://github.com/jsdom/jsdom) for parsing HTML.
 
 #### Fixed
 

@@ -9,7 +9,7 @@ class TestView extends View {
     </div>
   `
   items() {
-    return names.map(i => h('span', i))
+    return names.map(i => h('span').inner(i))
   }
 }
 

@@ -42,9 +42,8 @@ export function buildView(cls, parent) {
 
 
 /**
- * Creates a wrapper of type tag and sets inner.
- * TODO: allow class in tag?
+ * Creates a wrapper of type tag e.g. h('div')
  */
-export function h(tag, inner) {
-  return new Wrapper(doc.createElement(tag)).inner(inner)
+export function h(tag) {
+  return new Wrapper(doc.createElement(tag))
 }

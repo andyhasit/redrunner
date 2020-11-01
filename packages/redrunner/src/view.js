@@ -63,7 +63,7 @@ export class View {
    * Builds a nested view of the specified class. Its up to you how you use it.
    */
   nest(cls, props) {
-    const child = createView(cls, this, props)
+    const child = createView(cls, this, props || this.props)
     this.__nv.push(child)
     return child
   }

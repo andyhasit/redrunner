@@ -8,7 +8,7 @@ class TestView extends View {
     </div>
   `
   getContents() {
-    return this.props.items.map(i => h('div', i))
+    return this.props.items.map(i => h('div').inner(i))
   }
 }
 

@@ -1,7 +1,7 @@
 const c = console
 const {EOL} = require('../utils/constants')
 const {stripHtml} = require('../utils/dom')
-const {extractShieldCounts, groupArray} = require('../utils/misc')
+const {extractShieldCounts, groupArray, isUnd} = require('../utils/misc')
 const {DomWalker} = require('./dom_walker.js')
 const {extractNodeData} = require('./extract_node_data')
 const {
@@ -191,6 +191,9 @@ class ViewStatementBuilder {
   }
   saveNestedView(nodePath, saveAs, nodeData, tagName, props, replaceWith) {
     const nestedViewClass = replaceWith || tagName
+    if (isUnd(props)) {
+      props = 'this.props'
+    }
     this.nestedViewProps.add(saveAs, new FunctionStatement('', [`return ${props}`]))
     const initCall = `view.__ni(${getLookupArgs(nodePath)}, ${nestedViewClass})`
     this.saveElement(saveAs, initCall, nodeData.chainedCalls)
