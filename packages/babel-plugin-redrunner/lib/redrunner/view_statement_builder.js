@@ -151,8 +151,8 @@ class ViewStatementBuilder {
 
       // Squash array to object
       watches = groupArray(watches, 'property', function(watch) {
-        let {converter, target, raw} = watch
-        return nodeData.buildWatchCallbackLine(saveAs, converter, target, raw) // TODO: extract this
+        let {converter, target, raw, extraArgs} = watch
+        return nodeData.buildWatchCallbackLine(saveAs, converter, target, raw, extraArgs) // TODO: extract this
       })
 
       // Group statements into single function

@@ -1,4 +1,4 @@
-import {c, h, load, View} from '../utils'
+import {load, View} from '../utils'
 
 const child1 = {name: 'jo'}
 

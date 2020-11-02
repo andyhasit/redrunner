@@ -37,11 +37,11 @@ export class View {
   /**
    * Calls a function somewhere up the parent tree.
    */
-  bubble(name, ...rest) {
+  bubble(name) {
     let target = this
     while (!und(target)) {
       if (target[name]) {        
-        return target[name].apply(target, rest)
+        return target[name].apply(target,  Array.prototype.slice.call(arguments, 1))
       }
       target = target.parent
     }

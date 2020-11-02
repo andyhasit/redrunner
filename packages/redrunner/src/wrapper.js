@@ -126,7 +126,7 @@ Wrapper.prototype = {
   /*
    * Set items from cache.
    */
-  items: function(items) {
+  items: function(items, parent) {
     const e = this.e
     const childNodes = e.childNodes
     const cache = this._cache
@@ -142,7 +142,7 @@ Wrapper.prototype = {
      */
     for (let i=0; i<itemsLength; i++) {
       let item = items[i]
-      let {view, key} = this._cache.getOne(item)
+      let {view, key} = this._cache.getOne(item, parent)
       newKeys.push(key)
       if (i > canAddNow) {
         e.appendChild(view.e, this)

@@ -29,8 +29,8 @@ class NodeData {
     this.beforeSave = []
     this.afterSave = []
   }
-  addWatch(property, converter, target) {
-    this.watches.push({property, converter, target})
+  addWatch(property, converter, target, extraArgs) {
+    this.watches.push({property, converter, target, extraArgs})
   }
   /**
    * Returns the call for creating a new wrapper based on nodePath.

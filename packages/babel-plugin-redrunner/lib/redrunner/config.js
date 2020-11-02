@@ -30,7 +30,7 @@ const config = {
         if (cacheDef) {
           this.chainedCalls.push(`cache(${this.buildCacheInit(cacheDef, cacheKey)})`)
         }
-        this.addWatch(property, converter, 'items')
+        this.addWatch(property, converter, 'items', 'this')
       }
     },
     ':on': {

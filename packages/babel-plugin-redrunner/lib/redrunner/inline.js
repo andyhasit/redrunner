@@ -102,6 +102,7 @@ function processInlineWatches(node, config) {
   function addInlineWatches(rawStr, target) {
     const inlineCallDetails = splitInlineText(rawStr)
     if (inlineCallDetails) {
+      // This watch may have 'raw' key
       let watch = nodeData.buildInlineWatch(target, inlineCallDetails)
       watches.push(watch)
       return true

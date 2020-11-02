@@ -37,8 +37,9 @@ function buildCacheInit (cacheDef, cacheKey){
 
 /**
  * Builds callback statement for a watch.
+ * TODO: tidy this fucking mess...
  */
-function buildWatchCallbackLine(saveAs, convert, target, raw) {
+function buildWatchCallbackLine(saveAs, convert, target, raw, extraArgs) {
   let callbackBody, wrapper = `this.dom.${saveAs}`
   convert = convert ? this.expandConverter(convert) : ''
   if (target) {
@@ -46,7 +47,11 @@ function buildWatchCallbackLine(saveAs, convert, target, raw) {
     if (raw) {
       callbackBody = `${wrapper}.${targetString}${raw})`
     } else if (convert) {
-      callbackBody = `${wrapper}.${targetString}${convert})`
+      if (extraArgs) {
+        callbackBody = `${wrapper}.${targetString}${convert}, ${extraArgs})`
+      } else {
+        callbackBody = `${wrapper}.${targetString}${convert})`
+      }
     } else {
       callbackBody = `${wrapper}.${targetString}n)`
     }
