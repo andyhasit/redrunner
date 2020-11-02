@@ -25,9 +25,12 @@ class Button extends View {
   clicked() {
     this.bubble('add', 2)
   }
+  add() {
+    throw 'Should have tried parent first, not this.'
+  }
 }
 
-test('bubble function as expeted', () => {
+test('bubble function as expected', () => {
   const view = load(TestView)
   const btn = view.el.childNodes[1]
   expect(view).toShow(`

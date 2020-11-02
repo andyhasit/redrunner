@@ -38,7 +38,7 @@ export class View {
    * Calls a function somewhere up the parent tree.
    */
   bubble(name) {
-    let target = this
+    let target = this.parent
     while (!und(target)) {
       if (target[name]) {        
         return target[name].apply(target,  Array.prototype.slice.call(arguments, 1))
