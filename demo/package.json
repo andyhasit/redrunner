@@ -7,18 +7,7 @@
   "scripts": {
     "build-prod": "webpack -p",
     "build-dev": "webpack -d",
-    "copy-all": "npm run copy-plugin && npm run copy-redrunner && npm run copy-router",
-    "copy-plugin": "cp -r ../packages/babel-plugin-redrunner/lib/* node_modules/babel-plugin-redrunner/lib",
-    "copy-redrunner": "npm run copy-redrunner-src && npm run copy-redrunner-dist",
-    "copy-redrunner-dist": "cp ../packages/redrunner/dist/bundle.js node_modules/redrunner/dist",
-    "copy-redrunner-src": "cp -r ../packages/redrunner/src/* node_modules/redrunner/src",
-    "copy-router": "npm run copy-router-src && npm run copy-router-dist",
-    "copy-router-dist": "cp ../packages/redrunner-router/dist/bundle.js node_modules/redrunner-router/dist",
-    "copy-router-src": "cp -r ../packages/redrunner-router/src/* node_modules/redrunner-router/src",
-    "rebuild": "npm run rebuild-redrunner && npm run rebuild-router && npm run rebuild-plugin",
-    "rebuild-redrunner": "cd ../packages/redrunner && npm run build && cd - && npm run copy-redrunner",
-    "rebuild-plugin": " npm run copy-plugin",
-    "rebuild-router": "cd ../packages/redrunner-router && npm run build && cd - && npm run copy-router",
+    "copy-local": "./copy-local-packages.sh",
     "start": "webpack-dev-server --host 0.0.0.0",
     "watch": "webpack --watch"
   },
@@ -27,14 +16,11 @@
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/preset-env": "^7.7.4",
     "babel-loader": "^8.0.6",
-    "babel-plugin-redrunner": "^0.3.1",
-    "redrunner": "^0.3.1",
-    "redrunner-router": "0.3.1",
+    "babel-plugin-redrunner": "0.6.0",
+    "redrunner": "0.6.0",
+    "redrunner-router": "0.6.0",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.9.0"
-  },
-  "dependencies": {
-    "node-html-parser": "^1.2.20"
   }
 }

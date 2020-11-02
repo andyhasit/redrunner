@@ -5,8 +5,6 @@ import mountie from './mountie'
 import {Wrapper} from './wrapper'
 import {Watch} from './watch'
 import {Lookup} from './lookup'
-import { c } from '../../babel-plugin-redrunner/lib/utils/constants'
-
 
 /**
  * Represents a view.
