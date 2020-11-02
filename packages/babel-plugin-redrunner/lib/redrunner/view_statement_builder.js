@@ -131,6 +131,12 @@ class ViewStatementBuilder {
         this.saveStub(stubName, nodePath)
         return
       }
+
+      // if (saveAs && this.asStub) {
+      //   this.afterSave.push(`console.log(view.parent);`)
+      //   this.afterSave.push(`view.parent.dom.${saveAs} = view.dom.${saveAs}`)
+      // }
+
       // Use the saveAs supplied, or get a sequential one
       saveAs = saveAs ? saveAs : this.getNextElementRef()
 
@@ -202,10 +208,9 @@ class ViewStatementBuilder {
     if (!re_lnu.test(stubName)) {
       this.walker.throw('Stub name may only contain letters numbers and underscores')
     }
-    const saveAs = this.getNextElementRef()
-    this.nestedViewProps.add(saveAs, new FunctionStatement('', ['return this.props']))
+    this.nestedViewProps.add(stubName, new FunctionStatement('', ['return this.props']))
     const initCall = `view.__ni(${getLookupArgs(nodePath)}, this.__stubs__${stubName})`
-    this.saveElement(saveAs, initCall, [])
+    this.saveElement(stubName, initCall, [])
   }
   saveElement(saveAs, initCall, chainedCalls) {
     const chainedCallStatement = chainedCalls.length ? '.' + chainedCalls.join('.') : ''

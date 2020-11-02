@@ -16,9 +16,12 @@ const adjustName = (name) => {
   return name.endsWith('()') ? name.slice(0, -2) + '?' : name
 }
 
-
 /**
- * Builds the call to create a cache.
+ * Builds the call to create a cache for child views.
+ * 
+ * @param {string} cacheDef - the name of the view class to cache, or if it
+ * starts with @ then it is the path to a cache object (e.g. @..sharedCache ).
+ * @param {string} cacheKey - the field on the props to cache by.
  */
 function buildCacheInit (cacheDef, cacheKey){
   if (cacheDef.startsWith('@')) {
