@@ -3,7 +3,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-### [0.5.1] - 2020-11-01
+### [0.6.1] - 2020-11-02
+
+#### Added
+
+- The bubble() method throws an error if it doesn't find a method.
+
+#### Fixed
+
+- Items added via `wrapper.items()` did not have parent set.
+
+### [0.6.0] - 2020-11-01
 
 #### Added
 

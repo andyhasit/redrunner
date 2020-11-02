@@ -45,6 +45,7 @@ export class View {
       }
       target = target.parent
     }
+    throw 'Bubble popped.'
   }
   /**
    * Move the view to new parent. Necessary if sharing a cache.
