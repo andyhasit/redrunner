@@ -35,7 +35,7 @@ export class View {
     }
   }
   /**
-   * Calls a function somewhere up the parent tree.
+   * Calls a function somewhere up the view parent tree.
    */
   bubble(name) {
     let target = this.parent
