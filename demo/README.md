@@ -31,5 +31,11 @@ This demo also serves as a way of checking the configuration files of the variou
 
 It is purposefully not a packages itself. This is to prevent Lerna from creating symlinks in its node_modules, as certain bundlers (notably parcel) treat symlinks differently, which can hide configuration errors.
 
-Use the `copy*` scripts in package.json to update instead.
+Run the script to copy packages over instead:
+
+```
+./copy-local-packages.sh
+```
+
+
 
