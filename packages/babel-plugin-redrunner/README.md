@@ -1,8 +1,10 @@
 #RedRunner Babel Plugin
 
-The babel plugin for use with RedRunner.
+This is the babel plugin for RedRunner.
 
-## Installation
+## Usage
+
+#### Installation
 
 Install into your project with:
 
@@ -10,89 +12,59 @@ Install into your project with:
 npm i -D babel-plugin-redrunner
 ```
 
-## Overview
-
-This plugin mainly replaces the `__html__` definition of RedRunner views with fields on the prototype.
-
-This:
+You must match the minor version to the version of RedRunner you are using, so this would be OK for example:
 
 ```javascript
-class MyView extends View {
-  __html__ = '<div :watch="*|name|text"/>'
+{ 
+  "devDependencies": {
+    "babel-plugin-redrunner": "~0.6.2"
+    "redrunner": "~0.6.4"
+  }
 }
 ```
 
-Becomes something like:
+#### Configuration
 
-```javascript
-MyView.prototype.html = '...';
-MyView.prototype.watches = [...];
-MyView.prototype.queries = {...};
-MyView.prototype.build = function () {...};
-```
-
-## Compatibility
-
-You *must* match the exact version to the version of RedRunner you are using.
-
-## Tests
-
-Run with:
-
-`npm test`
-
-## Configuration
-
-### The helper (not working yet)
-
-TBC
-
-### Directives (not configurable yet)
-
-You can override or define your own directives (i.e. the special attributes in `__html__` which get parsed).
-
-```json
-{
-  "plugins": [
-    ["redrunner", {"configFile": "./src/config.js"}]
-  ]
-}
-```
-
-In your **config.js**:
+You can configure various options, and define your own directives, by creating a file called **redrunner.config.js** and the root directory of your project:
 
 ```javascript
 module.exports = {
-   directives: {
-    ':my-dir': {
-         params: 'arg1, arg2',
-         handle: function(arg1, arg2) {
-           this...
-       }
+  options: {
+    inlineDelimiters: ['{%', '%}']
+  },
+  directives: {
+    ':as': {
+      handle: function(arg) {
+        this.saveAs = arg
+      }
     }
   }
 }
 ```
 
-#### Directive syntax
+This feature hasn't been developed much yet, nor documented beyond what you are about to read. 
 
-##### Params
+##### Basic How To
 
-This specifies the expected arguments, which are separated by the `|` symbol:
+Look at the base config file in **lib/redrunner/config.js** to see how other directives have been specified. 
 
-```html
-<div :foo="arg1|arg2"/>
-```
+The `handle()` function takes whatever args you specify in the directive, and `this` is bound to the NodeData object of the current node (see **lib/redrunner/node_data.js**, which has all the methods you might want to use. My recommendation is to only do what you see other directives doing.
 
-##### Handle
+RedRunner is currently in alpha stage, and minor versions may break things.
 
-There are several actions
+## Developer Notes
 
-| Action          | Effect                              |
-| --------------- | ----------------------------------- |
-| this.addWatch() | saves a value watch with a callback |
-| chain           | adds a chain call                   |
-| saveAs          |                                     |
+The code is pretty awful, inconsistent, messy, and could do with a big re-write. Enjoy!
 
+#### Plugin development
 
+The [plugin-handbook](https://github.com/jamiebuilds/babel-handbook/blob/master/translations/en/plugin-handbook.md) is pretty much the only guide available on writing babel plugins to date.
+
+#### Tests
+
+Run tests with:
+
+`npm test`
+
+These are just basic tests to help build the plugin TDD style, and you will probably find them outdated. To really test the plugin, run the tests in the package for redrunner itself.
 

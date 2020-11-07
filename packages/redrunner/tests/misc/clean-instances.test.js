@@ -4,9 +4,9 @@ import {load, View} from '../utils'
 class TestView extends View {
   __html__ = `
     <div>
-      <div>{{title}}</div>
-      <span>{{content}}</span>
-      <span>{{footer}}</span>
+      <div>{title}</div>
+      <span>{content}</span>
+      <span>{footer}</span>
     </div>
   `
 }

@@ -3,9 +3,14 @@
  * 
  * A directive definition's handler's "this" is a NodeData instance.
  */
+var fs = require('fs');
+var path = require('path');
 
 
 const config = {
+  options: {
+    inlineDelimiters: ['{', '}']
+  },
   directives: {
     ':as': {
       handle: function(arg) {
@@ -92,5 +97,12 @@ const config = {
   }
 }
 
+// Use config file if there is one.
+const configFile = path.join(process.cwd(), 'redrunner.config.js')
+if (fs.existsSync(configFile)) {
+  var userConfig = require(configFile)
+  Object.assign(config.directives, userConfig.directives)
+  Object.assign(config.options, userConfig.options)
+}
 
 module.exports = {config}

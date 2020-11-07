@@ -13,7 +13,7 @@ class View2 extends View {
     <div>meh</div>
   `
   __stubs__ = {
-    footer: `<span>{{footer}}</span>`
+    footer: `<span>{footer}</span>`
   }
   yolo = 2
 }

@@ -4,9 +4,9 @@ import {c, load, View} from '../utils'
 class TestView extends View {
   __html__ = `
     <div>
-      <span class="{{style}}"></span>
-      <span class="{{.style}}"></span>
-      <span class="{{..service.style}}"></span>
+      <span class="{style}"></span>
+      <span class="{.style}"></span>
+      <span class="{..service.style}"></span>
     </div>
   `
   init() {

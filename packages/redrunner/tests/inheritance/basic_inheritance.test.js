@@ -7,8 +7,8 @@ const person = {name: 'Hortense'}
 class ParentView extends View {
   __html__ = `
     <div>
-      <div>{{name}}</div>
-      <div>{{.getHeight?}}</div>
+      <div>{name}</div>
+      <div>{.getHeight?}</div>
     </div>
   `
   getHeight() {
@@ -25,8 +25,8 @@ class ChildView1 extends ParentView {
 class ChildView2 extends ParentView {
   __html__ = `
     <div>
-      <div>{{name | ..caps?}}</div>
-      <div>{{.getHeight?}}</div>
+      <div>{name | ..caps?}</div>
+      <div>{.getHeight?}</div>
     </div>
   `
 }

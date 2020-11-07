@@ -3,14 +3,14 @@ import {load, View} from '../utils'
 class BaseModal extends View {
   __html__ = `
     <div>
-      <div>{{title}}</div>
+      <div>{title}</div>
       <stub:inner />
     </div>
   `
 }
 
 class Item extends View {
-  __html__ = `<li>{{.props}}</li>`
+  __html__ = `<li>{.props}</li>`
 }
 
 class CustomModal extends BaseModal {

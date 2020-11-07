@@ -7,8 +7,11 @@
  */
 
 const {c} = require('../utils/constants')
+const {config} = require('./config')
 const {extractAtts, isLeafNode, removeAtt} = require('../utils/dom')
 const {splitter} = require('./syntax')
+const [startDelimiter, endDelimiter] = config.options.inlineDelimiters
+const delimiterLength = startDelimiter.length
 
 /**
  * Returns undefined if string is only whitespace, else the original string.
@@ -35,15 +38,16 @@ function clearIfEmpty(str) {
  *  "my-style {{style|foo}} xyz  "  >  {style, foo, 'my-style ', ' xyz'}
  *
  */
+
 function splitInlineText(rawStr) {
   let end = 0
-  let start = rawStr.indexOf('{{')
+  let start = rawStr.indexOf(startDelimiter)
   if (start >= 0) {
-    end = rawStr.indexOf('}}')
+    end = rawStr.indexOf(endDelimiter)
     if (end > start) {
-      const inline = rawStr.substring(start + 2, end)
+      const inline = rawStr.substring(start + delimiterLength, end)
       let before = clearIfEmpty(rawStr.substr(0, start).trimStart())
-      let after = clearIfEmpty(rawStr.substr(end + 2).trimEnd())
+      let after = clearIfEmpty(rawStr.substr(end + delimiterLength).trimEnd())
       const [property, convert] = inline.split(splitter).map(s => s.trim())
       return {property, convert, before, after}
     }

@@ -4,7 +4,7 @@ import {c, load, View} from '../utils'
 class TestView extends View {
   __html__ = `
     <div>
-      <span>{{.count}}</span>
+      <span>{.count}</span>
       <use:Button>
     </div>
   `

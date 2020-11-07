@@ -6,7 +6,7 @@ class Container extends View {
 }
 
 class Child extends View {
-  __html__ = '<div>{{.props}}</div>'
+  __html__ = '<div>{.props}</div>'
 }
 
 test('Initial load works', () => {

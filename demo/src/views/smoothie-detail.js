@@ -5,7 +5,7 @@ import {smoothiesService} from '../services/smoothies'
 class Page extends View {
   __html__ = `
     <div class="page">
-      <h3>{{.getTitle?}}</h3>
+      <h3>{.getTitle?}</h3>
       <stub:content>
       <hr>
     </div>
@@ -20,7 +20,7 @@ export class SmoothieDetail extends Page {
     content: `
       <div>
         <button :onClick=".toggle">X</button>
-        <span>{{name}}</span>
+        <span>{name}</span>
       </div>
     `
   }

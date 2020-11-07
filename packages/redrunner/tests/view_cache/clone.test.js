@@ -16,7 +16,7 @@ class TestView extends View {
 
 class NestedView extends View {
   __clone__ = `
-    <span>{{.props}}</span>
+    <span>{.props}</span>
   `
   init() {
     this.uniqueSeq = getSeq()

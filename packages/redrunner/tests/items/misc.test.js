@@ -15,7 +15,7 @@ class TestView extends View {
 
 
 class Child extends View {
-  __html__ = '<span>{{.parent.name}}</span>'
+  __html__ = '<span>{.parent.name}</span>'
 }
 
 

@@ -21,7 +21,7 @@ Comment out the other section before uncommenting this one.
 // class TestView extends View {
 //   __html__ = `
 //     <div>
-//       <h1>Hello {{name}}</h1>
+//       <h1>Hello {name}</h1>
 //     </div>
 //   `
 // }

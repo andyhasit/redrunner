@@ -26,7 +26,7 @@ class ParentView extends View {
 class ChildView extends View {
   __html__ = `
     <div>
-      {{name}}
+      {name}
     </div>
   `
   init() {

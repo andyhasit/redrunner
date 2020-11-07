@@ -7,8 +7,8 @@ import {smoothiesService} from '../services/smoothies'
 class FormLine extends View {
   __html__ = `
     <div class="form-field">
-      <label for="{{name}}">{{caption}}: </label>
-      <input type="{{type}}" name="{{name}}" :onKeyUp=".changed" required>
+      <label for="{name}">{caption}: </label>
+      <input type="{type}" name="{name}" :onKeyUp=".changed" required>
     </div>
   `
   init() {

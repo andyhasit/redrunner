@@ -15,7 +15,7 @@ class TestView extends View {
 
 class NestedView extends View {
   __html__ = `
-    <div>{{name}}</div>
+    <div>{name}</div>
   `
   init() {
     this.uniqueSeq = counter.next()
