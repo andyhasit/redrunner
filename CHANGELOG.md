@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 #### Changed
 
 * Inline delimiters now configurable and default to single curly braces.
+* Directive `:as` is now called `:el`
+* `view.dom` is now `view.el` 
 
 #### Fixed
 
