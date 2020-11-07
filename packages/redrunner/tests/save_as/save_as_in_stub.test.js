@@ -11,10 +11,10 @@ class BaseModal extends View {
 
 class CustomModal extends BaseModal {
   __stubs__ = {
-    inner: `<span :as="x"></span>`
+    inner: `<span :el="x"></span>`
   }
   init() {
-    this.dom.inner.dom.x.text('YO')
+    this.el.inner.el.x.text('YO')
   }
 }
 

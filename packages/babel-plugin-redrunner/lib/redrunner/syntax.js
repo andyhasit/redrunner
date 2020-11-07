@@ -43,7 +43,7 @@ function buildCacheInit (cacheDef, cacheKey){
  * TODO: tidy this fucking mess...
  */
 function buildWatchCallbackLine(saveAs, convert, target, raw, extraArgs) {
-  let callbackBody, wrapper = `this.dom.${saveAs}`
+  let callbackBody, wrapper = `this.el.${saveAs}`
   convert = convert ? this.expandConverter(convert) : ''
   if (target) {
     const targetString = parseWatchTargetSlot(target)

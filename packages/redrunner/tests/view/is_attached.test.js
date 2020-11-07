@@ -3,7 +3,7 @@ import {c, createView, load, View} from '../utils'
 
 class TestView extends View {
   __html__ = `
-    <div :as="root">
+    <div :el="root">
     </div>
   `
 }
@@ -25,6 +25,6 @@ test('Nested views should not be attached until it is', () => {
   const parentView = load(TestView).view
   const randomView = createView(NestedView, undefined, parentView)
   expect(randomView.__ia()).toBe(false)
-  parentView.dom.root.child(randomView)
+  parentView.el.root.child(randomView)
   expect(randomView.__ia()).toBe(true)
 })

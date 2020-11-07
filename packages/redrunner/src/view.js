@@ -17,7 +17,7 @@ export class View {
 
     // These will be set during build
     s.e = null              // the element
-    s.dom = null            // the named wrappers
+    s.el = null             // the named wrappers
 
     // Internal state objects
     s.__nv = []             // Nested views
@@ -29,7 +29,7 @@ export class View {
    */
   init() {
     for (const [k, v] of Object.entries(this.__ip)) {
-      let view = this.dom[k]
+      let view = this.el[k]
       view.props = v.apply(this)
       view.init()
     }
@@ -128,7 +128,7 @@ export class View {
         shieldCount = shouldBeVisible ? 0 : watch.sc
 
         // Set the element visibility
-        this.dom[watch.wk].visible(shouldBeVisible)
+        this.el[watch.wk].visible(shouldBeVisible)
         i += shieldCount
       }
       if (shouldBeVisible) {
@@ -151,7 +151,7 @@ export class View {
     // These are created with directives, and whose props arguments may need reprocessed.
     // TODO improve this, maybe drop for of
     for (const [k, v] of Object.entries(this.__ip)) {
-      let view = this.dom[k]
+      let view = this.el[k]
       view.setProps(v.apply(this))
     }
   }

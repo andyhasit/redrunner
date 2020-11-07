@@ -3,17 +3,17 @@ import {c, load, View} from '../utils'
 
 class TestView extends View {
   __html__ = `
-    <div :as="x">
+    <div :el="x">
       <div>
-        <span :as="y"></span>
+        <span :el="y"></span>
       </div>
-      <span :as="z"></span>
+      <span :el="z"></span>
     </div>
   `
   init() {
-    this.dom.x.css('x')
-    this.dom.y.css('y')
-    this.dom.z.css('z')
+    this.el.x.css('x')
+    this.el.y.css('y')
+    this.el.z.css('z')
   }
 }
 

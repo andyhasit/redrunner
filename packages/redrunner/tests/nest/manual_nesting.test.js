@@ -6,11 +6,11 @@ const child1 = {name: 'jo'}
 
 class TestView extends View {
   __html__ = html`
-    <div :as="main">
+    <div :el="main">
     </div>
   `
   init() {
-    this.dom.main.inner([
+    this.el.main.inner([
       this.nest(Child, child1),
       this.nest(Child, {name: 'alice'}),
       this.nest(Child, {name: 'jess'})

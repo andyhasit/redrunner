@@ -85,7 +85,7 @@ class ViewStatementBuilder {
     this.setShieldCounts()
     this.buildMethod.add(`view.__bd(prototype, ${this.clone})`)
     this.beforeSave.forEach(i => this.buildMethod.add(i))
-    this.buildMethod.add(this.savedElements.buildAssign('view.dom'))
+    this.buildMethod.add(this.savedElements.buildAssign('view.el'))
     this.afterSave.forEach(i => this.buildMethod.add(i))
     // We do this at the end as the dom has been changed
     const convertedHTML = this.buildHtmlString(this.walker.dom.outerHTML)
@@ -131,11 +131,6 @@ class ViewStatementBuilder {
         this.saveStub(stubName, nodePath)
         return
       }
-
-      // if (saveAs && this.asStub) {
-      //   this.afterSave.push(`console.log(view.parent);`)
-      //   this.afterSave.push(`view.parent.dom.${saveAs} = view.dom.${saveAs}`)
-      // }
 
       // Use the saveAs supplied, or get a sequential one
       saveAs = saveAs ? saveAs : this.getNextElementRef()

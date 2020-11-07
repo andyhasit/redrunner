@@ -3,12 +3,12 @@ import {load, View} from '../utils'
 class TestView extends View {
   __html__ = html`
     <div>
-      <div :as="main"></div>
+      <div :el="main"></div>
       <div><use:Child></div>
     </div>
   `
   init() {
-    this.dom.main.child(this.nest(Child))
+    this.el.main.child(this.nest(Child))
     super.init()
   }
 }

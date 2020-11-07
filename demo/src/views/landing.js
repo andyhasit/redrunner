@@ -9,7 +9,7 @@ export class LandingPage extends View {
       <h3>A RedRunner demo app</h3>
       <hr/>
       <div class="splash-wrapper">
-        <span class="homepage-logo" :as="logo"/>
+        <span class="homepage-logo" :el="logo"/>
       </div>
       <a class="button" href="#/smoothies">Enter</a>
     </div>
@@ -22,7 +22,7 @@ export class LandingPage extends View {
   swapFruit() {
     const fruitItems = fruitService.getItems()
     const fruit = fruitItems[this.fruitIndex]
-    let el = this.dom.logo
+    let el = this.el.logo
     this.fruitIndex = this.fruitIndex < fruitItems.length - 1 ? this.fruitIndex + 1 : 0
     // el.transition(_ => {
     // })

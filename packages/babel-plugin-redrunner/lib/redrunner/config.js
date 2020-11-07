@@ -12,7 +12,7 @@ const config = {
     inlineDelimiters: ['{', '}']
   },
   directives: {
-    ':as': {
+    ':el': {
       handle: function(arg) {
         this.saveAs = arg
       }
