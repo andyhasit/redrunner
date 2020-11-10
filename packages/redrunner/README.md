@@ -6,11 +6,11 @@
 
 RedRunner is a JavaScript framework for building dynamic pages and apps.
 
-It looks like a cross between Vue and React, but works very differently, and because of that:
+It looks like a cross between Vue and React, but works very differently, and as a result:
 
-1. It is a lot faster.
-2. It produces smaller bundles.
-3. You can solve many problems more easily.
+1. It is faster than either of those.
+2. It produces *much* smaller bundles.
+3. It lets you solve problems more easily, and therefore ship quicker.
 
 #### How fast is it?
 
@@ -18,19 +18,13 @@ Preliminary tests using [js-framework-benchmark](https://github.com/krausest/js-
 
 ![benchmark resuts](docs/benchmark_2020_11_06.png)
 
-**Footnotes:**
+***Footnote:*** *this is a screenshot from locally run tests, not the official figures (RedRunner hasn't been submitted yet) and also omits some tests because of uncertainty over [772](https://github.com/krausest/js-framework-benchmark/issues/772).*
 
-1. *This is a screenshot from locally run tests, not the official figures (RedRunner hasn't been submitted yet)*
-2. *I omitted a few test as I wasn't sure if my implementation breached the rules on direct DOM manipulation, thereby gaining unfair advantage.*
-3. *RedRunner hasn't been optimised as extensively as the others, so will likely get even faster.*
-
-Benchmark speed is not the same as real world performance. What really matters in the real world is how **quickly** and **cleanly** you can fix *specific* performance issues (and those happen regardless of which framework you use).
+But benchmark speed doesn't really matter that much... What matters is how **quickly** and **cleanly** you can fix *specific* performance issues - the kind happen regardless of which framework you use.
 
 #### How small is it?
 
-The size of the framework itself is irrelevant, what matters are bundle sizes.
-
-Here are the production build sizes for implementations of the same app (the one used in the above benchmark) in kB, minified & gzipped:
+The size of the framework is irrelevant, what matters are bundle sizes. Here are the production build sizes for implementations of the same app (the one used in the above benchmark) in kB, minified & gzipped:
 
 ```
 React 17.0       42.3
@@ -42,9 +36,9 @@ RedRunner 0.6     4.9
 Svelte 3.28       3.2
 ```
 
-#### What does it look like?
+#### How do I use it?
 
-You compose views as ES6 classes (like React) but build use a declarative syntax in the HTML, like Vue, Angular and others:
+You compose views as ES6 classes like React, but instead of JSX you annotate the HTML, like Vue:
 
 ```javascript
 import {View, mount} from 'redrunner'
@@ -65,13 +59,74 @@ class ClickCounter extends View {
 mount('#some-div-id', ClickCounter, {clickCount: 0})
 ```
 
-But don't panic.
+Don't panic. Whatever you're thinking, it's probably addressed further down.
 
-* You can keep your HTML in separate file if you'd rather (I prefer seeing it next to the code)
-* Your editor probably has a way to highlight the HTML (I use vscode, and can even get tailwindcss autocompletion in the `__html__` string)
-* The syntax is extremely simple `.btnClick` means `this.btnClick` and `..clickCount` means `this.props.clickCount` - and the rest is really easy too. In fact, if you leave a directive empty (e.g. `<button :onClick="">`  or `<span>Clicks: {}</span>`) then you get a printout telling you how to use it (TBI).
+#### How does it work?
 
-But unlike those frameworks RedRunner interprets the syntax at build time, rather than run time (hence the smaller bundles and fast DOM operations). This is exactly how Svelte achieves its exceptional performance.
+The `__html__` field in the example above will be *compiled* into instructions.
+
+There are instructions for *building* the view, which look like this:
+
+```javascript
+// creates the actual real DOM
+this.e = createFromHtml('<div><button>Click me</button><span</span></div>')
+// Create a wrapper around the span, and save a reference to it
+this.el.span = createWrapperFromPath(e, [0, 1])
+```
+
+And instructions for *updating* the view, which look like this:
+
+```javascript
+let w = this.el.span  // w is a Wrapper object
+let n = props.clickCount
+let o = this.oldValues('..ClickCount')
+if (n !== o) {
+  wr.text('Clicks: ' + n)
+  this.oldValues['..ClickCount'] = n
+}
+```
+
+The two important points to note are:
+
+1. There is no magic data binding, we're simply comparing values when the view is updated.
+2. The call to `w.text()` *directly* updates the element. There is no virtual DOM here. 
+
+Here are some other wrapper methods:
+
+```javascript
+w.text('Clicks: ' + n)
+w.css('alert-danger')
+w.visible(false)
+w.inner(arrayOfWrappers)
+```
+
+In RedRunner *all* updates work the same way:
+
+> We check a field's value against its previous value, and if it has changed we update the DOM by calling methods on wrappers.
+
+As you can see, it is *exceedingly* simple, and you might be wondering:
+
+1. How can RedRunner provide all the functionality of other frameworks?
+2. What are the benefits of this system?
+
+#### How does RedRunner provide functionality?
+
+RedRunner looks for **placeholders** and **directives** in the `__html__` field. Here are some placeholders:
+
+```html
+<div>Clicks {..clickCount}</div>
+<div class="{..clickCount|getCssClass}">hello</div>
+```
+
+Here are some directives:
+
+```html
+<div :onClick=".btnClick"></div>
+<div :watch="..clickCount|updateSpan"></div>
+<div :items="|..users|UserDiv|id"></div>
+```
+
+These are converted into JavaScript code which lands in your bundle. They can literally do anything.
 
 #### What are the cool tricks?
 
