@@ -44,19 +44,16 @@ function buildCacheInit (cacheDef, cacheKey){
  */
 function buildWatchCallbackLine(saveAs, convert, target, raw, extraArgs) {
   let callbackBody, wrapper = `this.el.${saveAs}`
+  let extraArg = `, ${extraArgs}`
   convert = convert ? this.expandConverter(convert) : ''
   if (target) {
     const targetString = parseWatchTargetSlot(target)
     if (raw) {
       callbackBody = `${wrapper}.${targetString}${raw})`
     } else if (convert) {
-      if (extraArgs) {
-        callbackBody = `${wrapper}.${targetString}${convert}, ${extraArgs})`
-      } else {
-        callbackBody = `${wrapper}.${targetString}${convert})`
-      }
+      callbackBody = `${wrapper}.${targetString}${convert}${extraArg})`
     } else {
-      callbackBody = `${wrapper}.${targetString}n)`
+      callbackBody = `${wrapper}.${targetString}n${extraArg})`
     }
   } else {
     // No watch target. Assume convert is provided.
@@ -103,7 +100,17 @@ function buildEventCallback(statement) {
 function expandConverter(convert) {
   if (convert && (convert !== '')) {
 
+    // If it starts with () then we treat it as raw JavaScript code.
+    if (convert.startsWith('(')) {
+      if (convert.endsWith(')')) {
+        return convert.substr(1, convert.length - 2)
+      } else {
+        throw 'Converter starting with "(" must also end with ")"'
+      }
+    }
+    
     // If it ends with ) then we treat it as raw function call.
+    // e.g. foo(x, 2)
     if (convert.endsWith(')')) {
       return this.expandPrefix(convert)
     }

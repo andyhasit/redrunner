@@ -179,6 +179,10 @@ Wrapper.prototype = {
     this.e.style[name] = value
     return this
   },
+  swap: function(key, parent) {
+    this.child(this._cache.getOne(key, parent))
+    return this
+  },
   text: function(value) {
     this.e.textContent = value
     return this

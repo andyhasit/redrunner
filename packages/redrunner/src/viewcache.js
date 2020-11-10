@@ -69,3 +69,31 @@ SequentialCache.prototype = {
     this._seq = 0
   }
 }
+
+
+/**
+ * An object which creates and caches views according to the mappings provided.
+ * If there is no match in the mappings, the fallback function is called.
+ * 
+ * Note that the fallback must return an instance (of View or Wrapper) whereas
+ * mappings must specify view classes. 
+ * 
+ * You can rely solely on the fallback if you like.
+ * 
+ * @param {Object} mappings - a mapping of format key->viewClass
+ * @param {function} fallback - a function to call when no key is provided.
+ * 
+ */
+export function InstanceCache(mappings, fallback) {
+  this._m = mappings
+  this._f = fallback
+  this._i = {} // Instances
+}
+
+InstanceCache.prototype.getOne = function(key, parentView) {
+  if (!this._i.hasOwnProperty(key)) {
+    this._i[key] = this._m.hasOwnProperty(key) ?
+      parentView.nest(this._m[key]) : this._f(key, parentView)
+  }
+  return this._i[key]
+}

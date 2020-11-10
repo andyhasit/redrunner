@@ -57,6 +57,17 @@ const config = {
         this.reverseShield = 1
       }
     },
+    ':swap': {
+      params: 'property, mappings, fallback?',
+      handle: function(property, mappings, fallback) {
+        let args = this.expandPrefix(mappings)
+        if (fallback) {
+          args += ', ' + this.expandPrefix(fallback)
+        }
+        this.chainedCalls.push(`cache(view.__ic(${args}))`)
+        this.addWatch(property, undefined, 'swap', 'this')
+      }
+    },
     ':use': {
       params: 'viewCls, props?',
       handle: function(viewCls, props) {

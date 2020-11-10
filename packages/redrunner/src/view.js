@@ -1,4 +1,4 @@
-import {KeyedCache, SequentialCache} from './viewcache'
+import {KeyedCache, InstanceCache, SequentialCache} from './viewcache'
 import {buildView, createView} from  './utils'
 import {und, makeEl} from './helpers'
 import mountie from './mountie'
@@ -192,6 +192,10 @@ proto.__kc = function(cls, keyFn) {
 proto.__sc = function(cls) {
   return new SequentialCache(cls)
 }
+proto.__ic = function(mappings, fallback) {
+  return new InstanceCache(mappings, fallback)
+}
+
 
 /**
  * Build the DOM. We pass prototype as local var for speed.
