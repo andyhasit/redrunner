@@ -263,3 +263,9 @@ proto.__sv = function() {
   return cls
 }
 
+/**
+ * Toggles visibility, like wrapper.
+ */
+proto.visible = function(visible) {
+  this.e.classList.toggle('hidden', !visible)
+}
