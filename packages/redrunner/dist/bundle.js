@@ -86,7 +86,6 @@ Wrapper.prototype = {
   },
   cache: function cache(_cache) {
     this._cache = _cache;
-    this._keys = [];
     return this;
   },
   clear: function clear() {
@@ -166,51 +165,9 @@ Wrapper.prototype = {
   /*
    * Set items from cache.
    */
-  items: function items(_items) {
-    var e = this.e;
-    var childNodes = e.childNodes;
-    var cache = this._cache;
-    var oldKeys = this._keys;
-    var newKeys = [];
-    var itemsLength = _items.length;
-    var canAddNow = oldKeys.length - 1;
-    cache.reset();
-    /*
-     * We loop over the newKeys and pull Elements forward.
-     * oldKeys will be edited in place to look like newKeys, but may have trailing
-     * keys which represent the items to be removed.
-     */
+  items: function items(_items, parent) {
+    this._cache.patch(this.e, _items, parent);
 
-    for (var i = 0; i < itemsLength; i++) {
-      var item = _items[i];
-
-      var _this$_cache$getOne = this._cache.getOne(item),
-          view = _this$_cache$getOne.view,
-          key = _this$_cache$getOne.key;
-
-      newKeys.push(key);
-
-      if (i > canAddNow) {
-        e.appendChild(view.e, this);
-      } else if (key !== oldKeys[i]) {
-        /*
-         * Note: insertBefore removes the element from the DOM if attached
-         * elsewhere, which should either only be further down in the
-         * childNodes, or in case of a shared cache, somewhere we don't
-         * care about removing it from, so its OK.
-         */
-        e.insertBefore(view.e, childNodes[i]);
-      }
-    }
-
-    var lastIndex = childNodes.length - 1;
-    var keepIndex = itemsLength - 1;
-
-    for (var _i = lastIndex; _i > keepIndex; _i--) {
-      e.removeChild(childNodes[_i]);
-    }
-
-    this._keys = newKeys;
     return this;
   },
   on: function on(event, callback) {
@@ -230,6 +187,10 @@ Wrapper.prototype = {
   },
   style: function style(name, value) {
     this.e.style[name] = value;
+    return this;
+  },
+  swap: function swap(key, parent) {
+    this.child(this._cache.getOne(key, parent));
     return this;
   },
   text: function text(value) {
@@ -375,85 +336,154 @@ function _nonIterableRest() {
 /**
  * An object which caches and returns views of a same type, using a key Function
  * to retrieve views.
- * @param {class} cls The class of View to create
- * @param {function} keyFn A function which obtains the key to cache by
+ * @param {class} viewClass - The class of View to create
+ * @param {function} keyFn - A function which obtains the key to cache by
  */
 
+function KeyedCache(viewClass, keyFn) {
+  this._v = viewClass;
+  this._f = keyFn;
+  this._k = []; // keys
 
-function KeyedCache(cls, keyFn) {
-  this.cls = cls;
-  this.cache = {};
-  this.keyFn = keyFn;
-  this._seq = 0;
+  this._p = []; // pool of view instances
 }
-KeyedCache.prototype = {
-  /**
-   * Gets a view, potentially from cache.
-   */
-  getOne: function getOne(props, parentView) {
-    var view,
-        key = this.keyFn(props);
 
-    if (this.cache.hasOwnProperty(key)) {
-      view = this.cache[key];
+KeyedCache.prototype.patch = function (e, items, parent) {
+  var pool = this._p;
+  var viewClass = this._v;
+  var keyFn = this._f;
+  var childNodes = e.childNodes;
+  var itemsLength = items.length;
+  var oldKeys = this._k;
+  var newKeys = [];
+  var canAddNow = oldKeys.length - 1;
+  var item, key, view;
 
-      if (parentView !== view.parent) {
-        view.move(parentView);
-      }
+  for (var i = 0; i < itemsLength; i++) {
+    item = items[i];
+    key = keyFn(item);
 
-      view.setProps(props);
+    if (pool.hasOwnProperty(key)) {
+      view = pool[key];
+      view.setProps(item);
     } else {
-      view = createView(this.cls, parentView, props);
-      this.cache[key] = view;
+      view = createView(viewClass, parent, item);
+      pool[key] = view;
     }
 
-    this._seq += 1;
-    return {
-      view: view,
-      key: key
-    };
-  },
-  reset: function reset() {
-    this._seq = 0;
+    newKeys.push(key);
+    /*
+     * Note: insertBefore removes the element from the DOM if attached
+     * elsewhere, which should either only be further down in the
+     * childNodes, or in case of a shared cache, somewhere we don't
+     * care about removing it from, so its OK.
+     */
+
+    if (i > canAddNow) {
+      e.appendChild(view.e);
+    } else if (key !== oldKeys[i]) {
+      e.insertBefore(view.e, childNodes[i]);
+    }
   }
+
+  this._k = newKeys;
+  trimChildren(e, childNodes, itemsLength);
 };
 /**
  * An object which caches and returns views of a same type, caching by sequence.
- * @param {class} cls The class of View to create.
+ * @param {class} viewClass - The class of View to create.
  */
 
-function SequentialCache(cls) {
-  this.cls = cls;
-  this.cache = [];
-  this._seq = 0;
+
+function SequentialCache(viewClass) {
+  this._v = viewClass;
+  this._p = []; // pool of view instances
+
+  this._c = 0; // Child element count
 }
-SequentialCache.prototype = {
-  getOne: function getOne(props, parentView) {
-    var view;
+/**
+ * Updates the element's children to match the items
+ * @param {*} e 
+ * @param {*} items 
+ * @param {*} parent 
+ */
 
-    if (this._seq < this.cache.length) {
-      view = this.cache[this._seq];
+SequentialCache.prototype.patch = function (e, items, parent) {
+  var pool = this._p;
+  var viewClass = this._v;
+  var childNodes = e.childNodes;
+  var itemsLength = items.length;
+  var item,
+      view,
+      poolCount = pool.length,
+      childElementCount = this._c;
 
-      if (parentView !== view.parent) {
-        view.move(parentView);
-      }
+  for (var i = 0; i < itemsLength; i++) {
+    item = items[i];
 
-      view.setProps(props);
+    if (i < poolCount) {
+      view = pool[i];
+      view.setProps(item);
     } else {
-      view = createView(this.cls, parentView, props);
-      this.cache.push(view);
+      view = createView(viewClass, parent, item);
+      pool.push(view);
+      poolCount++;
     }
 
-    this._seq += 1;
-    return {
-      view: view,
-      key: this._seq
-    };
-  },
-  reset: function reset() {
-    this._seq = 0;
+    if (i >= childElementCount) {
+      e.appendChild(view.e);
+      childElementCount++;
+    }
   }
+
+  this._c = itemsLength;
+  trimChildren(e, childNodes, itemsLength);
 };
+/**
+ * An object which creates and caches views according to the mappings provided.
+ * If there is no match in the mappings, the fallback function is called.
+ * 
+ * Note that the fallback must return an instance (of View or Wrapper) whereas
+ * mappings must specify view classes. 
+ * 
+ * You can rely solely on the fallback if you like.
+ * 
+ * @param {Object} mappings - a mapping of format key->viewClass
+ * @param {function} fallback - a function to call when no key is provided.
+ * 
+ */
+
+
+function InstanceCache(mappings, fallback) {
+  this._m = mappings;
+  this._f = fallback;
+  this._i = {}; // Instances
+}
+
+InstanceCache.prototype.getOne = function (key, parentView) {
+  if (!this._i.hasOwnProperty(key)) {
+    this._i[key] = this._m.hasOwnProperty(key) ? parentView.nest(this._m[key]) : this._f(key, parentView);
+  }
+
+  return this._i[key];
+};
+/**
+ * Trims the unwanted child elements from the end.
+ * 
+ * @param {Node} e 
+ * @param {Array} childNodes 
+ * @param {Int} itemsLength 
+ */
+
+
+function trimChildren(e, childNodes, itemsLength) {
+  var lastIndex = childNodes.length - 1;
+  var keepIndex = itemsLength - 1;
+
+  for (var i = lastIndex; i > keepIndex; i--) {
+    e.removeChild(childNodes[i]);
+  }
+}
 
 /**
  * RedRunner's crude way of tracking mounting and unmounting.
@@ -575,7 +605,7 @@ var View = /*#__PURE__*/function () {
 
     s.e = null; // the element
 
-    s.dom = null; // the named wrappers
+    s.el = null; // the named wrappers
     // Internal state objects
 
     s.__nv = []; // Nested views
@@ -596,7 +626,7 @@ var View = /*#__PURE__*/function () {
             k = _Object$entries$_i[0],
             v = _Object$entries$_i[1];
 
-        var view = this.dom[k];
+        var view = this.el[k];
         view.props = v.apply(this);
         view.init();
       }
@@ -608,19 +638,17 @@ var View = /*#__PURE__*/function () {
   }, {
     key: "bubble",
     value: function bubble(name) {
-      var target = this;
-
-      for (var _len = arguments.length, rest = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-        rest[_key - 1] = arguments[_key];
-      }
+      var target = this.parent;
 
       while (!und(target)) {
         if (target[name]) {
-          return target[name].apply(target, rest);
+          return target[name].apply(target, Array.prototype.slice.call(arguments, 1));
         }
 
         target = target.parent;
       }
+
+      throw 'Bubble popped.';
     }
     /**
      * Move the view to new parent. Necessary if sharing a cache.
@@ -735,7 +763,7 @@ var View = /*#__PURE__*/function () {
 
           shieldCount = shouldBeVisible ? 0 : watch.sc; // Set the element visibility
 
-          this.dom[watch.wk].visible(shouldBeVisible);
+          this.el[watch.wk].visible(shouldBeVisible);
           i += shieldCount;
         }
 
@@ -769,7 +797,7 @@ var View = /*#__PURE__*/function () {
             k = _Object$entries2$_i[0],
             v = _Object$entries2$_i[1];
 
-        var view = this.dom[k];
+        var view = this.el[k];
         view.setProps(v.apply(this));
       }
     }
@@ -816,6 +844,10 @@ proto.__kc = function (cls, keyFn) {
 
 proto.__sc = function (cls) {
   return new SequentialCache(cls);
+};
+
+proto.__ic = function (mappings, fallback) {
+  return new InstanceCache(mappings, fallback);
 };
 /**
  * Build the DOM. We pass prototype as local var for speed.
@@ -897,12 +929,21 @@ proto.__sv = function () {
   cls.prototype = new View();
   return cls;
 };
+/**
+ * Toggles visibility, like wrapper.
+ */
+
+
+proto.visible = function (visible) {
+  this.e.classList.toggle('hidden', !visible);
+};
 
 module.exports = {
   createView: createView,
   h: h,
   mount: mount,
   KeyedCache: KeyedCache,
+  InstanceCache: InstanceCache,
   isStr: isStr,
   SequentialCache: SequentialCache,
   View: View,

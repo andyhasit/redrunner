@@ -8,7 +8,6 @@ import {doc} from './helpers'
  */
 export function Wrapper(element) {
   this.e = element
-  this._keys = undefined
   this._cache = undefined
 }
 
@@ -59,7 +58,6 @@ Wrapper.prototype = {
   },
   cache: function(cache) {
     this._cache = cache
-    this._keys = []
     return this
   },
   clear: function() {
@@ -127,41 +125,7 @@ Wrapper.prototype = {
    * Set items from cache.
    */
   items: function(items, parent) {
-    const e = this.e
-    const childNodes = e.childNodes
-    const cache = this._cache
-    const oldKeys = this._keys
-    const newKeys = []
-    const itemsLength = items.length
-    let canAddNow = oldKeys.length - 1
-    cache.reset()
-    /*
-     * We loop over the newKeys and pull Elements forward.
-     * oldKeys will be edited in place to look like newKeys, but may have trailing
-     * keys which represent the items to be removed.
-     */
-    for (let i=0; i<itemsLength; i++) {
-      let item = items[i]
-      let {view, key} = this._cache.getOne(item, parent)
-      newKeys.push(key)
-      if (i > canAddNow) {
-        e.appendChild(view.e, this)
-      } else if (key !== oldKeys[i]) {
-        /*
-         * Note: insertBefore removes the element from the DOM if attached
-         * elsewhere, which should either only be further down in the
-         * childNodes, or in case of a shared cache, somewhere we don't
-         * care about removing it from, so its OK.
-         */
-        e.insertBefore(view.e, childNodes[i])
-      }
-    }
-    let lastIndex = childNodes.length - 1
-    let keepIndex = itemsLength - 1
-    for (let i=lastIndex; i>keepIndex; i--) {
-      e.removeChild(childNodes[i])
-    }
-    this._keys = newKeys
+    this._cache.patch(this.e, items, parent)
     return this
   },
   on: function(event, callback) {

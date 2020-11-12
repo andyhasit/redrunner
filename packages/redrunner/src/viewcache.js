@@ -1,75 +1,130 @@
 import {createView} from './utils'
 
-const defaultKeyFn = (props, seq) => seq
 
 /**
- * An object which caches and returns views of a same type, using a key Function
- * to retrieve views.
- * @param {class} cls The class of View to create
- * @param {function} keyFn A function which obtains the key to cache by
+ * Caches same type views, retrieving by sequence.
+ * Must not be shared.
+ * 
+ * @param {class} viewClass - The class of View to create.
+ * @param {function} keyFn - A function which obtains the key to cache by
  */
-export function KeyedCache(cls, keyFn) {
-  this.cls = cls
-  this.cache = {}
-  this.keyFn = keyFn
-  this._seq = 0
+export function KeyedCache(viewClass, keyFn) {
+  this._v = viewClass
+  this._f = keyFn
+  this._k = []  // keys
+  this._p = []  // pool of view instances
 }
+const proto = KeyedCache.prototype
 
-KeyedCache.prototype = {
-  /**
-   * Gets a view, potentially from cache.
-   */
-  getOne: function(props, parentView) {
-    let view, key = this.keyFn(props)
-    if (this.cache.hasOwnProperty(key)) {
-      view = this.cache[key]
-      if (parentView !== view.parent) {
-        view.move(parentView)
-      }
-      view.setProps(props)
-    } else {
-      view = createView(this.cls, parentView, props)
-      this.cache[key] = view
-    }
-    this._seq += 1
-    return {view, key}
-  },
-  reset: function() {
-    this._seq = 0
-  }
+/**
+ * Retrieves a single view. Though not used in RedRunner itself, it may
+ * be used elsewhere, such as in the router.
+ * 
+ * @param {Object} item - The item which will be passed as props.
+ * @param {View} parent - The parent view.
+ */
+proto.getOne = function(item, parent) {
+  return this._get(this._p, this._v, this._f(item), item, parent)
 }
 
 /**
- * An object which caches and returns views of a same type, caching by sequence.
- * @param {class} cls The class of View to create.
+ * Updates the element's childNodes to match the items.
+ * Performance is important.
+ * 
+ * @param {DOMElement} e - The DOM element to patch.
+ * @param {Array} items - Array of items which will be passed as props.
+ * @param {View} parent - The parent view.
  */
-export function SequentialCache(cls) {
-  this.cls = cls
-  this.cache = []
-  this._seq = 0
-}
+proto.patch = function(e, items, parent) {
+  const pool = this._p
+  const viewClass = this._v
+  const keyFn = this._f
+  const childNodes = e.childNodes
+  const itemsLength = items.length
+  const oldKeys = this._k;
+  const newKeys = [];
+  const canAddNow = oldKeys.length - 1;
+  let item, key, view
 
-SequentialCache.prototype = {
-  getOne: function(props, parentView) {
-    let view
-    if (this._seq < this.cache.length) {
-      view = this.cache[this._seq]
-      if (parentView !== view.parent) {
-        view.move(parentView)
-      }
-      view.setProps(props)
-    } else {
-      view = createView(this.cls, parentView, props)
-      this.cache.push(view)
+  for (let i=0; i<itemsLength; i++) {
+    item = items[i]
+    key = keyFn(item)
+    view = this._get(pool, viewClass, key, item, parent)
+    newKeys.push(key);
+    /*
+     * Note: insertBefore removes the element from the DOM if attached
+     * elsewhere, which should either only be further down in the
+     * childNodes, or in case of a shared cache, somewhere we don't
+     * care about removing it from, so its OK.
+     */
+    if (i > canAddNow) {
+      e.appendChild(view.e);
+    } else if (key !== oldKeys[i]) {
+      e.insertBefore(view.e, childNodes[i]);
     }
-    this._seq += 1
-    return {view: view, key: this._seq}
-  },
-  reset: function() {
-    this._seq = 0
   }
+  this._k = newKeys;
+  trimChildren(e, childNodes, itemsLength)
 }
 
+// Internal
+proto._get = function(pool, viewClass, key, item, parent) {
+  let view
+  if (pool.hasOwnProperty(key)) {
+    view = pool[key]
+    view.setProps(item)
+  } else {
+    view = createView(viewClass, parent, item)
+    pool[key] = view;
+  }
+  return view
+}
+
+/**
+ * Caches same type views, retrieving by sequence.
+ * Must not be shared.
+ * 
+ * @param {class} viewClass - The class of View to create.
+ */
+export function SequentialCache(viewClass) {
+  this._v = viewClass
+  this._p = []  // pool of view instances
+  this._c = 0   // Child element count
+}
+
+/**
+ * Updates the element's childNodes to match the items.
+ * Performance is important.
+ * 
+ * @param {DOMElement} e - The DOM element to patch.
+ * @param {Array} items - Array of items which will be passed as props.
+ * @param {View} parent - The parent view.
+ */
+SequentialCache.prototype.patch = function(e, items, parent) {
+  const pool = this._p
+  const viewClass = this._v
+  const childNodes = e.childNodes
+  const itemsLength = items.length
+  let item, view, poolCount = pool.length, childElementCount = this._c
+
+  for (let i=0; i<itemsLength; i++) {
+    item = items[i]
+    if (i < poolCount) {
+      view = pool[i]
+      view.setProps(item)
+    } else {
+      view = createView(viewClass, parent, item)
+      pool.push(view)
+      poolCount ++
+    }
+    if (i >= childElementCount) {
+      e.appendChild(view.e)
+      childElementCount ++
+    }
+  }
+  this._c = itemsLength
+  trimChildren(e, childNodes, itemsLength)
+}
 
 /**
  * An object which creates and caches views according to the mappings provided.
@@ -96,4 +151,19 @@ InstanceCache.prototype.getOne = function(key, parentView) {
       parentView.nest(this._m[key]) : this._f(key, parentView)
   }
   return this._i[key]
+}
+
+/**
+ * Trims the unwanted child elements from the end.
+ * 
+ * @param {Node} e 
+ * @param {Array} childNodes 
+ * @param {Int} itemsLength 
+ */
+function trimChildren(e, childNodes, itemsLength) {
+  let lastIndex = childNodes.length - 1
+  let keepIndex = itemsLength - 1
+  for (let i=lastIndex; i>keepIndex; i--) {
+    e.removeChild(childNodes[i])
+  }
 }
