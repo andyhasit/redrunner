@@ -29,7 +29,6 @@ var isStr = function isStr(x) {
 
 function Wrapper(element) {
   this.e = element;
-  this._keys = undefined;
   this._cache = undefined;
 }
 Wrapper.prototype = {
@@ -334,9 +333,10 @@ function _nonIterableRest() {
 }
 
 /**
- * An object which caches and returns views of a same type, using a key Function
- * to retrieve views.
- * @param {class} viewClass - The class of View to create
+ * Caches same type views, retrieving by sequence.
+ * Must not be shared.
+ * 
+ * @param {class} viewClass - The class of View to create.
  * @param {function} keyFn - A function which obtains the key to cache by
  */
 
@@ -347,8 +347,29 @@ function KeyedCache(viewClass, keyFn) {
 
   this._p = []; // pool of view instances
 }
+var proto = KeyedCache.prototype;
+/**
+ * Retrieves a single view. Though not used in RedRunner itself, it may
+ * be used elsewhere, such as in the router.
+ * 
+ * @param {Object} item - The item which will be passed as props.
+ * @param {View} parent - The parent view.
+ */
 
-KeyedCache.prototype.patch = function (e, items, parent) {
+proto.getOne = function (item, parent) {
+  return this._get(this._p, this._v, this._f(item), item, parent);
+};
+/**
+ * Updates the element's childNodes to match the items.
+ * Performance is important.
+ * 
+ * @param {DOMElement} e - The DOM element to patch.
+ * @param {Array} items - Array of items which will be passed as props.
+ * @param {View} parent - The parent view.
+ */
+
+
+proto.patch = function (e, items, parent) {
   var pool = this._p;
   var viewClass = this._v;
   var keyFn = this._f;
@@ -362,15 +383,7 @@ KeyedCache.prototype.patch = function (e, items, parent) {
   for (var i = 0; i < itemsLength; i++) {
     item = items[i];
     key = keyFn(item);
-
-    if (pool.hasOwnProperty(key)) {
-      view = pool[key];
-      view.setProps(item);
-    } else {
-      view = createView(viewClass, parent, item);
-      pool[key] = view;
-    }
-
+    view = this._get(pool, viewClass, key, item, parent);
     newKeys.push(key);
     /*
      * Note: insertBefore removes the element from the DOM if attached
@@ -388,9 +401,26 @@ KeyedCache.prototype.patch = function (e, items, parent) {
 
   this._k = newKeys;
   trimChildren(e, childNodes, itemsLength);
+}; // Internal
+
+
+proto._get = function (pool, viewClass, key, item, parent) {
+  var view;
+
+  if (pool.hasOwnProperty(key)) {
+    view = pool[key];
+    view.setProps(item);
+  } else {
+    view = createView(viewClass, parent, item);
+    pool[key] = view;
+  }
+
+  return view;
 };
 /**
- * An object which caches and returns views of a same type, caching by sequence.
+ * Caches same type views, retrieving by sequence.
+ * Must not be shared.
+ * 
  * @param {class} viewClass - The class of View to create.
  */
 
@@ -402,10 +432,12 @@ function SequentialCache(viewClass) {
   this._c = 0; // Child element count
 }
 /**
- * Updates the element's children to match the items
- * @param {*} e 
- * @param {*} items 
- * @param {*} parent 
+ * Updates the element's childNodes to match the items.
+ * Performance is important.
+ * 
+ * @param {DOMElement} e - The DOM element to patch.
+ * @param {Array} items - Array of items which will be passed as props.
+ * @param {View} parent - The parent view.
  */
 
 SequentialCache.prototype.patch = function (e, items, parent) {
@@ -816,17 +848,17 @@ var View = /*#__PURE__*/function () {
 
   return View;
 }();
-var proto = View.prototype;
+var proto$1 = View.prototype;
 /**
  * The global mount tracker.
  */
 
-proto.__mt = mountie;
+proto$1.__mt = mountie;
 /**
  * Nest Internal. For building a nested view declared in the html.
  */
 
-proto.__ni = function (path, cls) {
+proto$1.__ni = function (path, cls) {
   var child = buildView(cls, this);
 
   this.__gw(path).replace(child.e);
@@ -838,15 +870,15 @@ proto.__ni = function (path, cls) {
  */
 
 
-proto.__kc = function (cls, keyFn) {
+proto$1.__kc = function (cls, keyFn) {
   return new KeyedCache(cls, keyFn);
 };
 
-proto.__sc = function (cls) {
+proto$1.__sc = function (cls) {
   return new SequentialCache(cls);
 };
 
-proto.__ic = function (mappings, fallback) {
+proto$1.__ic = function (mappings, fallback) {
   return new InstanceCache(mappings, fallback);
 };
 /**
@@ -854,7 +886,7 @@ proto.__ic = function (mappings, fallback) {
  */
 
 
-proto.__bd = function (prototype, clone) {
+proto$1.__bd = function (prototype, clone) {
   if (clone && !prototype.__cn) {
     prototype.__cn = makeEl(prototype.__ht);
   }
@@ -867,7 +899,7 @@ proto.__bd = function (prototype, clone) {
  */
 
 
-proto.__gw = function (path) {
+proto$1.__gw = function (path) {
   return new Wrapper(this.__fe(path));
 };
 /**
@@ -876,7 +908,7 @@ proto.__gw = function (path) {
  */
 
 
-proto.__fe = function (path) {
+proto$1.__fe = function (path) {
   return path.reduce(function (acc, index) {
     return acc.childNodes[index];
   }, this.e);
@@ -887,7 +919,7 @@ proto.__fe = function (path) {
  */
 
 
-proto.__ia = function () {
+proto$1.__ia = function () {
   var e = this.e;
 
   while (e) {
@@ -905,7 +937,7 @@ proto.__ia = function () {
  */
 
 
-proto.__wa = function (el, shieldQuery, reverseShield, shieldCount, callbacks) {
+proto$1.__wa = function (el, shieldQuery, reverseShield, shieldCount, callbacks) {
   return new Watch(el, shieldQuery, reverseShield, shieldCount, callbacks);
 };
 /**
@@ -913,7 +945,7 @@ proto.__wa = function (el, shieldQuery, reverseShield, shieldCount, callbacks) {
  */
 
 
-proto.__lu = function (callbacks) {
+proto$1.__lu = function (callbacks) {
   return new Lookup(callbacks);
 };
 /**
@@ -921,7 +953,7 @@ proto.__lu = function (callbacks) {
  */
 
 
-proto.__sv = function () {
+proto$1.__sv = function () {
   var cls = function cls(parent) {
     View.call(this, parent);
   };
@@ -934,7 +966,7 @@ proto.__sv = function () {
  */
 
 
-proto.visible = function (visible) {
+proto$1.visible = function (visible) {
   this.e.classList.toggle('hidden', !visible);
 };
 

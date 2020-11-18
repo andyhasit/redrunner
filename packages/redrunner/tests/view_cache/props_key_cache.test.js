@@ -138,3 +138,40 @@ test('Re-added items use their old views', () => {
     </div>
   `)
 })
+
+test('Can swap items', () => {
+  fruit = [
+    {id: 501, name: 'apple'},
+    {id: 22, name: 'carrot'},
+    {id: 47, name: 'kiwi'},
+    {id: 43, name: 'orange'},
+    {id: 5, name: 'grape'},
+  ]
+  init()
+  expect(div).toShow(`
+  <div>
+    <div>apple</div>
+    <div>carrot</div>
+    <div>kiwi</div>
+    <div>orange</div>
+    <div>grape</div>
+    </div>
+  `)
+
+  // Swap positions of carrot and orange
+  const temp = fruit[1]
+  fruit[1] = fruit[3]
+  fruit[3] = temp
+  div.update()
+
+  c.log(div.html)
+  expect(div).toShow(`
+  <div>
+    <div>apple</div>
+    <div>orange</div>
+    <div>kiwi</div>
+    <div>carrot</div>
+    <div>grape</div>
+    </div>
+  `)
+})

@@ -1,6 +1,5 @@
 import {createView} from './utils'
 
-
 /**
  * Caches same type views, retrieving by sequence.
  * Must not be shared.
@@ -12,7 +11,7 @@ export function KeyedCache(viewClass, keyFn) {
   this._v = viewClass
   this._f = keyFn
   this._k = []  // keys
-  this._p = []  // pool of view instances
+  this._p = {}  // pool of view instances
 }
 const proto = KeyedCache.prototype
 
@@ -41,29 +40,22 @@ proto.patch = function(e, items, parent) {
   const keyFn = this._f
   const childNodes = e.childNodes
   const itemsLength = items.length
-  const oldKeys = this._k;
-  const newKeys = [];
-  const canAddNow = oldKeys.length - 1;
-  let item, key, view
-
+  const oldKeySequence = this._k
+  const newKeys = []
+  let item, key, view, childElementCount = oldKeySequence.length + 1
   for (let i=0; i<itemsLength; i++) {
     item = items[i]
     key = keyFn(item)
     view = this._get(pool, viewClass, key, item, parent)
-    newKeys.push(key);
-    /*
-     * Note: insertBefore removes the element from the DOM if attached
-     * elsewhere, which should either only be further down in the
-     * childNodes, or in case of a shared cache, somewhere we don't
-     * care about removing it from, so its OK.
-     */
-    if (i > canAddNow) {
-      e.appendChild(view.e);
-    } else if (key !== oldKeys[i]) {
-      e.insertBefore(view.e, childNodes[i]);
+    newKeys.push(key)
+    if (i > childElementCount) {
+      e.appendChild(view.e)
+    } else if (key !== oldKeySequence[i]) {
+      e.insertBefore(view.e, childNodes[i])
+      pull(oldKeySequence, key, i)
     }
   }
-  this._k = newKeys;
+  this._k = newKeys
   trimChildren(e, childNodes, itemsLength)
 }
 
@@ -119,7 +111,6 @@ SequentialCache.prototype.patch = function(e, items, parent) {
     }
     if (i >= childElementCount) {
       e.appendChild(view.e)
-      childElementCount ++
     }
   }
   this._c = itemsLength
@@ -165,5 +156,18 @@ function trimChildren(e, childNodes, itemsLength) {
   let keepIndex = itemsLength - 1
   for (let i=lastIndex; i>keepIndex; i--) {
     e.removeChild(childNodes[i])
+  }
+}
+
+/**
+ * Pulls an item forward in an array, to replicate insertBefore.
+ * @param {Array} arr 
+ * @param {any} item 
+ * @param {Int} to 
+ */
+function pull(arr, item, to) {
+  const position = arr.indexOf(item)
+  if (position != to) {
+    arr.splice(to, 0, arr.splice(position, 1)[0])
   }
 }
