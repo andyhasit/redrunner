@@ -345,7 +345,7 @@ function KeyedCache(viewClass, keyFn) {
   this._f = keyFn;
   this._k = []; // keys
 
-  this._p = []; // pool of view instances
+  this._p = {}; // pool of view instances
 }
 var proto = KeyedCache.prototype;
 /**
@@ -375,27 +375,24 @@ proto.patch = function (e, items, parent) {
   var keyFn = this._f;
   var childNodes = e.childNodes;
   var itemsLength = items.length;
-  var oldKeys = this._k;
+  var oldKeySequence = this._k;
   var newKeys = [];
-  var canAddNow = oldKeys.length - 1;
-  var item, key, view;
+  var item,
+      key,
+      view,
+      childElementCount = oldKeySequence.length + 1;
 
   for (var i = 0; i < itemsLength; i++) {
     item = items[i];
     key = keyFn(item);
     view = this._get(pool, viewClass, key, item, parent);
     newKeys.push(key);
-    /*
-     * Note: insertBefore removes the element from the DOM if attached
-     * elsewhere, which should either only be further down in the
-     * childNodes, or in case of a shared cache, somewhere we don't
-     * care about removing it from, so its OK.
-     */
 
-    if (i > canAddNow) {
+    if (i > childElementCount) {
       e.appendChild(view.e);
-    } else if (key !== oldKeys[i]) {
+    } else if (key !== oldKeySequence[i]) {
       e.insertBefore(view.e, childNodes[i]);
+      pull(oldKeySequence, key, i);
     }
   }
 
@@ -464,7 +461,6 @@ SequentialCache.prototype.patch = function (e, items, parent) {
 
     if (i >= childElementCount) {
       e.appendChild(view.e);
-      childElementCount++;
     }
   }
 
@@ -514,6 +510,21 @@ function trimChildren(e, childNodes, itemsLength) {
 
   for (var i = lastIndex; i > keepIndex; i--) {
     e.removeChild(childNodes[i]);
+  }
+}
+/**
+ * Pulls an item forward in an array, to replicate insertBefore.
+ * @param {Array} arr 
+ * @param {any} item 
+ * @param {Int} to 
+ */
+
+
+function pull(arr, item, to) {
+  var position = arr.indexOf(item);
+
+  if (position != to) {
+    arr.splice(to, 0, arr.splice(position, 1)[0]);
   }
 }
 
