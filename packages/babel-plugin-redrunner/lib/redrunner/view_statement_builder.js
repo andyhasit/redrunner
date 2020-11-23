@@ -169,6 +169,7 @@ class ViewStatementBuilder {
       // number of wrappers nested underneath, which we have to calculate postParsing
       // so we just set it to 0 for now.
       const shieldCount = 0
+
       const watchCallArgs = [
         `'${saveAs}'`,
         shieldQuery,
@@ -223,7 +224,7 @@ class ViewStatementBuilder {
    */
   getNextElementRef() {
     this.nextElementRefIndex ++
-    return `_${this.nextElementRefIndex}_`
+    return `_${this.nextElementRefIndex}`
   }
 }
 

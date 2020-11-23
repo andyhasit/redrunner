@@ -13,7 +13,8 @@ export function Watch (wrapperKey, shieldQuery, reverseShield, shieldCount, call
  * Applies the callbacks.
  */
 Watch.prototype.go = function(view) {
-  for (let [key, callback] of Object.entries(this.cb)) {
+  for (let key in this.cb) {
+    let callback = this.cb[key]
     if (key === '*') {
       callback.apply(view)
     } else {

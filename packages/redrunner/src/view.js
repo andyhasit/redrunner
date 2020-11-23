@@ -28,9 +28,10 @@ export class View {
    * Sets initial props extracted from __html__.
    */
   init() {
-    for (const [k, v] of Object.entries(this.__ip)) {
-      let view = this.el[k]
-      view.props = v.apply(this)
+    for (let key in this.__ip) {
+      let callback = this.__ip[key]
+      let view = this.el[key]
+      view.props = callback.apply(this)
       view.init()
     }
   }
@@ -149,10 +150,10 @@ export class View {
       }
     }
     // These are created with directives, and whose props arguments may need reprocessed.
-    // TODO improve this, maybe drop for of
-    for (const [k, v] of Object.entries(this.__ip)) {
-      let view = this.el[k]
-      view.setProps(v.apply(this))
+    for (let key in this.__ip) {
+      let callback = this.__ip[key]
+      let view = this.el[key]
+      view.setProps(callback.apply(this))
     }
   }
   /**

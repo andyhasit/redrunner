@@ -276,62 +276,6 @@ function _createClass(Constructor, protoProps, staticProps) {
   return Constructor;
 }
 
-function _slicedToArray(arr, i) {
-  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
-}
-
-function _arrayWithHoles(arr) {
-  if (Array.isArray(arr)) return arr;
-}
-
-function _iterableToArrayLimit(arr, i) {
-  if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
-  var _arr = [];
-  var _n = true;
-  var _d = false;
-  var _e = undefined;
-
-  try {
-    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-      _arr.push(_s.value);
-
-      if (i && _arr.length === i) break;
-    }
-  } catch (err) {
-    _d = true;
-    _e = err;
-  } finally {
-    try {
-      if (!_n && _i["return"] != null) _i["return"]();
-    } finally {
-      if (_d) throw _e;
-    }
-  }
-
-  return _arr;
-}
-
-function _unsupportedIterableToArray(o, minLen) {
-  if (!o) return;
-  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
-  var n = Object.prototype.toString.call(o).slice(8, -1);
-  if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return Array.from(o);
-  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
-}
-
-function _arrayLikeToArray(arr, len) {
-  if (len == null || len > arr.length) len = arr.length;
-
-  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-
-  return arr2;
-}
-
-function _nonIterableRest() {
-  throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-}
-
 /**
  * Caches same type views, retrieving by sequence.
  * Must not be shared.
@@ -574,10 +518,8 @@ function Watch(wrapperKey, shieldQuery, reverseShield, shieldCount, callbacks) {
  */
 
 Watch.prototype.go = function (view) {
-  for (var _i = 0, _Object$entries = Object.entries(this.cb); _i < _Object$entries.length; _i++) {
-    var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-        key = _Object$entries$_i[0],
-        callback = _Object$entries$_i[1];
+  for (var key in this.cb) {
+    var callback = this.cb[key];
 
     if (key === '*') {
       callback.apply(view);
@@ -664,13 +606,10 @@ var View = /*#__PURE__*/function () {
   _createClass(View, [{
     key: "init",
     value: function init() {
-      for (var _i = 0, _Object$entries = Object.entries(this.__ip); _i < _Object$entries.length; _i++) {
-        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-            k = _Object$entries$_i[0],
-            v = _Object$entries$_i[1];
-
-        var view = this.el[k];
-        view.props = v.apply(this);
+      for (var key in this.__ip) {
+        var callback = this.__ip[key];
+        var view = this.el[key];
+        view.props = callback.apply(this);
         view.init();
       }
     }
@@ -832,16 +771,12 @@ var View = /*#__PURE__*/function () {
           child.update();
         }
       } // These are created with directives, and whose props arguments may need reprocessed.
-      // TODO improve this, maybe drop for of
 
 
-      for (var _i2 = 0, _Object$entries2 = Object.entries(this.__ip); _i2 < _Object$entries2.length; _i2++) {
-        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
-            k = _Object$entries2$_i[0],
-            v = _Object$entries2$_i[1];
-
-        var view = this.el[k];
-        view.setProps(v.apply(this));
+      for (var key in this.__ip) {
+        var callback = this.__ip[key];
+        var view = this.el[key];
+        view.setProps(callback.apply(this));
       }
     }
     /**
