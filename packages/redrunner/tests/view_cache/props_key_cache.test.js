@@ -164,7 +164,6 @@ test('Can swap items', () => {
   fruit[3] = temp
   div.update()
 
-  c.log(div.html)
   expect(div).toShow(`
   <div>
     <div>apple</div>

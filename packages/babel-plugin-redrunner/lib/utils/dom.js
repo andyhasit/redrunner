@@ -115,9 +115,10 @@ function findNextClosingTag(s, start) {
  */
 function stripHtml(htmlString) {
   return htmlString.replace(/\n/g, "")
-    .replace(/[\t ]+\</g, "<")
+    .replace(/[\t ]+\</g, " <")
+    .replace(/\>[\t ]+$/g, "> ")
     .replace(/\>[\t ]+\</g, "><")
-    .replace(/\>[\t ]+$/g, ">")
+    .trim()
 }
 
 /**

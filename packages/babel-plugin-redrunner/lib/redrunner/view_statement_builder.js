@@ -95,7 +95,7 @@ class ViewStatementBuilder {
    * Converts the raw HTML text from the DOM
    */
   buildHtmlString(rawHtml) {
-    return stripHtml(rawHtml).replace("'", "\\'")
+    return stripHtml(rawHtml).replace(/'/g, "\\'")
   }
   /**
    * Sets the shieldCounts, which has to be done after parsing as nodes
