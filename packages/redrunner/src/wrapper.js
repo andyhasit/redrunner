@@ -156,6 +156,7 @@ Wrapper.prototype = {
     return this
   },
   value: function(value) {
-    return this.att('value', value)
+    this.e.value = value
+    return this
   }
 }
