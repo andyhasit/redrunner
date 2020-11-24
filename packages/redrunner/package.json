@@ -1,6 +1,6 @@
 {
   "name": "redrunner",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "A tiny framework with legs",
   "scripts": {
     "prepublish": "npm test && npm run build",
