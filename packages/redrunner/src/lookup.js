@@ -16,7 +16,7 @@ Lookup.prototype = {
     if (run[key] === undefined) {
       // Verbose but efficient way as it avoids lookups?
       const o = view.__ov[key]
-      const n = this.callbacks[key].apply(view)
+      const n = this.callbacks[key].call(view)
       const c = n !== o
       view.__ov[key] = n
       const rtn = {n, o, c}

@@ -8,7 +8,7 @@ const {findNextClosingTagOrWhiteSpace} = require('../utils/dom')
  * The name of the arg representing the view in the buildView method.
  */
 const viewVar = 'view'
-
+const callableWatchArgs = `${viewVar}, props`
 /**
  * Replaces the () at the end of name with ? so we don't create two watches for the same thing
  */
@@ -24,8 +24,9 @@ const adjustName = (name) => {
  * @param {string} cacheKey - the field on the props to cache by.
  */
 function buildCacheInit (cacheDef, cacheKey){
+  let cacheStatement
   if (cacheDef.startsWith('@')) {
-    let cacheStatement = this.parseWatchedValueSlot(cacheDef.substr(1))
+    cacheStatement = this.parseWatchedValueSlot(cacheDef.substr(1))
   } else {
     if (cacheKey) {
       const keyFn = `function(props) {return props.${cacheKey}}`
@@ -149,7 +150,7 @@ function parseWatchedValueSlot(property) {
   property = property.endsWith('!') ? property.slice(0, -1) : property
 
   const expanded = this.expandPrefix(property)
-  return property.endsWith('?') ? expanded.slice(0, -1) + '()' : expanded
+  return property.endsWith('?') ? expanded.slice(0, -1) + `(this.props, this)` : expanded
 }
 
 
@@ -191,7 +192,7 @@ const getLookupArgs = (nodePath) => {
 function getWatchQueryCallBack(property) {
   if (property !== '*') {
     return (property === '' || property === undefined) ?
-      'function() {return null}' :
+      `function() {return null}` :
       `function() {return ${this.parseWatchedValueSlot(property)}}`
   }
 }
