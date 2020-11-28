@@ -25,11 +25,11 @@ function removeRedrunnerDefs(path){
 function getNodeHtmlString(node) {
   const nodeValue = node.value
   const type = nodeValue.type
-  if (type == 'TemplateLiteral') {
+  if (type === 'TemplateLiteral') {
     return nodeValue.quasis[0].value.raw
-  } else if (type == 'TaggedTemplateExpression') {
+  } else if (type === 'TaggedTemplateExpression') {
     return nodeValue.quasi.quasis[0].value.raw
-  } else if (type == 'StringLiteral') {
+  } else if (type === 'StringLiteral') {
     return nodeValue.value
   }
   throw new Error(`HTML template value ${node.key.name} must be a TemplateLiteral\

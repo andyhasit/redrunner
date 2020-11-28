@@ -57,7 +57,7 @@ function getAttDefinition(attStr, attName) {
     if (start >= 0) {
       attStr = attStr.substr(start)
       let quoteSymbol = attStr[valueStartIndex - 1]
-      if (quoteSymbol == '"' || quoteSymbol == "'") {
+      if (quoteSymbol === '"' || quoteSymbol === "'") {
         // Its in quotes...
         return attStr.substr(0, attStr.indexOf(quoteSymbol, valueStartIndex) + 1)
       } else {
@@ -81,14 +81,14 @@ function removeAtt(node, att) {
  * Note: the character at position "start" must not be a with whitespace.
  */
 function findNextClosingTagOrWhiteSpace(s, start) {
-  if (start == undefined) {
+  if (start === undefined) {
     start = 0
   }
   let nextWhiteSpace = findNextWhiteSpace(s, start)
   let nextClosingTag = findNextClosingTag(s, start)
-  if (nextWhiteSpace == undefined) {
+  if (nextWhiteSpace === undefined) {
     return nextClosingTag
-  } else if (nextClosingTag == undefined) {
+  } else if (nextClosingTag === undefined) {
     return nextWhiteSpace
   } else {
     return (nextWhiteSpace > nextClosingTag) ? nextClosingTag : nextWhiteSpace

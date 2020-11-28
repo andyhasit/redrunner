@@ -122,7 +122,7 @@ export class View {
         shieldQueryResult = this.lookup(watch.sq).n
 
         // Determine if shouldBeVisible based on reverseShield
-        // i.e. whether "shieldQuery==true" means show or hide.
+        // i.e. whether "shieldQuery===true" means show or hide.
         shouldBeVisible = watch.rv ? shieldQueryResult : !shieldQueryResult
 
         // The number of watches to skip if this element is not visible

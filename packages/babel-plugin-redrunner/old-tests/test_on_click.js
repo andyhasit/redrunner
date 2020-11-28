@@ -18,16 +18,16 @@ MyView.prototype.__ht = '<div><span></span><span></span><span></span><span></spa
 MyView.prototype.__bv = function (view, prototype) {
   view.__bd(prototype, false);
   view.dom = {
-    __1: view.__gw([0]).on('click', function (e, w) {
-      view.props.foo(e, w);
+    __1: view.__gw([0]).on('click', function (w, e) {
+      view.props.foo(w, e);
     }),
-    __2: view.__gw([1]).on('click', function (e, w) {
-      view.foo(e, w);
+    __2: view.__gw([1]).on('click', function (w, e) {
+      view.foo(w, e);
     }),
-    __3: view.__gw([2]).on('click', function (e, w) {
-      foo(e, w);
+    __3: view.__gw([2]).on('click', function (w, e) {
+      foo(w, e);
     }),
-    __4: view.__gw([3]).on('click', function (e, w) {
+    __4: view.__gw([3]).on('click', function (w, e) {
       foo(2);
     })
   };

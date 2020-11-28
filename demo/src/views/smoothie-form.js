@@ -20,7 +20,7 @@ class FormLine extends View {
     super.update()
     c.log(this.props)
   }
-  changed(e, w) {
+  changed(w, e) {
     c.log(this.props)
     c.log(w.getValue())
     // Maybe use emit?
@@ -48,7 +48,7 @@ export class SmoothieForm extends View {
       cost: 0
     }
   }
-  clickSave(e, w) {
+  clickSave(w, e) {
     c.log(e)
   }
 }

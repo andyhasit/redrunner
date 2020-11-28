@@ -1,4 +1,4 @@
-const {EOL, watchArgs} = require('./utils/constants')
+const {EOL, viewVar, watchArgs} = require('./utils/constants')
 
 /**
  * A NodeData object is created for every HTML node with directives.
@@ -51,11 +51,11 @@ class NodeData {
     let text = this.expandPrefix(statement.trim())
     // Cater for '?' ending
     text = text.endsWith('?') ? text.slice(0, -1) : text
-    const extra = text.endsWith(')') ? '' : '(e, w)'
-    // Convert 'this' to 'view' because of binding
-    text = text.startsWith('this.') ? 'view' + text.substr(4) : text
+    const extra = text.endsWith(')') ? '' : `(w, e, ${viewVar}.props, ${viewVar})`
+    // Convert 'this' to viewVar because of binding
+    text = text.startsWith('this.') ? viewVar + text.substr(4) : text
     const body = `${text}${extra}`
-    return ['function(e, w) {', body, '}'].join(EOL)
+    return ['function(w, e) {', body, '}'].join(EOL)
   }
   /**
    * Builds the call to create a cache for child views.
@@ -121,9 +121,10 @@ class NodeData {
   }
   
   /**
-   * Expands the convert slot, including the expandPrefix
-   * Assumes it is a function not a field.
-   *
+   * Expands the converter slot.
+   * Assumes it is a function, not a field.
+   * If enclosed in bracket, treats as raw code.
+   * 
    *   undefined  >  undefined
    *   ''         >  undefined
    *   foo        >  this.props.foo()
@@ -157,7 +158,6 @@ class NodeData {
       return this.expandPrefix(convert)
     }
   }
-
   /**
    * Expands a field's shorthand notation as follows:
    *
@@ -192,7 +192,7 @@ class NodeData {
    *
    */
   parseWatchedValueSlot(property) {
-    if (property == '*') {
+    if (property === '*') {
       return '*'
     }
     if (property === '' || property === undefined) {

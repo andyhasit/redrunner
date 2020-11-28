@@ -4,20 +4,27 @@ const data = {
   clicks: 0
 }
 
+let args = undefined
+
 class TestView extends View {
   __html__ = `
     <div>
-      <button :onClick=".clicked">Go</button>
+      <button :el="btn" :onClick="..clicked">Go</button>
     </div>
   `
-  clicked() {
-    data.clicks ++
-  }
+}
+
+const clicked = (w, e, p, c) => {
+  p.clicks ++
+  args = {w, e, p, c}
 }
 
 test('On click event works', () => {
-  const div = load(TestView)
+  const div = load(TestView, data)
   const btn = div.el.childNodes[0]
   btn.click()
   expect(data.clicks).toEqual(1)
+  expect(args.w).toEqual(div.view.el.btn)
+  expect(args.p).toEqual(data)
+  expect(args.c).toEqual(div.view)
 })

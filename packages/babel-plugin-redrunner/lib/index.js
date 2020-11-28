@@ -9,7 +9,7 @@ module.exports = () => {
   return {
     visitor: {
       Class(path, state) {
-        if (path.type == 'ClassDeclaration') {
+        if (path.type === 'ClassDeclaration') {
           let foundHtmFieldInClass = false
           let className = path.node.id.name
           let viewData = {className, config}
@@ -17,11 +17,11 @@ module.exports = () => {
           // Iterate over class nodes to find ones we care about
           for (let node of path.node.body.body) {
             let propName = node.key.name
-            if (propName == '__html__' || propName == '__clone__') {
-              viewData.clone = (propName == '__clone__')
+            if (propName === '__html__' || propName === '__clone__') {
+              viewData.clone = (propName === '__clone__')
               foundHtmFieldInClass = true
               viewData.html = getNodeHtmlString(node)
-            } else if (propName == '__stubs__') {
+            } else if (propName === '__stubs__') {
               viewData.stubs = getNodeHtmlStringDict(node)
             }
           }

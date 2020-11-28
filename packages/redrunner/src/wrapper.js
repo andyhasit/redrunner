@@ -129,7 +129,7 @@ Wrapper.prototype = {
     return this
   },
   on: function(event, callback) {
-    this.e.addEventListener(event, e => callback(e, this))
+    this.e.addEventListener(event, e => callback(this, e))
     return this
   },
   replace: function(el) {
