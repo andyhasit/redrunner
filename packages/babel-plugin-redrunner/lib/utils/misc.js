@@ -30,7 +30,15 @@ const groupArray = (ar, key, f) => {
 	return obj
 }
 
-
+/**
+ * Returns undefined if string is only whitespace, else the original string.
+ */
+function clearIfEmpty(str) {
+	if (str.trim().length > 0) {
+		return str
+	}
+}
+	
 const arrayStartsWith = (origin, test) => {
 	if (test.length <= origin.length) {
 		return false
@@ -77,6 +85,7 @@ const extractShieldCounts = (paths) => {
 module.exports = {
 	arrayStartsWith,
 	capitalize,
+	clearIfEmpty,
 	extractShieldCounts,
 	groupArray,
 	isFunc,

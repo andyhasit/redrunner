@@ -4,6 +4,8 @@ const {NodeData} = require('./node_data')
 
 /**
  * Extracts the relevant data from the HTML node, and removes parts that need removed.
+ * Returns a NodeData object if there are directives found.
+ * 
  * @param {Object} node - a nodeInfo instance from the walker
  * @param {Object} config - the global config object
  * @param {DomWalker} walker - the walker itself (just for raising exceptions)

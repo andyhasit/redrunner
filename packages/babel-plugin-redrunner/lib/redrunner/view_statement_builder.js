@@ -1,12 +1,7 @@
-const c = console
-const {EOL} = require('../utils/constants')
-const {stripHtml} = require('../utils/dom')
+const {getLookupArgs, stripHtml} = require('../utils/dom')
 const {extractShieldCounts, groupArray, isUnd} = require('../utils/misc')
 const {DomWalker} = require('./dom_walker.js')
 const {extractNodeData} = require('./extract_node_data')
-const {
-  getLookupArgs,
-} = require('./syntax')
 const {
   ArrayStatement,
   CallStatement,
@@ -189,7 +184,27 @@ class ViewStatementBuilder {
    * Add a saved Element.
    */
   saveWrapper(nodePath, saveAs, nodeData) {
-    this.saveElement(saveAs, nodeData.wrapperInit(nodePath), nodeData.chainedCalls)
+    this.saveElement(saveAs, this.buildWrapperInitCall(nodeData, nodePath), nodeData.chainedCalls)
+  }
+  /**
+   * Returns the call for creating a new wrapper based on nodePath.
+   *
+   * If customWrapperClass is provided, it is initiated with new, and the class better
+   * be in scope. That is why we do it with new here rather than passing the class
+   * to __gw or so.
+   * Similarly, that is why we use __gw, because we know "Wrapper" will be in scope
+   * there, but it isn't guaranteed to be where the view is defined.
+   *
+   */
+  buildWrapperInitCall(nodeData, nodePath) {
+    const path = getLookupArgs(nodePath)
+    if (nodeData.wrapperOverride) {
+      return nodeData.wrapperOverride
+    } else if (nodeData.customWrapperClass) {
+      const args = nodeData.customWrapperArgs ? ',' + nodeData.customWrapperArgs : ''
+      return `new ${nodeData.customWrapperClass}(view.__fe(${path})${args})`
+    }
+    return `view.__gw(${path})`
   }
   saveNestedView(nodePath, saveAs, nodeData, tagName, props, replaceWith) {
     const nestedViewClass = replaceWith || tagName

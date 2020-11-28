@@ -140,11 +140,23 @@ function preprocessHTML(htmlString) {
     .replace(/<stub=/g, "<br :stub=")
 }
 
+
+/**
+ * Returns the args string for a node lookup based on nodePath.
+ *
+ * @param {array} nodePath The path to the node as array of indices in the dom
+ *    tree e.g. [1, 0]
+ */
+const getLookupArgs = (nodePath) => {
+  return `[${nodePath.slice(2)}]`
+}
+
 module.exports = {
   extractAtts,
   findNextClosingTagOrWhiteSpace,
   getAttVal,
   getAttDefinition,
+  getLookupArgs,
   isLeafNode,
   parseHTML,
   preprocessHTML,
