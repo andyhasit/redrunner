@@ -47,7 +47,7 @@ const config = {
     ':props': {
       params: 'args',
       handle: function(args) {
-        this.props = this.expandPrefix(args, true)
+        this.props = this.expandProps(args)
       }
     },
     ':show': {
@@ -60,9 +60,9 @@ const config = {
     ':swap': {
       params: 'property, mappings, fallback?',
       handle: function(property, mappings, fallback) {
-        let args = this.expandPrefix(mappings)
+        let args = this.expandDots(mappings)
         if (fallback) {
-          args += ', ' + this.expandPrefix(fallback)
+          args += ', ' + this.expandDots(fallback)
         }
         this.chainedCalls.push(`cache(view.__ic(${args}))`)
         this.addWatch(property, undefined, 'swap', 'this')
@@ -73,16 +73,7 @@ const config = {
       handle: function(viewCls, props) {
         this.replaceWith = viewCls
         if (props) {
-          this.props = this.expandPrefix(props, true)
-        }
-      }
-    },
-    ':replace': {   // DEPRECATE, but maybe replace with a dynamic use.
-      params: 'viewCls, props?',
-      handle: function(viewCls, props) {
-        this.replaceWith = this.expandPrefix(viewCls, true)
-        if (props) {
-          this.props = this.expandPrefix(props, true)
+          this.props = this.expandProps(props)
         }
       }
     },

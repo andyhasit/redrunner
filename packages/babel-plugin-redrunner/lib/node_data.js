@@ -48,7 +48,7 @@ class NodeData {
    * Builds the callback function for an event listener.
    */
   buildEventCallback(statement) {
-    let text = this.expandPrefix(statement.trim())
+    let text = this.expandDots(statement.trim())
     // Cater for '?' ending
     text = text.endsWith('?') ? text.slice(0, -1) : text
     const extra = text.endsWith(')') ? '' : `(w, e, ${viewVar}.props, ${viewVar})`
@@ -79,15 +79,16 @@ class NodeData {
     return cacheStatement
   }
   /**
-   * Builds callback statement for a watch.
-   * TODO: tidy this fucking mess...
+   * Builds callback statement for a watch, like:
+   * "this.el._3.att('class', n)"
+   * 
    */
   buildWatchCallbackLine(saveAs, convert, target, raw, extraArgs) {
     let callbackBody, wrapper = `this.el.${saveAs}`
     let extraArg = `, ${extraArgs}`
     convert = convert ? this.expandConverter(convert) : ''
     if (target) {
-      const targetString = this.parseWatchTargetSlot(target)
+      const targetString = this._parseWatchTargetSlot(target)
       if (raw) {
         callbackBody = `${wrapper}.${targetString}${raw})`
       } else if (convert) {
@@ -109,6 +110,28 @@ class NodeData {
     return callbackBody
   }
   /**
+   * A watch target must correspond to a wrapper method.
+   * 
+   * If the target starts with @, it is deemed to be att() and the remainder
+   * if provided as first arg.
+   * 
+   * If the target includes ':' then it means method:firstArg
+   * 
+   * Note that this returns an incomplete string used in buildWatchCallbackLine.
+   * 
+   * @param {string} target -- the target slot
+   */
+  _parseWatchTargetSlot(target) {
+    if (target.startsWith('@')) {
+      target = 'att:' + target.substr(1)
+    }
+    const [method, arg] = target.split(':')
+    if (arg) {
+      return `${method}('${arg}', `
+    }
+    return target + '('
+  }
+  /**
    * Returns the callback for the watch query, or undefined.
    * TODO: move
    */
@@ -119,7 +142,6 @@ class NodeData {
         `function() {return ${this.parseWatchedValueSlot(property)}}`
     }
   }
-  
   /**
    * Expands the converter slot.
    * Assumes it is a function, not a field.
@@ -131,7 +153,6 @@ class NodeData {
    *   foo!       >  this.props.foo
    *   foo?       >  this.props.foo(n, o)
    *   foo(x, 2)  >  this.props.foo(x, 2)
-   *
    */
   expandConverter(convert) {
     if (convert && (convert !== '')) {
@@ -148,14 +169,14 @@ class NodeData {
       // If it ends with ) then we treat it as raw function call.
       // e.g. foo(x, 2)
       if (convert.endsWith(')')) {
-        return this.expandPrefix(convert)
+        return this.expandDots(convert)
       }
 
       // Remove ? because it's just the user explicity marking this a function
       convert = convert.endsWith('?') ? convert.slice(0, -1) : convert
       // If ends with . then treat as field, else turn it into a call with the watch args
       convert = convert.endsWith('.') ? convert.slice(0, -1) : `${convert}${watchArgs}`
-      return this.expandPrefix(convert)
+      return this.expandDots(convert)
     }
   }
   /**
@@ -164,12 +185,8 @@ class NodeData {
    *   field    >  this.props.field
    *   .field   >  this.field
    *   ..field  >  field
-   * 
    */
-  expandPrefix(field, convertToCall=false) {
-    if (convertToCall && field.endsWith('?')) {
-      field = field.slice(0, -1) + '(this.props, this)'
-    }
+  expandDots(field) {
     if (field.startsWith('..')) {
       return field.substr(2)
     } else if (field.startsWith('.')) {
@@ -178,8 +195,15 @@ class NodeData {
     return this.asStub ? 'this.parent.props.' + field : 'this.props.' + field
   }
 
+  expandProps(field) {
+    if (field.endsWith('?')) {
+      field = field.slice(0, -1) + '(this)'
+    }
+    return this.expandDots(field)
+  }
+
   /**
-   * Expands the watched property slot, including the expandPrefix.
+   * Expands the watched property slot, including the expandDots.
    * Assumes field not function.
    *
    *   undefined  >  undefined
@@ -202,18 +226,8 @@ class NodeData {
     // Remove ! because it's just the user explicity marking this a field
     property = property.endsWith('!') ? property.slice(0, -1) : property
 
-    const expanded = this.expandPrefix(property)
+    const expanded = this.expandDots(property)
     return property.endsWith('?') ? expanded.slice(0, -1) + `(this.props, this)` : expanded
-  }
-  parseWatchTargetSlot(target) {
-    if (target.startsWith('@')) {
-      target = 'att:' + target.substr(1)
-    }
-    const [method, arg] = target.split(':')
-    if (arg) {
-      return `${method}('${arg}', `
-    }
-    return target + '('
   }
 }
 
