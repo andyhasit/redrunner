@@ -1,9 +1,8 @@
 const babel = require('@babel/core')
 const {getNodeHtmlString, getNodeHtmlStringDict, removeRedrunnerDefs} = require('./utils/babel')
-const {generateStatements} = require('./redrunner/view_statement_builder')
-const {viewTemplates} = require('./redrunner/view_templates')
-const {config} = require('./redrunner/config')
-const { c } = require('./utils/constants')
+const {generateStatements} = require('./generate/code_generator')
+const {viewTemplates} = require('./parse/view_templates')
+const {config} = require('./config')
 
 
 module.exports = () => {

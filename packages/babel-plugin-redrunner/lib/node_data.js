@@ -1,19 +1,11 @@
-const {EOL, splitter, watchArgs} = require('../utils/constants')
-const {extractAtts, isLeafNode, removeAtt} = require('../utils/dom')
-const {clearIfEmpty, isFunc, isUnd, splitTrim} = require('../utils/misc')
-const {config} = require('./config')
-
-// Settings for inline directives
-const [startDelimiter, endDelimiter] = config.options.inlineDelimiters
-const delimiterLength = startDelimiter.length
-
+const {EOL, watchArgs} = require('./utils/constants')
 
 /**
  * A NodeData object is created for every HTML node with directives.
  * Its data will be used to generate statements on the component.
- * It exposes many methods which enable directives to set that date.
+ * It exposes methods which enable directives to set that data.
+ * It also contains the directive syntax rules (expansion etc...)
  */
-
 class NodeData {
   constructor(node, asStub) {
     this.node = node
@@ -32,7 +24,7 @@ class NodeData {
     this.afterSave = []
   }
   /**
-   * Create a watch on this node.
+   * Creates a watch on this node.
    * 
    * @param {string} property -- watchedProperty
    * @param {function} converter -- valueTranformer
@@ -43,7 +35,7 @@ class NodeData {
     this.watches.push({property, converter, target, extraArgs})
   }
   /**
-   * Create an event listener on this node.
+   * Creates an event listener on this node.
    * 
    * @param {string} event 
    * @param {string} callbackStr 
@@ -53,51 +45,18 @@ class NodeData {
     this.chainedCalls.push(`on('${event}', ${callback})`)
   }
   /**
-   * Used internally to 
-   * 
-   * @param {string} directiveName 
-   * @param {*} directive 
-   * @param {*} attVal 
+   * Builds the callback function for an event listener.
    */
-
-  processDirective(directiveName, directive, attVal) {
-    if (!isFunc(directive.handle)) {
-      throw new Error('handle must be a function')
-    }
-    let args = attVal
-    if (directive.hasOwnProperty('params')) {
-      let params = splitTrim(directive.params, ',')
-      args = this.parseDirectiveArguments(params, attVal)
-      directive.handle.apply(this, args)
-    } else {
-      directive.handle.apply(this, [args])
-    }
+  buildEventCallback(statement) {
+    let text = this.expandPrefix(statement.trim())
+    // Cater for '?' ending
+    text = text.endsWith('?') ? text.slice(0, -1) : text
+    const extra = text.endsWith(')') ? '' : '(e, w)'
+    // Convert 'this' to 'view' because of binding
+    text = text.startsWith('this.') ? 'view' + text.substr(4) : text
+    const body = `${text}${extra}`
+    return ['function(e, w) {', body, '}'].join(EOL)
   }
-
-  /**
-   * Return array of args based on definitions
-   *
-   * @param {Array} params The parameters as strings
-   * @param {String} attVal The raw attribute value.
-   */
-  parseDirectiveArguments(params, attVal) {
-    const args = []
-    const chunks = splitTrim(attVal, '|')
-    for (let i=0, il=params.length; i<il; i++) {
-      let param = params[i]
-      let raw = chunks[i]
-      let value = this.parseArgValue(param, raw, i)
-      args.push(value)
-    }
-    return args
-  }
-  parseArgValue(param, raw, i) {
-    if ((!param.endsWith('?')) && (isUnd(raw))) {
-      throw new Error(`Argument ${param} is required`)
-    }
-    return raw
-  }
-
   /**
    * Builds the call to create a cache for child views.
    * 
@@ -119,7 +78,6 @@ class NodeData {
     }
     return cacheStatement
   }
-
   /**
    * Builds callback statement for a watch.
    * TODO: tidy this fucking mess...
@@ -150,23 +108,9 @@ class NodeData {
     }
     return callbackBody
   }
-
-  /**
-   * Builds the callback function for an event listener.
-   */
-  buildEventCallback(statement) {
-    let text = this.expandPrefix(statement.trim())
-    // Cater for '?' ending
-    text = text.endsWith('?') ? text.slice(0, -1) : text
-    const extra = text.endsWith(')') ? '' : '(e, w)'
-    // Convert 'this' to 'view' because of binding
-    text = text.startsWith('this.') ? 'view' + text.substr(4) : text
-    const body = `${text}${extra}`
-    return ['function(e, w) {', body, '}'].join(EOL)
-  }
-
   /**
    * Returns the callback for the watch query, or undefined.
+   * TODO: move
    */
   getWatchQueryCallBack(property) {
     if (property !== '*') {
@@ -178,7 +122,7 @@ class NodeData {
   
   /**
    * Expands the convert slot, including the expandPrefix
-   * Assumes function
+   * Assumes it is a function not a field.
    *
    *   undefined  >  undefined
    *   ''         >  undefined
@@ -271,115 +215,6 @@ class NodeData {
     }
     return target + '('
   }
-
-  /**
-   * Builds the watch object.
-   */
-  buildInlineWatch(target, inlineCallDetails) {
-    let raw
-    let {property, convert, before, after} = inlineCallDetails
-    /*
-    before and after is any text found before or after the brackets.
-    raw is the raw javascript code that will be generated.
-
-    */
-    convert = convert ? this.expandConverter(convert) : 'n'
-    if (before && after) {
-      raw = `"${before}" + ${convert} + "${after}"`
-    } else if (before && !after) {
-      raw = `"${before}" + ${convert}`
-    } else if (!before && after) {
-      raw = `${convert} + "${after}"`
-    } else {
-      raw = convert
-    }
-    return {property, raw, target}
-  }
-
-  /**
-   * If an {{inline}} is found, returns an object with its details, else undefined.
-   *
-   * @return {object} As {name, convert, before, after}
-   *
-   * convert, before and after may be undefined. Before and after will be partially
-   *     trimmed.
-   *
-   * Examples:
-   *
-   *  "{{style}}"                     >  {style, undefined, undefined, undefined}
-   *  "my-style {{style}}"            >  {style, undefined, 'my-style ', undefined}
-   *  "  my-style {{style}}   "       >  {style, undefined, 'my-style ', undefined}
-   *  "my-style {{style|foo}} xyz  "  >  {style, foo, 'my-style ', ' xyz'}
-   *
-   */
-  splitInlineText(rawStr) {
-    const start = rawStr.indexOf(startDelimiter)
-    let end = 0
-    if (start >= 0) {
-      end = rawStr.indexOf(endDelimiter)
-      if (end > start) {
-        const inline = rawStr.substring(start + delimiterLength, end)
-        let before = clearIfEmpty(rawStr.substr(0, start).trimStart())
-        let after = clearIfEmpty(rawStr.substr(end + delimiterLength).trimEnd())
-        const [property, convert] = inline.split(splitter).map(s => s.trim())
-        return {property, convert, before, after}
-      }
-    }
-  }
-
-  /**
-   * Finds the inline calls and returns an array of watches. Also modifies the
-   * actual node object to remove inline call code.
-   *
-   * Notes:
-   *
-   *  - It only detects the first inline call in a given string
-   *  - Text detection only works with leaf nodes
-   *
-   * TODO: resolve or throw warnings for the above cases!
-   *
-   * @param {node} node A node from babel.
-   *
-   * @return {number} An array of watch objects as [{name, convert, target}...]
-   */
-  processInlineWatches(node, config) {
-    const watches = []
-    const atts = extractAtts(node)
-    const restrictedAtts = Object.values(config.directives)
-
-    /**
-     * Adds a watch if it detects an inline call. Returns true if one was found,
-     * else false. Bad practice but will do for now.
-     */
-    const addInlineWatches = (rawStr, target) => {
-      const inlineCallDetails = this.splitInlineText(rawStr)
-      if (inlineCallDetails) {
-        // This watch may have 'raw' key
-        let watch = this.buildInlineWatch(target, inlineCallDetails)
-        watches.push(watch)
-        return true
-      }
-      return false
-    }
-
-    // extract from node's text
-    if (isLeafNode(node)) {
-      if (addInlineWatches(node.innerHTML, 'text')) {
-        node.innerHTML = ''
-      }
-    }
-
-    // extract from node's attributes
-    for (let [key, value] of Object.entries(atts)) {
-      if (value && !restrictedAtts.includes(key)) {
-        if (addInlineWatches(value, `@${key}`)) {
-          removeAtt(node, key)
-        }
-      }
-    }
-    return watches
-  }
-
 }
 
 module.exports = {NodeData}

@@ -2,7 +2,6 @@
  * Utility functions for working with DOM and HTML.
  */
 
-const {c, EOL} = require('./constants')
 const {JSDOM} = require("jsdom")
 const document = new JSDOM('<!doctype html><html><body></body></html>').window.document
 

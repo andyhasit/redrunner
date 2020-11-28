@@ -1,14 +1,14 @@
 const {getLookupArgs, stripHtml} = require('../utils/dom')
 const {extractShieldCounts, groupArray, isUnd} = require('../utils/misc')
-const {DomWalker} = require('./dom_walker.js')
-const {extractNodeData} = require('./extract_node_data')
+const {DomWalker} = require('../parse/dom_walker.js')
+const {extractNodeData} = require('../parse/parse_node')
 const {
   ArrayStatement,
   CallStatement,
   FunctionStatement,
   ObjectStatement,
   ValueStatement
-} = require('../utils/statement_builders')
+} = require('./statement_builders')
 
 const re_lnu = /^\w+$/; // letters_numbers_underscores
 
@@ -29,7 +29,7 @@ const vars = {
  *
  *  - generating JS from html syntax.
  */
-class ViewStatementBuilder {
+class CodeGenerator {
   constructor(viewData) {
     this.walker = new DomWalker(viewData.html, nodeInfo => this.processNode(nodeInfo))
     this.className = viewData.className
@@ -244,8 +244,8 @@ class ViewStatementBuilder {
 }
 
 function generateStatements(viewData) {
-  const builder = new ViewStatementBuilder(viewData)
+  const builder = new CodeGenerator(viewData)
   return builder.buildStatements()
 }
 
-module.exports = {ViewStatementBuilder, generateStatements}
+module.exports = {CodeGenerator, generateStatements}

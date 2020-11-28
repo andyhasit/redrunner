@@ -1,9 +1,6 @@
 /**
  * Funtionality for working with JavaScript
  */
-const {EOL} = require('./constants')
-
-
 const isFunc = (def) => typeof def === 'function'
 
 const isUnd = (def) => def === undefined

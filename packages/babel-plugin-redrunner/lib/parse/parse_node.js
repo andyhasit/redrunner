@@ -1,6 +1,7 @@
-const c = console
 const {extractAtts, getAttVal, removeAtt} = require('../utils/dom')
-const {NodeData} = require('./node_data')
+const {NodeData} = require('../node_data')
+const {processInlineWatches} = require('./inline_directives')
+const {processDirective} = require('./parse_directives')
 
 /**
  * Extracts the relevant data from the HTML node, and removes parts that need removed.
@@ -15,7 +16,7 @@ function extractNodeData(node, config, walker, asStub) {
   const nodeData = new NodeData(node, asStub)
 
   // Check inline calls
-  const inlines = nodeData.processInlineWatches(node, config)
+  const inlines = processInlineWatches(nodeData, node, config)
   let hasData = inlines.length > 0
   inlines.forEach(w => nodeData.watches.push(w))
 
@@ -25,7 +26,7 @@ function extractNodeData(node, config, walker, asStub) {
       let attVal = getAttVal(node, directiveName)
       if (attVal) {
         hasData = true
-        nodeData.processDirective(directiveName, directive, attVal)
+        processDirective(nodeData, directiveName, directive, attVal)
         removeAtt(node, directiveName)
       }
     }
@@ -43,7 +44,7 @@ function extractNodeData(node, config, walker, asStub) {
             this.addEventListener(event, callbackStr)
           }
         }
-        nodeData.processDirective(key, directive, value)
+        processDirective(nodeData, key, directive, value)
         hasData = true
         removeAtt(node, key)
       }

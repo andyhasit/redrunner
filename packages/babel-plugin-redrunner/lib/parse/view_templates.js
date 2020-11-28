@@ -1,11 +1,12 @@
 /**
- * This feature is temporarily disabled.
+ * Feature temporarily disabled 
+ * 
+ * This relates to using HTML template files instead of HTML string.
  */
 
 const fs = require("fs")
 const path = require('path')
 const {parseHTML, stripHtml} = require('../utils/dom')
-const {c} = require('../utils/constants')
 
 /**
  * A cache of view templates by path. These are files, typically called views.html

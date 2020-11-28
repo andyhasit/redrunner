@@ -1,4 +1,3 @@
-const {c} = require('../utils/constants')
 const {parseHTML, preprocessHTML} = require('../utils/dom')
 
 /**
@@ -41,7 +40,7 @@ class DomWalker {
    * TODO: flesh this out to print more useful info.
    */
   throw(message) {
-    c.log(this.currentNode)
+    console.log(this.currentNode)
     new Error(message)
   }
 }
