@@ -27,4 +27,12 @@ test('On click event works', () => {
   expect(args.w).toEqual(div.view.el.btn)
   expect(args.p).toEqual(data)
   expect(args.c).toEqual(div.view)
+  const newData = {
+    clicks: 10
+  }
+  // Ensure new props are used
+  div.view.setProps(newData)
+  btn.click()
+  expect(data.clicks).toEqual(1)
+  expect(newData.clicks).toEqual(11)
 })
