@@ -1,5 +1,6 @@
 const {getLookupArgs, stripHtml} = require('../utils/dom')
 const {extractShieldCounts, groupArray, isUnd} = require('../utils/misc')
+const {viewVar, watchCallbackArgs, watchCallbackArgsAlways} = require('../utils/constants')
 const {DomWalker} = require('../parse/dom_walker.js')
 const {extractNodeData} = require('../parse/parse_node')
 const {
@@ -9,6 +10,7 @@ const {
   ObjectStatement,
   ValueStatement
 } = require('./statement_builders')
+const {buildWatchCallbackBody} = require('./watches')
 
 const re_lnu = /^\w+$/; // letters_numbers_underscores
 
@@ -145,17 +147,17 @@ class CodeGenerator {
       // Use the shieldQuery supplied, 0 (must set as string here)
       shieldQuery = shieldQuery ? `'${shieldQuery}'` : '0'
 
-      // Squash array to object
+      // Squash array to object with callbacks
       watches = groupArray(watches, 'property', function(watch) {
-        let {converter, target, raw, extraArgs} = watch
-        return nodeData.buildWatchCallbackLine(saveAs, converter, target, raw, extraArgs) // TODO: extract this
+        return buildWatchCallbackBody(nodeData, saveAs, watch)
       })
 
       // Group statements into single function
       const allCallbacks = new ObjectStatement()
       for (let [property, statements] of Object.entries(watches)) {
         this.addWatchQueryCallback(nodeData, property)
-        let callback = new FunctionStatement('n, o')
+        let callbackArgs = property === '*' ? watchCallbackArgsAlways : watchCallbackArgs
+        let callback = new FunctionStatement(callbackArgs)
         statements.forEach(s => callback.add(s))
         allCallbacks.add(property, callback)
       }

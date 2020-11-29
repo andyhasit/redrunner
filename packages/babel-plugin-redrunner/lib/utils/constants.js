@@ -11,6 +11,23 @@ const splitter = '|'
  */
 const watchArgs = '(n, o)'
 
+/**
+ * The parameters for watch callback functions.
+ * The letters mean:
+ * 
+ *  newValue
+ *  oldValue
+ *  props
+ *  component
+ *  elements (i.e. named elements)
+ */
+const watchCallbackArgs = 'n, o, p, c, e'
+
+/**
+ * The parameters for an "always" watch callback function ('*')
+ * See watchCallbackArgs for letter meaning.
+ */
+const watchCallbackArgsAlways = 'p, c, e'
 
 /**
  * The name of the arg representing the view in the buildView method.
@@ -18,4 +35,13 @@ const watchArgs = '(n, o)'
 const viewVar = 'view'
 const callableWatchArgs = `${viewVar}, props`
 
-module.exports = {splitter, callableWatchArgs, watchArgs, EOL, redrunnerDefs, viewVar}
+module.exports = {
+  EOL,
+  callableWatchArgs,
+  redrunnerDefs, 
+  splitter,
+  viewVar,
+  watchArgs,
+  watchCallbackArgs,
+  watchCallbackArgsAlways
+}

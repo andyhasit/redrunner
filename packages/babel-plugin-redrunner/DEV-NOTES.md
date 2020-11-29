@@ -44,3 +44,26 @@ The flow can be summarised as follows:
 9. Once all the HTML is processed, the **CodeGenerator** builds all the statements to be added to the code.
 10. The visitor adds those statements (to the prototype of the class) and deletes the field with the HTML.
 
+##### Watches:
+
+Watches can come from inline or attribute directives. We wait until all of the component's watches are collected before building their statements as they are grouped.
+
+### Still to implement:
+
+Doesn't handle multiple inline directives in the same text:
+
+```html
+<div>
+    I ate {quantity|round2pd} {foodItems|captialise} today.
+</div>
+```
+
+Doesn't handle inline directives if it is not a leaf node:
+
+```html
+<div>
+    I ate {quantity|round2pd} {foodItems|captialise} today.
+    <span>It was yummy.</span>
+</div>
+```
+

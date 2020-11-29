@@ -11,7 +11,7 @@ const [startDelimiter, endDelimiter] = config.options.inlineDelimiters
 const delimiterLength = startDelimiter.length
 
 /**
- * Finds the inline calls and returns an array of watches. Also modifies the
+ * Finds the inline calls and adds watches. Also modifies the
  * actual node object to remove inline call code.
  *
  * Notes:
@@ -23,10 +23,9 @@ const delimiterLength = startDelimiter.length
  *
  * @param {node} node A node from babel.
  *
- * @return {number} An array of watch objects as [{name, convert, target}...]
+ * @return {number} An array of watch objects as [{name, convert, wrapperMethod}...]
  */
 const processInlineWatches = (nodeData, node, config) => {
-  const watches = []
   const atts = extractAtts(node)
   const restrictedAtts = Object.values(config.directives)
 
@@ -34,12 +33,13 @@ const processInlineWatches = (nodeData, node, config) => {
    * Adds a watch if it detects an inline call. Returns true if one was found,
    * else false. Bad practice but will do for now.
    */
-  const addInlineWatches = (rawStr, target) => {
-    const inlineCallDetails = splitInlineText(rawStr)
-    if (inlineCallDetails) {
+  const addInlineWatches = (rawStr, wrapperMethod) => {
+    const inlineCalls = splitInlineText(rawStr)
+    if (inlineCalls) {
       // This watch may have 'raw' key
-      let watch = buildInlineWatch(nodeData, target, inlineCallDetails)
-      watches.push(watch)
+      let watch = buildInlineWatch(nodeData, wrapperMethod, inlineCalls)
+      const watch = {wrapperMethod}
+      nodeData.watches.push(watch) // do not use addWatch here.
       return true
     }
     return false
@@ -60,15 +60,19 @@ const processInlineWatches = (nodeData, node, config) => {
       }
     }
   }
-  return watches
 }
 
 /**
- * Builds the watch object.
+ * Builds the watch object as:
+ * 
+ * {
+ *    property,  // the watched property
+ *    wrapperMethod  ,  // the wrapper method
+ * }
  */
-const buildInlineWatch = (nodeData, target, inlineCallDetails) => {
+const buildInlineWatch = (nodeData, wrapperMethod, inlineCalls) => {
   let raw
-  let {property, convert, before, after} = inlineCallDetails
+  let {property, convert, before, after} = inlineCalls
   /*
   before and after is any text found before or after the brackets.
   raw is the raw javascript code that will be generated.
@@ -83,12 +87,12 @@ const buildInlineWatch = (nodeData, target, inlineCallDetails) => {
   } else {
     raw = convert
   }
-  return {property, raw, target}
+  return {property, raw, wrapperMethod}
 }
 
   
 /**
- * If an {{inline}} is found, returns an object with its details, else undefined.
+ * If an inline is found, returns an object with its details, else undefined.
  *
  * @return {object} As {name, convert, before, after}
  *
@@ -97,10 +101,10 @@ const buildInlineWatch = (nodeData, target, inlineCallDetails) => {
  *
  * Examples:
  *
- *  "{{style}}"                     >  {style, undefined, undefined, undefined}
- *  "my-style {{style}}"            >  {style, undefined, 'my-style ', undefined}
- *  "  my-style {{style}}   "       >  {style, undefined, 'my-style ', undefined}
- *  "my-style {{style|foo}} xyz  "  >  {style, foo, 'my-style ', ' xyz'}
+ *  "{style}"                     >  {style, undefined, undefined, undefined}
+ *  "my-style {style}"            >  {style, undefined, 'my-style ', undefined}
+ *  "  my-style {style}   "       >  {style, undefined, 'my-style ', undefined}
+ *  "my-style {style|foo} xyz  "  >  {style, foo, 'my-style ', ' xyz'}
  *
  */
 
@@ -120,4 +124,4 @@ const splitInlineText = (rawStr) => {
 }
 
 
-module.exports = {buildInlineWatch, processInlineWatches}
+module.exports = {processInlineWatches}

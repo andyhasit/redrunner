@@ -29,10 +29,10 @@ class NodeData {
    * @param {string} property -- watchedProperty
    * @param {function} converter -- valueTranformer
    * @param {string} targer -- the wrapperMethod 
-   * @param {string} extraArgs -- extraArgsToWrapperMethod 
+   * @param {string} extraWrapperArgs -- extraWrapperArgsToWrapperMethod 
    */
-  addWatch(property, converter, target, extraArgs) {
-    this.watches.push({property, converter, target, extraArgs})
+  addWatch(property, converter, wrapperMethod, extraWrapperArgs) {
+    this.watches.push({property, converter, wrapperMethod, extraWrapperArgs})
   }
   /**
    * Creates an event listener on this node.
@@ -79,59 +79,6 @@ class NodeData {
     return cacheStatement
   }
   /**
-   * Builds callback statement for a watch, like:
-   * "this.el._3.att('class', n)"
-   * 
-   */
-  buildWatchCallbackLine(saveAs, convert, target, raw, extraArgs) {
-    let callbackBody, wrapper = `this.el.${saveAs}`
-    let extraArg = `, ${extraArgs}`
-    convert = convert ? this.expandConverter(convert) : ''
-    if (target) {
-      const targetString = this._parseWatchTargetSlot(target)
-      if (raw) {
-        callbackBody = `${wrapper}.${targetString}${raw})`
-      } else if (convert) {
-        callbackBody = `${wrapper}.${targetString}${convert}${extraArg})`
-      } else {
-        callbackBody = `${wrapper}.${targetString}n${extraArg})`
-      }
-    } else {
-      // No watch target. Assume convert is provided.
-      // But it needs messy adjusting...
-      if (convert.endsWith(watchArgs)) {
-        callbackBody = `${convert.slice(0, -1)}, ${wrapper})`
-      } else if (convert.endsWith(')')) {
-        callbackBody = `${convert}`
-      } else {
-        callbackBody = `${convert}${watchArgs.slice(0, -1)}, ${wrapper})`
-      }
-    }
-    return callbackBody
-  }
-  /**
-   * A watch target must correspond to a wrapper method.
-   * 
-   * If the target starts with @, it is deemed to be att() and the remainder
-   * if provided as first arg.
-   * 
-   * If the target includes ':' then it means method:firstArg
-   * 
-   * Note that this returns an incomplete string used in buildWatchCallbackLine.
-   * 
-   * @param {string} target -- the target slot
-   */
-  _parseWatchTargetSlot(target) {
-    if (target.startsWith('@')) {
-      target = 'att:' + target.substr(1)
-    }
-    const [method, arg] = target.split(':')
-    if (arg) {
-      return `${method}('${arg}', `
-    }
-    return target + '('
-  }
-  /**
    * Returns the callback for the watch query, or undefined.
    * TODO: move
    */
@@ -152,7 +99,6 @@ class NodeData {
    *   foo        >  this.props.foo()
    *   foo!       >  this.props.foo
    *   foo?       >  this.props.foo(n, o)
-   *   foo(x, 2)  >  this.props.foo(x, 2)
    */
   expandConverter(convert) {
     if (convert && (convert !== '')) {
@@ -165,17 +111,11 @@ class NodeData {
           throw 'Converter starting with "(" must also end with ")"'
         }
       }
-      
-      // If it ends with ) then we treat it as raw function call.
-      // e.g. foo(x, 2)
-      if (convert.endsWith(')')) {
-        return this.expandDots(convert)
-      }
 
       // Remove ? because it's just the user explicity marking this a function
       convert = convert.endsWith('?') ? convert.slice(0, -1) : convert
       // If ends with . then treat as field, else turn it into a call with the watch args
-      convert = convert.endsWith('.') ? convert.slice(0, -1) : `${convert}${watchArgs}`
+      convert = convert.endsWith('.') ? convert.slice(0, -1) : convert //`${convert}${watchArgs}`
       return this.expandDots(convert)
     }
   }

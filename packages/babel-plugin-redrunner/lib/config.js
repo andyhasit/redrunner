@@ -84,9 +84,9 @@ const config = {
       }
     },
     ':watch': {
-      params: 'property, converter, target?',
-      handle: function(property, converter, target) {
-        this.addWatch(property, converter, target)
+      params: 'property, converter, wrapperMethod?',
+      handle: function(property, converter, wrapperMethod) {
+        this.addWatch(property, converter, wrapperMethod)
       }
     },
     ':wrapper': {

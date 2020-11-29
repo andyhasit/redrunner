@@ -9,166 +9,196 @@ import {Lookup} from './lookup'
 /**
  * Represents a view.
  */
-export class View {
-  constructor(parent) {
-    const s = this
-    s.parent = parent       // The parent view
-    s.props = undefined     // The props passed to the view. May be changed.
+export function View(parent) {
+  const s = this
+  s.parent = parent       // The parent view
+  s.props = undefined     // The props passed to the view. May be changed.
 
-    // These will be set during build
-    s.e = null              // the element
-    s.el = null             // the named wrappers
+  // These will be set during build
+  s.e = null              // the element
+  s.el = null             // the named wrappers
 
-    // Internal state objects
-    s.__nv = []             // Nested views
-    s.__ov = {}             // The old values for watches to compare against
-  }
-  /**
-   * Gets called once immediately after building.
-   * Sets initial props extracted from __html__.
-   */
-  init() {
-    for (let key in this.__ip) {
-      let callback = this.__ip[key]
-      let view = this.el[key]
-      view.props = callback.apply(this)
-      view.init()
-    }
-  }
-  /**
-   * Calls a function somewhere up the parent tree.
-   */
-  bubble(name) {
-    let target = this.parent
-    while (!und(target)) {
-      if (target[name]) {        
-        return target[name].apply(target,  Array.prototype.slice.call(arguments, 1))
-      }
-      target = target.parent
-    }
-    throw 'Bubble popped.'
-  }
-  /**
-   * Move the view to new parent. Necessary if sharing a cache.
-   */
-  move(newParent) {
-    if (this.parent && this.parent.__nv) {
-      const nv = this.parent.__nv
-      nv.splice(nv.indexOf(this), 1)
-    }
-    this.parent = newParent
-  }
-  /**
-   * Builds a nested view of the specified class. Its up to you how you use it.
-   */
-  nest(cls, props) {
-    const child = createView(cls, this, props || this.props)
-    this.__nv.push(child)
-    return child
-  }
-  /**
-   * Lookup a watched value during update. Returns an object with {o, n, c}
-   * (oldValue, newValue, changed).
-   * You must call this.resetLookups before calling this during an update.
-   * The point is to cache the result so it doesn't have to be repeated.
-   */
-  lookup(query) {
-    return this.__qc.get(this, query)
-  }
-  /**
-   * Resets the lookups, must be called before calling this.lookup() during an update.
-   */
-  resetLookups() {
-    this.__qc.reset()
-  }
-  /**
-   * Sets the props and updates the view.
-   */
-  setProps(props) {
-    this.props = props
-    this.update()
-    return this
-  }
-  /**
-   * Call this if you want to get mount() and unmount() callbacks.
-   */
-  trackMounting() {
-    this.__mt.track(this)
-  }
-  /**
-   * Updates the view.
-   */
-  update() {
-    this.resetLookups()
-    this.updateSelf()
-    this.updateNested()
-  }
-  /**
-   * Loops over watches skipping shielded watches if elements are hidden.
-   */
-  updateSelf() {
-    let i = 0, watch, shieldCount, shieldQueryResult, shouldBeVisible
-    const watches = this.__wc
-    if (!watches) {
-      return
-    }
-    const il = watches.length
-    while (i < il) {
-      watch = watches[i]
-      i ++
-      shouldBeVisible = true
-      if (watch.sq) {
-        // Get the newValue for shieldQuery using lookup
-        shieldQueryResult = this.lookup(watch.sq).n
+  // Internal state objects
+  s.__nv = []             // Nested views
+  s.__ov = {}             // The old values for watches to compare against
+} 
 
-        // Determine if shouldBeVisible based on reverseShield
-        // i.e. whether "shieldQuery===true" means show or hide.
-        shouldBeVisible = watch.rv ? shieldQueryResult : !shieldQueryResult
-
-        // The number of watches to skip if this element is not visible
-        shieldCount = shouldBeVisible ? 0 : watch.sc
-
-        // Set the element visibility
-        this.el[watch.wk].visible(shouldBeVisible)
-        i += shieldCount
-      }
-      if (shouldBeVisible) {
-        watch.go(this)
-      }
-    }
-  }
-  /**
-   * Update nested views (but not repeat elements).
-   */
-  updateNested() {
-    // These are user created by calling nest()
-    const items = this.__nv
-    for (let i=0, il=items.length; i<il; i++) {
-      let child = items[i]
-      if (child.__ia()) {
-        child.update()
-      }
-    }
-    // These are created with directives, and whose props arguments may need reprocessed.
-    for (let key in this.__ip) {
-      let callback = this.__ip[key]
-      let view = this.el[key]
-      view.setProps(callback.apply(this))
-    }
-  }
-  /**
-   * Calls the callback if the value has changed (
-   */
-  // changed(name, callback) {
-  //   const n = this.__ov[name]
-  //   const o = this.props[name]
-  //   if (n !== o) {
-  //     callback(n, o)
-  //   }
-  // }
-}
 
 var proto = View.prototype
+
+
+/**
+ * Gets called once immediately after building.
+ * Sets initial props extracted from __html__.
+ */
+proto.init = function() {
+  for (let key in this.__ip) {
+    let callback = this.__ip[key]
+    let view = this.el[key]
+    view.props = callback.apply(this)
+    view.init()
+  }
+}
+/**
+ * Calls a function somewhere up the parent tree.
+ */
+proto.bubble = function(name) {
+  let target = this.parent
+  while (!und(target)) {
+    if (target[name]) {        
+      return target[name].apply(target,  Array.prototype.slice.call(arguments, 1))
+    }
+    target = target.parent
+  }
+  throw 'Bubble popped.'
+}
+/**
+ * Move the view to new parent. Necessary if sharing a cache.
+ */
+proto.move = function(newParent) {
+  if (this.parent && this.parent.__nv) {
+    const nv = this.parent.__nv
+    nv.splice(nv.indexOf(this), 1)
+  }
+  this.parent = newParent
+}
+/**
+ * Builds a nested view of the specified class. Its up to you how you use it.
+ */
+proto.nest = function(cls, props) {
+  const child = createView(cls, this, props || this.props)
+  this.__nv.push(child)
+  return child
+}
+/**
+ * Lookup a watched value during update. Returns an object with {o, n, c}
+ * (oldValue, newValue, changed).
+ * You must call this.resetLookups before calling this during an update.
+ * The point is to cache the result so it doesn't have to be repeated.
+ */
+proto.lookup = function(query) {
+  return this.__qc.get(this, query)
+}
+/**
+ * Resets the lookups, must be called before calling this.lookup() during an update.
+ */
+proto.resetLookups = function() {
+  this.__qc.reset()
+}
+/**
+ * Sets the props and updates the view.
+ */
+proto.setProps = function(props) {
+  this.props = props
+  this.update()
+  return this
+}
+/**
+ * Call this if you want to get mount() and unmount() callbacks.
+ */
+proto.trackMounting = function() {
+  this.__mt.track(this)
+}
+/**
+ * Updates the view.
+ */
+proto.update = function() {
+  this.resetLookups()
+  this.updateSelf()
+  this.updateNested()
+}
+/**
+ * Loops over watches skipping shielded watches if elements are hidden.
+ */
+proto.updateSelf = function() {
+  let i = 0, watch, shieldCount, shieldQuery, shieldQueryResult, shouldBeVisible
+  const watches = this.__wc
+  const il = watches.length
+  while (i < il) {
+    watch = watches[i]
+    shieldQuery = watch.sq
+    i ++
+    shouldBeVisible = true
+    if (shieldQuery) {
+      // Get the newValue for shieldQuery using lookup
+      shieldQueryResult = this.lookup(shieldQuery).n
+
+      // Determine if shouldBeVisible based on reverseShield
+      // i.e. whether "shieldQuery===true" means show or hide.
+      shouldBeVisible = watch.rv ? shieldQueryResult : !shieldQueryResult
+
+      // The number of watches to skip if this element is not visible
+      shieldCount = shouldBeVisible ? 0 : watch.sc
+
+      // Set the element visibility
+      this.el[watch.wk].visible(shouldBeVisible)
+      i += shieldCount
+    }
+    if (shouldBeVisible) {
+      applyWatchCallbacks(this, watch.cb)
+    }
+  }
+}
+/**
+ * Update nested views (but not repeat elements).
+ */
+proto.updateNested = function() {
+  // These are user created by calling nest()
+  const items = this.__nv
+  for (let i=0, il=items.length; i<il; i++) {
+    let child = items[i]
+    if (child.__ia()) {
+      child.update()
+    }
+  }
+  // These are created with directives, and whose props arguments may need reprocessed.
+  for (let key in this.__ip) {
+    let callback = this.__ip[key]
+    let view = this.el[key]
+    view.setProps(callback.apply(this))
+  }
+}
+/**
+ * Calls the callback if the value has changed (
+ */
+// changed(name, callback) {
+//   const n = this.__ov[name]
+//   const o = this.props[name]
+//   if (n !== o) {
+//     callback(n, o)
+//   }
+// }
+
+
+/**
+ * Creates a watch.
+ */
+proto.__wa = function(wrapperKey, shieldQuery, reverseShield, shieldCount, callbacks) {
+  return {
+    wk: wrapperKey,       // The key of the corresponding wrapper.
+    sq: shieldQuery,      // The shield query key
+    rv: reverseShield,    // whether shieldQuery should be flipped
+    sc: shieldCount,      // The number of items to shield
+    cb: callbacks         // The callbacks - object
+  }
+}
+
+
+const applyWatchCallbacks = (view, callbacks) => {
+  for (let key in callbacks) {
+    let callback = callbacks[key]
+    if (key === '*') {
+      callback.call(view, view.props, view, view.el)
+    } else {
+      // means: {new, old, changed}
+      const {n, o, c} = view.lookup(key)
+      if (c) {
+        callback.call(view, n, o, view.props, view, view.el)
+      }
+    }
+  }
+}
+
 
 /**
  * The global mount tracker.
@@ -208,6 +238,18 @@ proto.__bd = function(prototype, clone) {
   this.e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht)
 }
 
+
+// proto.__bd = function(prototype) {
+//   if (prototype.__cn === undefined) {
+//     prototype.__cn = makeEl(prototype.__ht)
+//   }
+//   this.e = prototype.__cn.cloneNode(true)
+// }
+
+// proto.__bd = function(prototype) {
+//   this.e = makeEl(prototype.__ht)
+// }
+
 /**
  * Returns a regular wrapper around element at path, where path is an array of indices.
  * This is used by the babel plugin.
@@ -237,13 +279,6 @@ proto.__ia = function() {
     e = e.parentNode
   }
   return false
-}
-
-/**
- * Creates a watch.
- */
-proto.__wa = function(el, shieldQuery, reverseShield, shieldCount, callbacks) {
-  return new Watch(el, shieldQuery, reverseShield, shieldCount, callbacks)
 }
 
 /**

@@ -16,9 +16,8 @@ function extractNodeData(node, config, walker, asStub) {
   const nodeData = new NodeData(node, asStub)
 
   // Check inline calls
-  const inlines = processInlineWatches(nodeData, node, config)
-  let hasData = inlines.length > 0
-  inlines.forEach(w => nodeData.watches.push(w))
+  processInlineWatches(nodeData, node, config)
+  let hasData = nodeData.watches.length > 0
 
   // Check attributes for directives
   if (node.attributes.length > 0) {
