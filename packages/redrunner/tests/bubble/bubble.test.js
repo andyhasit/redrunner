@@ -20,7 +20,7 @@ class TestView extends View {
 
 class Button extends View {
   __html__ = `
-    <button :onClick=".clicked()">Go</button>
+    <button :onClick=".clicked(c, p)">Go</button>
   `
   clicked() {
     this.bubble('add', 2)

@@ -34,9 +34,9 @@ var proto = View.prototype
 proto.init = function() {
   for (let key in this.__ip) {
     let callback = this.__ip[key]
-    let view = this.el[key]
-    view.props = callback.apply(this)
-    view.init()
+    let nestedComponent = this.el[key]
+    nestedComponent.props = callback(this, this.props)
+    nestedComponent.init()
   }
 }
 /**
@@ -156,8 +156,8 @@ proto.updateNested = function() {
   // These are created with directives, and whose props arguments may need reprocessed.
   for (let key in this.__ip) {
     let callback = this.__ip[key]
-    let view = this.el[key]
-    view.setProps(callback.apply(this))
+    let nestedComponent = this.el[key]
+    nestedComponent.setProps(callback(this, this.props))
   }
 }
 /**

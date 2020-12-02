@@ -44,9 +44,9 @@ module.exports = () => {
                 className: anonymousCls, 
                 clone: viewData.clone, 
                 html: stubHtml,
-                asStub: true
+                processAsStub: true
               }
-              generateStatements(stubViewData).forEach(statement =>
+              generateStatements(stubViewData, path).forEach(statement =>
                 path.insertAfter(babel.template.ast(statement))
               )
               path.insertAfter(babel.template.ast(`${viewData.className}.prototype.__stubs__${stubName} = ${anonymousCls};`))
@@ -55,7 +55,7 @@ module.exports = () => {
           }
 
           if (viewData.html) {
-            generateStatements(viewData).forEach(statement =>
+            generateStatements(viewData, path).forEach(statement =>
               path.insertAfter(babel.template.ast(statement))
             )
           }

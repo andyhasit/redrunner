@@ -15,8 +15,9 @@ Lookup.prototype = {
     const run = this.run
     if (run[key] === undefined) {
       // Verbose but efficient way as it avoids lookups?
+      // Or is this harmful to performance because we're just reading values more than calling functions?
       const o = view.__ov[key]
-      const n = this.callbacks[key].call(view)
+      const n = this.callbacks[key](view, view.props)
       const c = n !== o
       view.__ov[key] = n
       const rtn = {n, o, c}

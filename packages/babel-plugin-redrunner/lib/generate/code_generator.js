@@ -1,6 +1,12 @@
 const {getLookupArgs, stripHtml} = require('../utils/dom')
 const {escapeSingleQuotes, extractShieldCounts, groupArray, isUnd} = require('../utils/misc')
-const {viewVar, watchCallbackArgs, watchCallbackArgsAlways} = require('../constants')
+const {
+  componentRefInBuild, 
+  lookupCallbackArgs,
+  propsCallbackArgs,
+  watchCallbackArgs,
+  watchCallbackArgsAlways
+} = require('../constants')
 const {DomWalker} = require('../parse/dom_walker.js')
 const {extractNodeData} = require('../parse/parse_node')
 const {
@@ -32,12 +38,13 @@ const vars = {
  *  - generating JS from html syntax.
  */
 class CodeGenerator {
-  constructor(viewData) {
+  constructor(viewData, babelPath) {
     this.walker = new DomWalker(viewData.html, nodeInfo => this.processNode(nodeInfo))
     this.className = viewData.className
+    this.babelPath = babelPath
 
     this.clone = viewData.clone
-    this.asStub = viewData.asStub
+    this.processAsStub = viewData.processAsStub
     this.config = viewData.config
     this.nextElementRefIndex = 0
     this.savedWatchCallArgs = []
@@ -49,12 +56,12 @@ class CodeGenerator {
 
     // These objects build the statements.
     this.htmlString = new ValueStatement()
-    this.buildMethod = new FunctionStatement('view, prototype')
+    this.buildMethod = new FunctionStatement(`${componentRefInBuild}, prototype`)
     this.watches = new ArrayStatement()
-    this.queryCallbacks = new ObjectStatement()
+    this.protoLookupCallbacks = new ObjectStatement()
     this.nestedViewProps = new ObjectStatement()
-    this.lookup = new CallStatement(`${vars.prototypeVariable}.${vars.getLookup}`)
-    this.lookup.add(this.queryCallbacks)
+    this.createLookupCall = new CallStatement(`${vars.prototypeVariable}.${vars.getLookup}`)
+    this.createLookupCall.add(this.protoLookupCallbacks)
   }
   /**
    * Initiates parsing and returns all the generated statements.
@@ -66,7 +73,7 @@ class CodeGenerator {
       `var ${vars.prototypeVariable} = ${this.className}.prototype;`,
       this.htmlString.buildAssign(`${vars.prototypeVariable}.__ht`),
       this.watches.buildAssign(`${vars.prototypeVariable}.__wc`),
-      this.lookup.buildAssign(`${vars.prototypeVariable}.__qc`),
+      this.createLookupCall.buildAssign(`${vars.prototypeVariable}.__qc`),
       this.nestedViewProps.buildAssign(`${vars.prototypeVariable}.__ip`),
       this.buildMethod.buildAssign(`${vars.prototypeVariable}.__bv`),
     ]
@@ -80,9 +87,9 @@ class CodeGenerator {
    */
   postParsing() {
     this.setShieldCounts()
-    this.buildMethod.add(`view.__bd(prototype, ${this.clone})`)
+    this.buildMethod.add(`${componentRefInBuild}.__bd(prototype, ${this.clone})`)
     this.beforeSave.forEach(i => this.buildMethod.add(i))
-    this.buildMethod.add(this.savedElements.buildAssign('view.el'))
+    this.buildMethod.add(this.savedElements.buildAssign(`${componentRefInBuild}.el`))
     this.afterSave.forEach(i => this.buildMethod.add(i))
     // We do this at the end as the dom has been changed
     const convertedHTML = this.buildHtmlString(this.walker.dom.outerHTML)
@@ -120,7 +127,7 @@ class CodeGenerator {
    */
   processNode(nodeInfo) {
     const {nodePath, node, tagName} = nodeInfo
-    const nodeData = extractNodeData(node, this.config, this.walker, this.asStub)
+    const nodeData = extractNodeData(node, this.config, this.walker, this.processAsStub)
     if (nodeData) {
       let {afterSave, beforeSave, saveAs, props, shieldQuery, reverseShield, watches, stubName, replaceWith} = nodeData
 
@@ -177,18 +184,18 @@ class CodeGenerator {
   /**
    * Builds the object with callbacks for the watcher.
    * 
-   * @param {Array of Watch} watches 
+   * @param {Array} watches 
    */
   buildWatcherCallbacksObject(watches) {
     const callbacksObject = new ObjectStatement()
     // TODO maybe do this before so we can alias the names ?
     const callbackLinesroupedByWatchedField = groupArray(watches, 'watch', details => details)
-    for (let [watchedField, lines] of Object.entries(callbackLinesroupedByWatchedField)) {
+    for (let [watch, lines] of Object.entries(callbackLinesroupedByWatchedField)) {
 
-      this.addWatchQueryCallback(watchedField)
-      let callbackArgs = watchedField === '*' ? watchCallbackArgsAlways : watchCallbackArgs
+      this.addWatchQueryCallback(watch)
+      let callbackArgs = watch === '*' ? watchCallbackArgsAlways : watchCallbackArgs
       let callback = this.buildWatcherCallbackFunction(callbackArgs, lines)
-      callbacksObject.add(watchedField, callback)
+      callbacksObject.add(watch, callback)
     }
     return callbacksObject
   }
@@ -239,7 +246,7 @@ class CodeGenerator {
    * be in scope. That is why we do it with new here rather than passing the class
    * to __gw or so.
    * Similarly, that is why we use __gw, because we know "Wrapper" will be in scope
-   * there, but it isn't guaranteed to be where the view is defined.
+   * there, but it isn't guaranteed to be where componentRefInBuild is defined.
    *
    */
   buildWrapperInitCall(nodeData, nodePath) {
@@ -248,17 +255,17 @@ class CodeGenerator {
       return nodeData.wrapperOverride
     } else if (nodeData.customWrapperClass) {
       const args = nodeData.customWrapperArgs ? ',' + nodeData.customWrapperArgs : ''
-      return `new ${nodeData.customWrapperClass}(view.__fe(${path})${args})`
+      return `new ${nodeData.customWrapperClass}(${componentRefInBuild}.__fe(${path})${args})`
     }
-    return `view.__gw(${path})`
+    return `${componentRefInBuild}.__gw(${path})`
   }
   saveNestedView(nodePath, saveAs, nodeData, tagName, props, replaceWith) {
     const nestedViewClass = replaceWith || tagName
     if (isUnd(props)) {
-      props = 'this.props'
+      props = 'c.props'
     }
-    this.nestedViewProps.add(saveAs, new FunctionStatement('', [`return ${props}`]))
-    const initCall = `view.__ni(${getLookupArgs(nodePath)}, ${nestedViewClass})`
+    this.nestedViewProps.add(saveAs, new FunctionStatement(propsCallbackArgs, [`return ${props}`]))
+    const initCall = `${componentRefInBuild}.__ni(${getLookupArgs(nodePath)}, ${nestedViewClass})`
     this.saveElement(saveAs, initCall, nodeData.chainedCalls)
   }
   saveStub(stubName, nodePath) {
@@ -266,7 +273,7 @@ class CodeGenerator {
       this.walker.throw('Stub name may only contain letters numbers and underscores')
     }
     this.nestedViewProps.add(stubName, new FunctionStatement('', ['return this.props']))
-    const initCall = `view.__ni(${getLookupArgs(nodePath)}, this.__stubs__${stubName})`
+    const initCall = `${componentRefInBuild}.__ni(${getLookupArgs(nodePath)}, this.__stubs__${stubName})`
     this.saveElement(stubName, initCall, [])
   }
   saveElement(saveAs, initCall, chainedCalls) {
@@ -276,18 +283,27 @@ class CodeGenerator {
   addWatchQueryCallback(property) {
     const callback = this.getWatchQueryCallBack(property)
     if (callback) {
-      this.queryCallbacks.add(property, callback)
+      this.protoLookupCallbacks.add(property, callback)
     }
   }
   /**
    * Returns the callback for the watch query, or undefined.
    * TODO: is this necessary? Do we even call these null function?
    */
-  getWatchQueryCallBack(property) {
-    if (property !== '*') {
-      return (property === '' || property === undefined) ?
+  getWatchQueryCallBack(watch) {
+    if (watch !== '*') {
+      /*
+      TODO: fail, or warn if watch is not in scope (if not, babel does very funny stuff!)
+      split string on "." and use first, but not if it is raw Js?
+      Or one if it is a word followed by ".", "[" or "("
+
+      Same will happen with callbacks?
+      console.log(watch, this.babelPath.scope.hasBinding(watch))
+      */
+
+      return (watch === '' || watch === undefined) ?
         `function() {return null}` :
-        `function() {return ${property}}`
+        `function(${lookupCallbackArgs}) {return ${watch}}`
     }
   }
   /**
@@ -299,8 +315,8 @@ class CodeGenerator {
   }
 }
 
-function generateStatements(viewData) {
-  const builder = new CodeGenerator(viewData)
+function generateStatements(viewData, path) {
+  const builder = new CodeGenerator(viewData, path)
   return builder.buildStatements()
 }
 

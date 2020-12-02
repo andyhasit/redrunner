@@ -28,13 +28,15 @@ const watchCallbackArgs = 'n, o, w, p, c'
  * See watchCallbackArgs for letter meaning.
  */
 const watchCallbackArgsAlways = 'w, p, c'
-const eventCallbackArgs = 'w, p, c, e'
+const lookupCallbackArgs = 'c, p'
+const propsCallbackArgs = 'c, p'
+const eventCallbackArgs = 'w, e'
 
 /**
  * The name of the arg representing the view in the buildView method.
  */
-const viewVar = 'view'
-const callableWatchArgs = `${viewVar}, props`
+const componentRefInBuild = 'view'
+const callableWatchArgs = `${componentRefInBuild}, props`
 
 module.exports = {
   EOL,
@@ -42,7 +44,9 @@ module.exports = {
   eventCallbackArgs,
   redrunnerDefs, 
   splitter,
-  viewVar,
+  componentRefInBuild,
+  lookupCallbackArgs,
+  propsCallbackArgs,
   watchArgs,
   watchCallbackArgs,
   watchCallbackArgsAlways

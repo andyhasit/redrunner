@@ -10,10 +10,10 @@ const {processDirective} = require('./parse_directives')
  * @param {Object} node - a nodeInfo instance from the walker
  * @param {Object} config - the global config object
  * @param {DomWalker} walker - the walker itself (just for raising exceptions)
- * @param {boolean} asStub - indicates whether we are processing a stub.
+ * @param {boolean} processAsStub - indicates whether we are processing a stub.
  */
-function extractNodeData(node, config, walker, asStub) {
-  const nodeData = new NodeData(node, asStub)
+function extractNodeData(node, config, walker, processAsStub) {
+  const nodeData = new NodeData(node, processAsStub)
 
   // Check inline calls
   processInlineWatches(nodeData, node, config)

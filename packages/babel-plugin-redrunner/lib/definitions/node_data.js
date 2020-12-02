@@ -1,4 +1,5 @@
-const {eventCallbackArgs, viewVar, watchArgs, watchCallbackArgs, watchCallbackArgsAlways} = require('../constants')
+const {eventCallbackArgs, componentRefInBuild, watchArgs, watchCallbackArgs, watchCallbackArgsAlways} = require('../constants')
+const {replaceArgs} = require('../utils/misc')
 const {Watcher} = require('./watcher')
 
 /**
@@ -8,9 +9,9 @@ const {Watcher} = require('./watcher')
  * It also contains the directive syntax rules (expansion etc...)
  */
 class NodeData {
-  constructor(node, asStub) {
+  constructor(node, processAsStub) {
     this.node = node
-    this.asStub = asStub // whether the whole html declaration is a stub
+    this.processAsStub = processAsStub // whether the whole html declaration is a stub
     this.stubName = undefined // Whether this node should be a stub
     this.saveAs = undefined
     this.customWrapperClass = undefined
@@ -38,7 +39,7 @@ class NodeData {
   }
   /**
    * Creates an event listener on this node.
-   * Value will be expanded.
+   * Slot will be expanded.
    * 
    * @param {string} event 
    * @param {string} slot 
@@ -47,8 +48,20 @@ class NodeData {
     const callback = this.buildEventListenerCallback(slot)
     this.chainedCalls.push(`on('${event}', ${callback})`)
   }
+  /**
+   * Builds the callback function for an event handler.
+   * Replaces c & p arguments with variables from the outer scope
+   * if present as these are not provided by the wrapper.
+   * 
+   * @param {string} slot 
+   */
   buildEventListenerCallback(slot) {
-    const body = this.expandValueSlot(slot)
+    const isRawSlot = slot.startsWith('(')
+    let body = this.expandValueSlot(slot, true)
+    if (!isRawSlot) {
+      body = replaceArgs(body, 'c', componentRefInBuild)
+      body = replaceArgs(body, 'p', componentRefInBuild + '.props')
+    }
     return `function(${eventCallbackArgs}) {${body}}`
   }
   /**
@@ -76,7 +89,7 @@ class NodeData {
    * Expands a value slot.
    * 
    */
-  expandValueSlot(slot) {
+  expandValueSlot(slot, inBuild=false) {
     if (slot && (slot !== '')) {
       // If it starts with () then we don't expand dots (treat as raw code).
       if (slot.startsWith('(')) {
@@ -86,23 +99,49 @@ class NodeData {
           throw 'Value slot starting with "(" must also end with ")"'
         }
       }
-      return this.expandDots(slot)
+      return this.expandDots(slot, inBuild)
     }
   }
   /**
-   * Expands a field's shorthand notation as follows:
-   *
-   *   field    >  this.props.field
-   *   .field   >  this.field
-   *   ..field  >  field
+   * Expands a value field's dots.
+   * Works differently if it is a callback in Build.
    */
-  expandDots(field) {
-    if (field.startsWith('..')) {
-      return field.substr(2)
-    } else if (field.startsWith('.')) {
-      return this.asStub ? 'this.parent.' + field.substr(1) : 'this.' + field.substr(1)
+  expandDots(field, inBuild=false) {
+    if (this.processAsStub) {
+      if (inBuild) {
+        if (field.startsWith('..')) {
+          return `${componentRefInBuild}.parent.props.` + field.substr(2)
+        } else if (field.startsWith('.')) {
+          return `${componentRefInBuild}.parent.` + field.substr(1)
+        }
+      } else {
+        if (field.startsWith('..')) {
+          return `c.parent.props.` + field.substr(2)
+        } else if (field.startsWith('.')) {
+          return `c.parent.` + field.substr(1)
+        }
+      }
+    } else {
+      if (inBuild) {
+        if (field.startsWith('..')) {
+          return `${componentRefInBuild}.props.` + field.substr(2)
+        } else if (field.startsWith('.')) {
+          return `${componentRefInBuild}.` + field.substr(1)
+        }
+      } else {
+        if (field.startsWith('..')) {
+          return `p.` + field.substr(2)
+        } else if (field.startsWith('.')) {
+          return `c.` + field.substr(1)
+        }
+      }
     }
-    return this.asStub ? 'this.parent.props.' + field : 'this.props.' + field
+    // if (field.startsWith('..')) {
+    //   return this.processAsStub ? 'c.parent.props.' + field : 'this.props.' + field
+    // } else if (field.startsWith('.')) {
+    //   return this.processAsStub ? 'this.parent.' + field.substr(1) : 'this.' + field.substr(1)
+    // }
+    return field
   }
 
   /**

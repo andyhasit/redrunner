@@ -9,7 +9,7 @@ let args = undefined
 class TestView extends View {
   __html__ = `
     <div>
-      <button :el="btn" :onClick="..clicked">Go</button>
+      <button :el="btn" :onClick="clicked(w, e, p, c)">Go</button>
     </div>
   `
 }
