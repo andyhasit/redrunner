@@ -1,4 +1,4 @@
-const {EOL, viewVar, watchArgs, watchCallbackArgs, watchCallbackArgsAlways} = require('../constants')
+const {eventCallbackArgs, viewVar, watchArgs, watchCallbackArgs, watchCallbackArgsAlways} = require('../constants')
 const {Watcher} = require('./watcher')
 
 /**
@@ -38,13 +38,18 @@ class NodeData {
   }
   /**
    * Creates an event listener on this node.
+   * Value will be expanded.
    * 
    * @param {string} event 
-   * @param {string} callbackStr 
+   * @param {string} slot 
    */
-  addEventListener(event, callbackStr) {
-    const callback = this.expandValueSlot(callbackStr)
+  addEventListener(event, slot) {
+    const callback = this.buildEventListenerCallback(slot)
     this.chainedCalls.push(`on('${event}', ${callback})`)
+  }
+  buildEventListenerCallback(slot) {
+    const body = this.expandValueSlot(slot)
+    return `function(${eventCallbackArgs}) {${body}}`
   }
   /**
    * Builds the call to create a cache for child views.
