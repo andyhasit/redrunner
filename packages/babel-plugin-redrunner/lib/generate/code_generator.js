@@ -1,6 +1,6 @@
 const {getLookupArgs, stripHtml} = require('../utils/dom')
-const {extractShieldCounts, groupArray, isUnd} = require('../utils/misc')
-const {viewVar, watchCallbackArgs, watchCallbackArgsAlways} = require('../utils/constants')
+const {escapeSingleQuotes, extractShieldCounts, groupArray, isUnd} = require('../utils/misc')
+const {viewVar, watchCallbackArgs, watchCallbackArgsAlways} = require('../constants')
 const {DomWalker} = require('../parse/dom_walker.js')
 const {extractNodeData} = require('../parse/parse_node')
 const {
@@ -10,7 +10,7 @@ const {
   ObjectStatement,
   ValueStatement
 } = require('./statement_builders')
-const {buildWatchCallbackBody} = require('./watches')
+const {buildWatchCallbackBodyLine} = require('./watches')
 
 const re_lnu = /^\w+$/; // letters_numbers_underscores
 
@@ -92,7 +92,7 @@ class CodeGenerator {
    * Converts the raw HTML text from the DOM
    */
   buildHtmlString(rawHtml) {
-    return stripHtml(rawHtml).replace(/'/g, "\\'")
+    return escapeSingleQuotes(stripHtml(rawHtml))
   }
   /**
    * Sets the shieldCounts, which has to be done after parsing as nodes
@@ -124,6 +124,7 @@ class CodeGenerator {
     if (nodeData) {
       let {afterSave, beforeSave, saveAs, props, shieldQuery, reverseShield, watches, stubName, replaceWith} = nodeData
 
+      // If this node is a "stub", save it and because there's nothing to do stubs.
       if (stubName) {
         this.saveStub(stubName, nodePath)
         return
@@ -132,11 +133,14 @@ class CodeGenerator {
       // Use the saveAs supplied, or get a sequential one
       saveAs = saveAs ? saveAs : this.getNextElementRef()
 
+      // If replaceWith, then it's a nested view, which needs special treatment.
       if (replaceWith) {
         this.saveNestedView(nodePath, saveAs, nodeData, replaceWith, props, replaceWith)
       } else {
+        // TODO: do we always want to save the wrapper?
         this.saveWrapper(nodePath, saveAs, nodeData)
       }
+
 
       // Ensure the shieldQuery gets added
       // This is the query to determine whether the wrappers should shield
@@ -147,41 +151,81 @@ class CodeGenerator {
       // Use the shieldQuery supplied, 0 (must set as string here)
       shieldQuery = shieldQuery ? `'${shieldQuery}'` : '0'
 
-      // Squash array to object with callbacks
-      watches = groupArray(watches, 'property', function(watch) {
-        return buildWatchCallbackBody(nodeData, saveAs, watch)
-      })
-
-      // Group statements into single function
-      const allCallbacks = new ObjectStatement()
-      for (let [property, statements] of Object.entries(watches)) {
-        this.addWatchQueryCallback(nodeData, property)
-        let callbackArgs = property === '*' ? watchCallbackArgsAlways : watchCallbackArgs
-        let callback = new FunctionStatement(callbackArgs)
-        statements.forEach(s => callback.add(s))
-        allCallbacks.add(property, callback)
-      }
-
       // shieldCount is the number of wrappers to shield, which will equate to the
       // number of wrappers nested underneath, which we have to calculate postParsing
       // so we just set it to 0 for now.
-      const shieldCount = 0
+      const defaultShieldCount = 0
 
+
+      const watchCallbacks = this.buildWatcherCallbacksObject(watches)
       const watchCallArgs = [
         `'${saveAs}'`,
         shieldQuery,
         reverseShield.toString(),
-        shieldCount,  // shieldCount is at position 3 - if this changes we must change setShieldCounts!
-        allCallbacks
+        defaultShieldCount,  // shieldCount is at position 3 - if this changes we must change setShieldCounts!
+        watchCallbacks
       ]
       // We save this as we're going to need it postParsing to set the shieldCount
       // Must slice the nodePath!
       this.saveWatchCallArgs(nodePath.slice(), watchCallArgs)
 
+      // TODO: change this, as we may call different functions to make simpler watchers
       const watchCall = new CallStatement(`${vars.prototypeVariable}.${vars.getWatch}`, watchCallArgs)
       this.watches.add(watchCall)
     }
   }
+  /**
+   * Builds the object with callbacks for the watcher.
+   * 
+   * @param {Array of Watch} watches 
+   */
+  buildWatcherCallbacksObject(watches) {
+    const callbacksObject = new ObjectStatement()
+    // TODO maybe do this before so we can alias the names ?
+    const callbackLinesroupedByWatchedField = groupArray(watches, 'watch', details => details)
+    for (let [watchedField, lines] of Object.entries(callbackLinesroupedByWatchedField)) {
+
+      this.addWatchQueryCallback(watchedField)
+      let callbackArgs = watchedField === '*' ? watchCallbackArgsAlways : watchCallbackArgs
+      let callback = this.buildWatcherCallbackFunction(callbackArgs, lines)
+      callbacksObject.add(watchedField, callback)
+    }
+    return callbacksObject
+  }
+  /**
+   * 
+   * @param {String} callbackArgs 
+   * @param {Array} lines 
+   * 
+   * 
+   */
+  buildWatcherCallbackFunction(callbackArgs, lines) {
+    // TODO: perhaps optimise to generate a function if it is simple.
+    let callback = new FunctionStatement(callbackArgs)
+    
+    // Find lines which call methods on the wrapper so we can chain them.
+    const methodLines = lines.filter(line => line.wrapperMethod)
+    
+    if (methodLines.length > 0) {
+      let chainedCalls = 'w'
+      methodLines.forEach(line => {
+        const firstArg = line.converter || 'n'
+        let methodName = line.wrapperMethod
+        let methodArgs = line.extraArg ? `${firstArg},${line.extraArg}` : firstArg
+        if (methodName.startsWith('@')) {
+          methodArgs = `${methodName.substr(1)},${methodArgs}`
+          methodName = 'att'
+        }
+        chainedCalls += `.${methodName}(${methodArgs})`
+      })
+      callback.add(chainedCalls)
+    }
+    const nonMethodLines = lines.filter(line => !line.wrapperMethod)
+    nonMethodLines.forEach(line => callback.add(line))
+    return callback
+  } 
+
+
   /**
    * Add a saved Element.
    */
@@ -229,12 +273,22 @@ class CodeGenerator {
     const chainedCallStatement = chainedCalls.length ? '.' + chainedCalls.join('.') : ''
     this.savedElements.add(saveAs, `${initCall}${chainedCallStatement}`)
   }
-  addWatchQueryCallback(nodeData, property) {
-    const callback = nodeData.getWatchQueryCallBack(property)
+  addWatchQueryCallback(property) {
+    const callback = this.getWatchQueryCallBack(property)
     if (callback) {
       this.queryCallbacks.add(property, callback)
     }
-    // TODO: also initiate the previous values object?
+  }
+  /**
+   * Returns the callback for the watch query, or undefined.
+   * TODO: is this necessary? Do we even call these null function?
+   */
+  getWatchQueryCallBack(property) {
+    if (property !== '*') {
+      return (property === '' || property === undefined) ?
+        `function() {return null}` :
+        `function() {return ${property}}`
+    }
   }
   /**
    * Gets next name for saving elements.

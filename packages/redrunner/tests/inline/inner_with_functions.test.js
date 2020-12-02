@@ -23,9 +23,9 @@ class TestView extends View {
   __html__ = `
     <div>
       <span>{getName()}</span>
-      <span>{.getName?}</span>
+      <span>{.getName()}</span>
       <span>{..getName()}</span>
-      <span>{..service.getName?}</span>
+      <span>{..service.getName()}</span>
     </div>
   `
   init() {

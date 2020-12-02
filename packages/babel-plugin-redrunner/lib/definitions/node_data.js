@@ -1,4 +1,5 @@
-const {EOL, viewVar, watchArgs} = require('./utils/constants')
+const {EOL, viewVar, watchArgs, watchCallbackArgs, watchCallbackArgsAlways} = require('../constants')
+const {Watcher} = require('./watcher')
 
 /**
  * A NodeData object is created for every HTML node with directives.
@@ -26,13 +27,14 @@ class NodeData {
   /**
    * Creates a watch on this node.
    * 
-   * @param {string} property -- watchedProperty
-   * @param {function} converter -- valueTranformer
-   * @param {string} targer -- the wrapperMethod 
-   * @param {string} extraWrapperArgs -- extraWrapperArgsToWrapperMethod 
+   * @param {string} watch - the field or function to watch.
+   * @param {string} [converter] - the value to pass to method, or free function call if no wrapperMethod supplied.
+   * @param {string} [wrapperMethod] - the method on the wrapper (may use "@attName" syntax).
+   * @param {string} [extraArg] - And extra argument to pass to the wrapperMethod
+   * @param {string} [lookup] - name of the lookup to use. 
    */
-  addWatch(property, converter, wrapperMethod, extraWrapperArgs) {
-    this.watches.push({property, converter, wrapperMethod, extraWrapperArgs})
+  addWatch(watch, converter, wrapperMethod, extraArg, lookup) {
+    this.watches.push(new Watcher(this.expandValueSlot(watch), this.expandValueSlot(converter), wrapperMethod, extraArg, lookup))
   }
   /**
    * Creates an event listener on this node.
@@ -41,21 +43,8 @@ class NodeData {
    * @param {string} callbackStr 
    */
   addEventListener(event, callbackStr) {
-    const callback = this.buildEventCallback(callbackStr)
+    const callback = this.expandValueSlot(callbackStr)
     this.chainedCalls.push(`on('${event}', ${callback})`)
-  }
-  /**
-   * Builds the callback function for an event listener.
-   */
-  buildEventCallback(statement) {
-    let text = this.expandDots(statement.trim())
-    // Cater for '?' ending
-    text = text.endsWith('?') ? text.slice(0, -1) : text
-    const extra = text.endsWith(')') ? '' : `(w, e, ${viewVar}.props, ${viewVar})`
-    // Convert 'this' to viewVar because of binding
-    text = text.startsWith('this.') ? viewVar + text.substr(4) : text
-    const body = `${text}${extra}`
-    return ['function(w, e) {', body, '}'].join(EOL)
   }
   /**
    * Builds the call to create a cache for child views.
@@ -79,44 +68,20 @@ class NodeData {
     return cacheStatement
   }
   /**
-   * Returns the callback for the watch query, or undefined.
-   * TODO: move
-   */
-  getWatchQueryCallBack(property) {
-    if (property !== '*') {
-      return (property === '' || property === undefined) ?
-        `function() {return null}` :
-        `function() {return ${this.parseWatchedValueSlot(property)}}`
-    }
-  }
-  /**
-   * Expands the converter slot.
-   * Assumes it is a function, not a field.
-   * If enclosed in bracket, treats as raw code.
+   * Expands a value slot.
    * 
-   *   undefined  >  undefined
-   *   ''         >  undefined
-   *   foo        >  this.props.foo()
-   *   foo!       >  this.props.foo
-   *   foo?       >  this.props.foo(n, o)
    */
-  expandConverter(convert) {
-    if (convert && (convert !== '')) {
-
-      // If it starts with () then we treat it as raw JavaScript code.
-      if (convert.startsWith('(')) {
-        if (convert.endsWith(')')) {
-          return convert.substr(1, convert.length - 2)
+  expandValueSlot(slot) {
+    if (slot && (slot !== '')) {
+      // If it starts with () then we don't expand dots (treat as raw code).
+      if (slot.startsWith('(')) {
+        if (slot.endsWith(')')) {
+          return slot.substr(1, slot.length - 2)
         } else {
-          throw 'Converter starting with "(" must also end with ")"'
+          throw 'Value slot starting with "(" must also end with ")"'
         }
       }
-
-      // Remove ? because it's just the user explicity marking this a function
-      convert = convert.endsWith('?') ? convert.slice(0, -1) : convert
-      // If ends with . then treat as field, else turn it into a call with the watch args
-      convert = convert.endsWith('.') ? convert.slice(0, -1) : convert //`${convert}${watchArgs}`
-      return this.expandDots(convert)
+      return this.expandDots(slot)
     }
   }
   /**
@@ -135,11 +100,23 @@ class NodeData {
     return this.asStub ? 'this.parent.props.' + field : 'this.props.' + field
   }
 
+  /**
+   * Expands a single inline watched property like ".name" in "<i>{.name}</i>".
+   * If it ends with ? then call it with watch callback args.
+   * 
+   * @param {string} field 
+   */
+  expandInlineWatchedProperty(field) {
+    return this.expandDots(addCallIfCallable(field, watchCallbackArgsAlways))
+  }
+
+  /**
+   * Expands the props field. If ends with ? then call it with (this)
+   * 
+   * @param {string} field 
+   */
   expandProps(field) {
-    if (field.endsWith('?')) {
-      field = field.slice(0, -1) + '(this)'
-    }
-    return this.expandDots(field)
+    return this.expandDots(addCallIfCallable(field, 'this')) //TODO: not viewArg?
   }
 
   /**
@@ -156,6 +133,10 @@ class NodeData {
    *
    */
   parseWatchedValueSlot(property) {
+    // TODO: check why I still need this....
+
+
+
     if (property === '*') {
       return '*'
     }
@@ -169,6 +150,24 @@ class NodeData {
     const expanded = this.expandDots(property)
     return property.endsWith('?') ? expanded.slice(0, -1) + `(this.props, this)` : expanded
   }
+}
+
+/**
+ * If field ends with '?' then convert in into a call statement with callArgs.
+ * If it doesn't then return as is.
+ * It it ends with '.' then return without '.'
+ * 
+ * @param {string} field 
+ * @param {string} callArgs 
+ */
+const addCallIfCallable = (field, callArgs) => {
+  if (field.endsWith('.')) {
+    field = field.slice(0, -1)
+  }
+  if (field.endsWith('?')) {
+    field = field.slice(0, -1) + `(${callArgs})`
+  }
+  return field
 }
 
 module.exports = {NodeData}

@@ -17,17 +17,17 @@ const watchArgs = '(n, o)'
  * 
  *  newValue
  *  oldValue
+ *  wrapper
  *  props
  *  component
- *  elements (i.e. named elements)
  */
-const watchCallbackArgs = 'n, o, p, c, e'
+const watchCallbackArgs = 'n, o, w, p, c'
 
 /**
  * The parameters for an "always" watch callback function ('*')
  * See watchCallbackArgs for letter meaning.
  */
-const watchCallbackArgsAlways = 'p, c, e'
+const watchCallbackArgsAlways = 'w, p, c'
 
 /**
  * The name of the arg representing the view in the buildView method.

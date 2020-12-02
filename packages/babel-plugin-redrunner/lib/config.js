@@ -3,9 +3,9 @@
  * 
  * A directive definition's handler's "this" is a NodeData instance.
  */
-var fs = require('fs');
-var path = require('path');
-
+const fs = require('fs');
+const path = require('path');
+const componentRefVariable = 'c'; // The variable name by which the component will be known.
 
 const config = {
   options: {
@@ -18,24 +18,24 @@ const config = {
       }
     },
     ':hide': {
-      params: 'property',
-      handle: function(property) {
-        this.shieldQuery = property
+      params: 'watch',
+      handle: function(watch) {
+        this.shieldQuery = watch
       }
     },
     ':inner': {
-      params: 'property, converter',
-      handle: function(property, converter) {
-        this.addWatch(property, converter, 'inner')
+      params: 'watch, converter',
+      handle: function(watch, converter) {
+        this.addWatch(watch, converter, 'inner')
       }
     },
     ':items': {
-      params: 'property, converter, cacheDef?, cacheKey?',
-      handle: function(property, converter, cacheDef, cacheKey) {
+      params: 'watch, converter, cacheDef?, cacheKey?',
+      handle: function(watch, converter, cacheDef, cacheKey) {
         if (cacheDef) {
           this.chainedCalls.push(`cache(${this.buildCacheInit(cacheDef, cacheKey)})`)
         }
-        this.addWatch(property, converter, 'items', 'this')
+        this.addWatch(watch, converter, 'items', componentRefVariable)
       }
     },
     ':on': {
@@ -51,21 +51,21 @@ const config = {
       }
     },
     ':show': {
-      params: 'property',
-      handle: function(property) {
-        this.shieldQuery = property
+      params: 'watch',
+      handle: function(watch) {
+        this.shieldQuery = watch
         this.reverseShield = 1
       }
     },
     ':swap': {
-      params: 'property, mappings, fallback?',
-      handle: function(property, mappings, fallback) {
+      params: 'watch, mappings, fallback?',
+      handle: function(watch, mappings, fallback) {
         let args = this.expandDots(mappings)
         if (fallback) {
           args += ', ' + this.expandDots(fallback)
         }
         this.chainedCalls.push(`cache(view.__ic(${args}))`)
-        this.addWatch(property, undefined, 'swap', 'this')
+        this.addWatch(watch, undefined, 'swap', componentRefVariable)
       }
     },
     ':use': {
@@ -84,9 +84,9 @@ const config = {
       }
     },
     ':watch': {
-      params: 'property, converter, wrapperMethod?',
-      handle: function(property, converter, wrapperMethod) {
-        this.addWatch(property, converter, wrapperMethod)
+      params: 'watch, converter, wrapperMethod?',
+      handle: function(watch, converter, wrapperMethod) {
+        this.addWatch(watch, converter, wrapperMethod)
       }
     },
     ':wrapper': {

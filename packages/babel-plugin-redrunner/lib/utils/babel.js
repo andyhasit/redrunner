@@ -1,4 +1,4 @@
-const {redrunnerDefs} = require("./constants")
+const {redrunnerDefs} = require("../constants")
 
 /**
  * A visitor which removes a property, because that's Babel wants you to do it.

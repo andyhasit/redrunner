@@ -14,9 +14,9 @@ function foo(n) {
 class TestView extends View {
   __html__ = `
     <div>
-      <span>{name|foo}</span>
-      <span>{name|.foo}</span>
-      <span>{name|..foo}</span>
+      <span>{name|foo(n)}</span>
+      <span>{name|.foo(n)}</span>
+      <span>{name|..foo(n)}</span>
     </div>
   `
   foo(n) {

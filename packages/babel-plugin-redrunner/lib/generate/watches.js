@@ -3,29 +3,28 @@
  * 
  * The function parameters will be as per watchCallbackArgs or watchCallbackArgsAlways.
  * 
- * "this.el._3.att('class', n)"
+ * E.g.
  * 
- * 
- * function(n, o, view.props, view, view.el) {
- *  //body
- * }
+ *   function(n, o, p, c, e) {
+ *     e._1.text(n)
+ *   }
  * 
  */
-const buildWatchCallbackBody = (nodeData, saveAs, watch) => {
+const buildWatchCallbackBodyLine = (nodeData, saveAs, watch) => {
+  return 'console.log("stub");'
+  const func = watch.inlineRaw ? buildInlineWatchCallback : buildManualWatchCallback
+  return func(nodeData, saveAs, watch)
+}
 
-  //TODO: detect inline...
-
-  let {converter, wrapperMethod, raw, extraWrapperArgs} = watch
+const buildManualWatchCallback = (nodeData, saveAs, watch) => {
+  let {converter, wrapperMethod, extraWrapperArgs} = watch
   let callbackBody, wrapper = `e.${saveAs}`
   let extraArg = `${extraWrapperArgs}`
   converter = converter ? nodeData.expandConverter(converter) : ''
   if (wrapperMethod) {
     // wrapperMethodString will be like "foo(" or "foo(arg1, "
     const wrapperMethodString = parseWatchTargetSlot(wrapperMethod)
-    if (raw) {
-      // Insert raw code from inline.
-      callbackBody = `${wrapper}.${wrapperMethodString}${raw})`
-    } else if (converter) {
+    if (converter) {
       callbackBody = `${wrapper}.${wrapperMethodString}${converter}, ${extraArg})`
     } else {
       callbackBody = `${wrapper}.${wrapperMethodString}n, ${extraArg})`
@@ -38,9 +37,45 @@ const buildWatchCallbackBody = (nodeData, saveAs, watch) => {
   return callbackBody
 }
 
-const buildInlineWatch = (nodeData, wrapperMethod, inlineCallDetails) => {
+
+/**
+ * A watch wrapperMethod must correspond to a wrapper method.
+ * 
+ * If the wrapperMethod starts with @, it is deemed to be att() and the remainder
+ * if provided as first arg.
+ * 
+ * If the wrapperMethod includes ':' then it means method:firstArg
+ * 
+ * Note that this returns an incomplete string used in buildWatchCallbackBodyLine.
+ * 
+ * @param {string} wrapperMethod -- the wrapperMethod slot
+ */
+const parseWatchTargetSlot = (wrapperMethod) => {
+  if (wrapperMethod.startsWith('@')) {
+    wrapperMethod = 'att:' + wrapperMethod.substr(1)
+  }
+  const [method, arg] = wrapperMethod.split(':')
+  if (arg) {
+    return `${method}('${arg}', `
+  }
+  return wrapperMethod + '('
+}
+
+
+
+
+
+/**
+ * Builds the watch object as:
+ * 
+ * {
+ *    property,  // the watched property
+ *    wrapperMethod  ,  // the wrapper method
+ * }
+ */
+const buildInlineWatch = (nodeData, wrapperMethod, inlineCalls) => {
   let raw
-  let {property, convert, before, after} = inlineCallDetails
+  let {property, convert, before, after} = inlineCalls
   /*
   before and after is any text found before or after the brackets.
   raw is the raw javascript code that will be generated.
@@ -59,28 +94,8 @@ const buildInlineWatch = (nodeData, wrapperMethod, inlineCallDetails) => {
 }
 
 
-/**
- * A watch wrapperMethod must correspond to a wrapper method.
- * 
- * If the wrapperMethod starts with @, it is deemed to be att() and the remainder
- * if provided as first arg.
- * 
- * If the wrapperMethod includes ':' then it means method:firstArg
- * 
- * Note that this returns an incomplete string used in buildWatchCallbackBody.
- * 
- * @param {string} wrapperMethod -- the wrapperMethod slot
- */
-const parseWatchTargetSlot = (wrapperMethod) => {
-  if (wrapperMethod.startsWith('@')) {
-    wrapperMethod = 'att:' + wrapperMethod.substr(1)
-  }
-  const [method, arg] = wrapperMethod.split(':')
-  if (arg) {
-    return `${method}('${arg}', `
-  }
-  return wrapperMethod + '('
-}
 
 
-module.exports = {buildWatchCallbackBody}
+
+
+module.exports = {buildWatchCallbackBodyLine}

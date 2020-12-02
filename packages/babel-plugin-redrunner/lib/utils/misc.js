@@ -79,10 +79,15 @@ const extractShieldCounts = (paths) => {
 	return processedPaths.map(i => i.count)
 }
 
+
+const escapeSingleQuotes = (text) => text.replace(/'/g, "\\'")
+
+
 module.exports = {
 	arrayStartsWith,
 	capitalize,
 	clearIfEmpty,
+	escapeSingleQuotes,
 	extractShieldCounts,
 	groupArray,
 	isFunc,

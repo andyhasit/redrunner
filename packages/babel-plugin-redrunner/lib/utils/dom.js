@@ -16,7 +16,6 @@ function getAttVal(node, attName) {
   return node.getAttribute(attName)
 }
 
-
 /**
  * Determines whether a node from node-html-parser is a leaf node, or rather,
  * whether it only contains TextNodes as children (or no children).

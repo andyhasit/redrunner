@@ -1,5 +1,5 @@
 const {extractAtts, getAttVal, removeAtt} = require('../utils/dom')
-const {NodeData} = require('../node_data')
+const {NodeData} = require('../definitions/node_data')
 const {processInlineWatches} = require('./inline_directives')
 const {processDirective} = require('./parse_directives')
 

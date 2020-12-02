@@ -45,7 +45,8 @@ proto.init = function() {
 proto.bubble = function(name) {
   let target = this.parent
   while (!und(target)) {
-    if (target[name]) {        
+    if (target[name]) {     
+      // We don't really care about performance here, so accessing arguments is fine.   
       return target[name].apply(target,  Array.prototype.slice.call(arguments, 1))
     }
     target = target.parent
@@ -111,11 +112,12 @@ proto.update = function() {
  * Loops over watches skipping shielded watches if elements are hidden.
  */
 proto.updateSelf = function() {
-  let i = 0, watch, shieldCount, shieldQuery, shieldQueryResult, shouldBeVisible
+  let i = 0, watch, wrapper, shieldCount, shieldQuery, shieldQueryResult, shouldBeVisible
   const watches = this.__wc
   const il = watches.length
   while (i < il) {
     watch = watches[i]
+    wrapper = this.el[watch.wk]
     shieldQuery = watch.sq
     i ++
     shouldBeVisible = true
@@ -131,11 +133,11 @@ proto.updateSelf = function() {
       shieldCount = shouldBeVisible ? 0 : watch.sc
 
       // Set the element visibility
-      this.el[watch.wk].visible(shouldBeVisible)
+      wrapper.visible(shouldBeVisible)
       i += shieldCount
     }
     if (shouldBeVisible) {
-      applyWatchCallbacks(this, watch.cb)
+      applyWatchCallbacks(this, wrapper, watch.cb)
     }
   }
 }
@@ -184,7 +186,7 @@ proto.__wa = function(wrapperKey, shieldQuery, reverseShield, shieldCount, callb
 }
 
 
-const applyWatchCallbacks = (view, callbacks) => {
+const applyWatchCallbacks = (view, wrapper, callbacks) => {
   for (let key in callbacks) {
     let callback = callbacks[key]
     if (key === '*') {
@@ -193,7 +195,7 @@ const applyWatchCallbacks = (view, callbacks) => {
       // means: {new, old, changed}
       const {n, o, c} = view.lookup(key)
       if (c) {
-        callback.call(view, n, o, view.props, view, view.el)
+        callback.call(view, n, o, wrapper, view.props, view)
       }
     }
   }

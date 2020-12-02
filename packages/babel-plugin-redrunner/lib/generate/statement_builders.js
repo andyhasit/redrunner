@@ -1,4 +1,4 @@
-const {c, EOL} = require('../utils/constants')
+const {EOL} = require('../constants')
 
 function expand(value) {
   if (value instanceof BaseStatement) {
