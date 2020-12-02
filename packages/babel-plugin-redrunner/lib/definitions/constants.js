@@ -34,9 +34,17 @@ const eventCallbackArgs = 'w, e'
 const componentRefInBuild = 'view'
 const callableWatchArgs = `${componentRefInBuild}, props`
 
+
+function FrameworkError (msg) {
+  this.msg = msg
+}
+
+FrameworkError.prototype = new Error();
+
 module.exports = {
   EOL,
   callableWatchArgs,
+  FrameworkError,
   eventCallbackArgs,
   redrunnerDefs, 
   splitter,

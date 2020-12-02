@@ -1,5 +1,6 @@
 const {eventCallbackArgs, componentRefInBuild} = require('./constants')
 const {replaceArgs} = require('../utils/misc')
+const {FrameworkError} = require('./constants')
 const {Watcher} = require('./watcher')
 
 /**
@@ -36,7 +37,9 @@ class NodeData {
    * @param {string} [lookup] - name of the lookup to use. 
    */
   addWatch(watch, converter, wrapperMethod, extraArg, lookup) {
-    this.watches.push(new Watcher(this.expandValueSlot(watch), this.expandValueSlot(converter), wrapperMethod, extraArg, lookup))
+    this.watches.push(new Watcher(
+      this.expandValueSlot(watch), this.expandValueSlot(converter), wrapperMethod, extraArg, lookup
+    ))
   }
   /**
    * Creates an event listener on this node.
@@ -46,6 +49,9 @@ class NodeData {
    * @param {string} slot 
    */
   addEventListener(event, slot) {
+    if (!slot.endsWith(')')) {
+      throw new FrameworkError("Event callback slot must be a function call.")
+    }
     const callback = this.buildEventListenerCallback(slot)
     this.chainedCalls.push(`on('${event}', ${callback})`)
   }

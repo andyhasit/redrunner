@@ -5,8 +5,10 @@ const {
   lookupCallbackArgs,
   propsCallbackArgs,
   watchCallbackArgsWithValue,
-  watchCallbackArgsWithoutValue
+  watchCallbackArgsWithoutValue,
+  FrameworkError
 } = require('../definitions/constants')
+
 const {DomWalker} = require('../parse/dom_walker.js')
 const {extractNodeData} = require('../parse/parse_node')
 const {
@@ -317,8 +319,22 @@ class CodeGenerator {
 }
 
 function generateStatements(viewData, path) {
-  const builder = new CodeGenerator(viewData, path)
-  return builder.buildStatements()
+  try {
+    const builder = new CodeGenerator(viewData, path)
+    statements = builder.buildStatements()
+  } catch (error) {
+    if (error instanceof FrameworkError) {
+      const bar = '|'
+      const hr =     '|----------------------------------------------------------------------'
+      const header = '|  Error in component definition (specific location not available yet).'
+      const errorMessage = `${bar}  > ${error.msg}`
+      const fullMessage = ['\n', hr, bar, header, bar, errorMessage, bar, hr].join('\n')
+      throw path.buildCodeFrameError(fullMessage)
+     } else {
+       throw error
+     }
+  }
+  return statements
 }
 
 module.exports = {CodeGenerator, generateStatements}
