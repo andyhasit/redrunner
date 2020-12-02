@@ -2,24 +2,24 @@ import {load, View} from '../utils'
 
 
 class Child extends View {
-  __html__ = '<span>{name}</span>'
+  __html__ = '<span>{..name}</span>'
 }
 
 class TestView extends View {
   __html__ = html`
     <div>
-      <use:Child :props="..child1">
+      <use:Child :props="child1">
       <use:Child :props=".child2"/>
-      <use=Child :props=".child3?">
-      <use=Child :props="..child4Props?">
+      <use=Child :props=".child3(c)">
+      <use=Child :props="child4Props(c)">
     </div>
   `
   init() {
     this.child2 = {name: 'alice'}
     super.init()
   }
-  child3(me) {
-    args3 = me
+  child3(c) {
+    args3 = c
     return {name: 'jess'}
   }
 }
@@ -29,12 +29,10 @@ let args3 = undefined
 let args4 = undefined
 const child1 = {name: 'jo'}
 const child4 = {name: 'ja'}
-function child4Props (me) {
-  args4 = me
+function child4Props (c) {
+  args4 = c
   return child4
 }  
-
-
 
 
 test('Nest accepts props', () => {

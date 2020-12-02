@@ -1,15 +1,15 @@
 import {c, load, View} from '../utils'
 
 
-function getCss(props, view) {
-  return `${view.size} ${props.color}`
+function getCss(p, c) {
+  return `${c.size} ${p.color}`
 }
 
 class TestView extends View {
   __html__ = `
     <div>
-      <span :watch="..getCss?||css"></span>
-      <span class="{..getCss?}"></span>
+      <span :watch="getCss(p,c)||css"></span>
+      <span class="{getCss(p,c)}"></span>
     </div>
   `
   init() {

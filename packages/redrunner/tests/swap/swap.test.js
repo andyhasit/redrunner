@@ -3,7 +3,7 @@ import {c, load, View} from '../utils'
 
 
 class TestView extends View {
-  __html__ = `<div :swap="choice|..mappings|..myFallback"></div>`
+  __html__ = `<div :swap="..choice|mappings|myFallback"></div>`
 }
 
 

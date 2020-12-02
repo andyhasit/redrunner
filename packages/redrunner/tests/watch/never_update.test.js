@@ -1,13 +1,13 @@
 import {c, load, View} from '../utils'
 
 let next = 0
-function getNext(n) {
+function getNext() {
   next ++
   return next
 }
 
 class TestView extends View {
-  __html__ = '<span :watch="|..getNext|text"></span>'
+  __html__ = '<span :watch="|getNext()|text"></span>'
 }
 
 

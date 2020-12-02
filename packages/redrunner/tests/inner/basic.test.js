@@ -1,10 +1,10 @@
-import {c, h, load, View} from '../utils'
+import {h, load, View} from '../utils'
 
 const names = ['joe', 'bob', 'alice']
 
 class TestView extends View {
   __html__ = `
-    <div :inner="*|.items">
+    <div :inner="*|.items()">
     </div>
   `
   items() {

@@ -1,14 +1,14 @@
 import {c, load, View} from '../utils'
 
 
-function setSpan(n,o,w) {
+function setSpan(n, w) {
   w.text(n.toUpperCase()).css('alert')
 }
 
 class TestView extends View {
   __html__ = `
     <div>
-      <span :watch="name|..setSpan"></span>
+      <span :watch="..name|setSpan(n,w)"></span>
     </div>
   `
 }

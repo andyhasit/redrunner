@@ -4,12 +4,12 @@ which they shouldn't.
 
 */
 
-import {c, load, View} from '../utils'
+import {load, View} from '../utils'
 
 
 class TestView extends View {
   __html__ = `
-    <div :items="*|..names.|NestedView">
+    <div :items="*|names|NestedView">
     </div>
   `
 }

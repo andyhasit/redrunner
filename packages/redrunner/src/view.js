@@ -3,7 +3,6 @@ import {buildView, createView} from  './utils'
 import {und, makeEl} from './helpers'
 import mountie from './mountie'
 import {Wrapper} from './wrapper'
-import {Watch} from './watch'
 import {Lookup} from './lookup'
 
 /**
@@ -187,10 +186,11 @@ proto.__wa = function(wrapperKey, shieldQuery, reverseShield, shieldCount, callb
 
 
 const applyWatchCallbacks = (view, wrapper, callbacks) => {
+  
   for (let key in callbacks) {
     let callback = callbacks[key]
     if (key === '*') {
-      callback.call(view, view.props, view, view.el)
+      callback.call(view, wrapper, view.props, view)
     } else {
       // means: {new, old, changed}
       const {n, o, c} = view.lookup(key)

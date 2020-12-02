@@ -18,7 +18,7 @@ class View2 extends View {
   yolo = 2
 }
 
-test("Views cretain class properties", () => {
+test("Views retain class properties", () => {
   const div1 = load(View1)
   const div2 = load(View2)
   expect(div1.view.yolo).toBe(1)

@@ -3,8 +3,8 @@ import {c, h, load, View} from '../utils'
 class TestView extends View {
   __html__ = `
     <div>
-      <div :show="show">
-        <div :watch="*|message.|text"/>
+      <div :show="..show">
+        <div :watch="*|..message|text"/>
       </div>
     </div>
   `

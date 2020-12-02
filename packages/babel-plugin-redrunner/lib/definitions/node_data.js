@@ -136,11 +136,6 @@ class NodeData {
         }
       }
     }
-    // if (field.startsWith('..')) {
-    //   return this.processAsStub ? 'c.parent.props.' + field : 'this.props.' + field
-    // } else if (field.startsWith('.')) {
-    //   return this.processAsStub ? 'this.parent.' + field.substr(1) : 'this.' + field.substr(1)
-    // }
     return field
   }
 

@@ -9,13 +9,13 @@ import {c, load, View} from '../utils'
 
 class TestView extends View {
   __html__ = `
-    <div :items="*|..fruit.|NestedView|id"/>
+    <div :items="*|fruit|NestedView|id"/>
   `
 }
 
 class NestedView extends View {
   __html__ = `
-    <div>{name}</div>
+    <div>{..name}</div>
   `
   init() {
     this.uniqueSeq = counter.next()

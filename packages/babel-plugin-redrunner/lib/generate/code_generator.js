@@ -152,8 +152,9 @@ class CodeGenerator {
       // Ensure the shieldQuery gets added
       // This is the query to determine whether the wrappers should shield
       // nested wrappers
+      shieldQuery = nodeData.expandValueSlot(shieldQuery)
       if (shieldQuery) {
-        this.addWatchQueryCallback(nodeData, shieldQuery)
+        this.addWatchQueryCallback(shieldQuery)
       }
       // Use the shieldQuery supplied, 0 (must set as string here)
       shieldQuery = shieldQuery ? `'${shieldQuery}'` : '0'
@@ -191,7 +192,6 @@ class CodeGenerator {
     // TODO maybe do this before so we can alias the names ?
     const callbackLinesroupedByWatchedField = groupArray(watches, 'watch', details => details)
     for (let [watch, lines] of Object.entries(callbackLinesroupedByWatchedField)) {
-
       this.addWatchQueryCallback(watch)
       let callbackArgs = watch === '*' ? watchCallbackArgsAlways : watchCallbackArgs
       let callback = this.buildWatcherCallbackFunction(callbackArgs, lines)
@@ -213,6 +213,7 @@ class CodeGenerator {
     // Find lines which call methods on the wrapper so we can chain them.
     const methodLines = lines.filter(line => line.wrapperMethod)
     
+    // TODO: handle lookups in here too
     if (methodLines.length > 0) {
       let chainedCalls = 'w'
       methodLines.forEach(line => {
@@ -220,15 +221,16 @@ class CodeGenerator {
         let methodName = line.wrapperMethod
         let methodArgs = line.extraArg ? `${firstArg},${line.extraArg}` : firstArg
         if (methodName.startsWith('@')) {
-          methodArgs = `${methodName.substr(1)},${methodArgs}`
+          methodArgs = `'${methodName.substr(1)}',${methodArgs}`
           methodName = 'att'
         }
         chainedCalls += `.${methodName}(${methodArgs})`
       })
       callback.add(chainedCalls)
     }
+
     const nonMethodLines = lines.filter(line => !line.wrapperMethod)
-    nonMethodLines.forEach(line => callback.add(line))
+    nonMethodLines.forEach(line => callback.add(line.converter))
     return callback
   } 
 
@@ -272,7 +274,7 @@ class CodeGenerator {
     if (!re_lnu.test(stubName)) {
       this.walker.throw('Stub name may only contain letters numbers and underscores')
     }
-    this.nestedViewProps.add(stubName, new FunctionStatement('', ['return this.props']))
+    this.nestedViewProps.add(stubName, new FunctionStatement(propsCallbackArgs, ['return c.props']))
     const initCall = `${componentRefInBuild}.__ni(${getLookupArgs(nodePath)}, this.__stubs__${stubName})`
     this.saveElement(stubName, initCall, [])
   }

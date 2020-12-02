@@ -2,11 +2,11 @@ import {c, load, View, Wrapper} from '../utils'
 import {KeyedCache, SequentialCache} from '../../src/index'
 
 class Container extends View {
-  __html__ = '<div :items="*|.props.|Child|id"></div>'
+  __html__ = '<div :items="*|.props|Child|id"></div>'
 }
 
 class Child extends View {
-  __html__ = '<div>{name}</div>'
+  __html__ = '<div>{..name}</div>'
 }
 
 test('Initial load works', () => {

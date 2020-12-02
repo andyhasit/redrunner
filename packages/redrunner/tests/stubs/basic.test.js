@@ -3,7 +3,7 @@ import {load, View} from '../utils'
 class BaseModal extends View {
   __html__ = `
     <div>
-      <div>{title}</div>
+      <div>{..title}</div>
       <stub:inner />
     </div>
   `
@@ -11,7 +11,7 @@ class BaseModal extends View {
 
 class CustomModal extends BaseModal {
   __stubs__ = {
-    inner: `<span>{content}</span>`
+    inner: `<span>{..content}</span>`
   }
 }
 

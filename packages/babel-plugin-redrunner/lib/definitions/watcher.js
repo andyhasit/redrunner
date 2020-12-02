@@ -16,7 +16,7 @@
  * 
  */
 function Watcher(watch, converter, wrapperMethod, extraArg, lookup) {
-  this.watch = watch
+  this.watch = watch || ''
   this.converter = converter
   this.wrapperMethod = wrapperMethod
   this.extraArg = extraArg
