@@ -1,4 +1,8 @@
-const {EOL} = require('../constants')
+/**
+ * Tools for building generic JavaScript statements.
+ */
+
+const {EOL} = require('../definitions/constants')
 
 function expand(value) {
   if (value instanceof BaseStatement) {

@@ -4,9 +4,9 @@ const {
   componentRefInBuild, 
   lookupCallbackArgs,
   propsCallbackArgs,
-  watchCallbackArgs,
-  watchCallbackArgsAlways
-} = require('../constants')
+  watchCallbackArgsWithValue,
+  watchCallbackArgsWithoutValue
+} = require('../definitions/constants')
 const {DomWalker} = require('../parse/dom_walker.js')
 const {extractNodeData} = require('../parse/parse_node')
 const {
@@ -16,7 +16,6 @@ const {
   ObjectStatement,
   ValueStatement
 } = require('./statement_builders')
-const {buildWatchCallbackBodyLine} = require('./watches')
 
 const re_lnu = /^\w+$/; // letters_numbers_underscores
 
@@ -193,7 +192,7 @@ class CodeGenerator {
     const callbackLinesroupedByWatchedField = groupArray(watches, 'watch', details => details)
     for (let [watch, lines] of Object.entries(callbackLinesroupedByWatchedField)) {
       this.addWatchQueryCallback(watch)
-      let callbackArgs = watch === '*' ? watchCallbackArgsAlways : watchCallbackArgs
+      let callbackArgs = watch === '*' ? watchCallbackArgsWithoutValue : watchCallbackArgsWithValue
       let callback = this.buildWatcherCallbackFunction(callbackArgs, lines)
       callbacksObject.add(watch, callback)
     }

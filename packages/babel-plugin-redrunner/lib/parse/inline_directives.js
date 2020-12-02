@@ -2,10 +2,10 @@
  * This module deals with parsing inline directives and building the 
  * watch objects.
  */
-const {splitter} = require('../constants')
+const {splitter} = require('../definitions/constants')
 const {extractAtts, isLeafNode, removeAtt} = require('../utils/dom')
 const {escapeSingleQuotes, clearIfEmpty} = require('../utils/misc')
-const {config} = require('../config')
+const {config} = require('../config/base_config')
 
 // Settings for inline directives
 const [startDelimiter, endDelimiter] = config.options.inlineDelimiters
@@ -53,9 +53,9 @@ const processInlineWatches = (nodeData, node, config) => {
   // extract from node's attributes
   for (let [key, value] of Object.entries(atts)) {
     if (value && !restrictedAtts.includes(key)) {
-      // Use @ notation which is handled downstream, unless it's class in which case we use css()
-      key = key == 'class' ? 'css' : `@${key}`
-      if (addInlineWatches(nodeData, value, key)) {
+      // The @ notation is handled downstream, but it's class we can conver it to css()
+      let usedKey = key == 'class' ? 'css' : `@${key}`
+      if (addInlineWatches(nodeData, value, usedKey)) {
         removeAtt(node, key)
       }
     }
@@ -110,6 +110,7 @@ const addInlineWatches = (nodeData, inlineText, wrapperMethod) => {
     // Create a function and add multiple watches
     //TODO: build this  up
     //{wrapperMethod, inlineRaw}
+    return true
   }
   return true
 }

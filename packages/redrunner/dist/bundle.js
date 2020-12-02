@@ -173,7 +173,7 @@ Wrapper.prototype = {
     var _this4 = this;
 
     this.e.addEventListener(event, function (e) {
-      return callback(e, _this4);
+      return callback(_this4, e);
     });
     return this;
   },
@@ -201,7 +201,8 @@ Wrapper.prototype = {
     return this;
   },
   value: function value(_value) {
-    return this.att('value', _value);
+    this.e.value = _value;
+    return this;
   }
 };
 
@@ -252,28 +253,6 @@ function buildView(cls, parent) {
 
 function h(tag) {
   return new Wrapper(doc.createElement(tag));
-}
-
-function _classCallCheck(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-}
-
-function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
-  }
-}
-
-function _createClass(Constructor, protoProps, staticProps) {
-  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) _defineProperties(Constructor, staticProps);
-  return Constructor;
 }
 
 /**
@@ -500,44 +479,6 @@ var mountie = {
 };
 
 /**
- * Used internally. Represents a watch on an element.
- */
-function Watch(wrapperKey, shieldQuery, reverseShield, shieldCount, callbacks) {
-  this.wk = wrapperKey; // The key of the corresponding wrapper.
-
-  this.sq = shieldQuery; // The shield query key
-
-  this.rv = reverseShield; // whether shieldQuery should be flipped
-
-  this.sc = shieldCount; // The number of items to shield
-
-  this.cb = callbacks; // Callbacks - object
-}
-/**
- * Applies the callbacks.
- */
-
-Watch.prototype.go = function (view) {
-  for (var key in this.cb) {
-    var callback = this.cb[key];
-
-    if (key === '*') {
-      callback.apply(view);
-    } else {
-      // means: {new, old, changed}
-      var _view$lookup = view.lookup(key),
-          n = _view$lookup.n,
-          o = _view$lookup.o,
-          c = _view$lookup.c;
-
-      if (c) {
-        callback.apply(view, [n, o]);
-      }
-    }
-  }
-};
-
-/**
  * Used internally.
  * An object which caches the results of lookup queries so we don't have to
  * repeat them in the same view.
@@ -554,8 +495,9 @@ Lookup.prototype = {
 
     if (run[key] === undefined) {
       // Verbose but efficient way as it avoids lookups?
+      // Or is this harmful to performance because we're just reading values more than calling functions?
       var o = view.__ov[key];
-      var n = this.callbacks[key].apply(view);
+      var n = this.callbacks[key](view, view.props);
       var c = n !== o;
       view.__ov[key] = n;
       var rtn = {
@@ -578,226 +520,246 @@ Lookup.prototype = {
  * Represents a view.
  */
 
-var View = /*#__PURE__*/function () {
-  function View(parent) {
-    _classCallCheck(this, View);
+function View(parent) {
+  var s = this;
+  s.parent = parent; // The parent view
 
-    var s = this;
-    s.parent = parent; // The parent view
+  s.props = undefined; // The props passed to the view. May be changed.
+  // These will be set during build
 
-    s.props = undefined; // The props passed to the view. May be changed.
-    // These will be set during build
+  s.e = null; // the element
 
-    s.e = null; // the element
+  s.el = null; // the named wrappers
+  // Internal state objects
 
-    s.el = null; // the named wrappers
-    // Internal state objects
+  s.__nv = []; // Nested views
 
-    s.__nv = []; // Nested views
-
-    s.__ov = {}; // The old values for watches to compare against
-  }
-  /**
-   * Gets called once immediately after building.
-   * Sets initial props extracted from __html__.
-   */
-
-
-  _createClass(View, [{
-    key: "init",
-    value: function init() {
-      for (var key in this.__ip) {
-        var callback = this.__ip[key];
-        var view = this.el[key];
-        view.props = callback.apply(this);
-        view.init();
-      }
-    }
-    /**
-     * Calls a function somewhere up the parent tree.
-     */
-
-  }, {
-    key: "bubble",
-    value: function bubble(name) {
-      var target = this.parent;
-
-      while (!und(target)) {
-        if (target[name]) {
-          return target[name].apply(target, Array.prototype.slice.call(arguments, 1));
-        }
-
-        target = target.parent;
-      }
-
-      throw 'Bubble popped.';
-    }
-    /**
-     * Move the view to new parent. Necessary if sharing a cache.
-     */
-
-  }, {
-    key: "move",
-    value: function move(newParent) {
-      if (this.parent && this.parent.__nv) {
-        var nv = this.parent.__nv;
-        nv.splice(nv.indexOf(this), 1);
-      }
-
-      this.parent = newParent;
-    }
-    /**
-     * Builds a nested view of the specified class. Its up to you how you use it.
-     */
-
-  }, {
-    key: "nest",
-    value: function nest(cls, props) {
-      var child = createView(cls, this, props || this.props);
-
-      this.__nv.push(child);
-
-      return child;
-    }
-    /**
-     * Lookup a watched value during update. Returns an object with {o, n, c}
-     * (oldValue, newValue, changed).
-     * You must call this.resetLookups before calling this during an update.
-     * The point is to cache the result so it doesn't have to be repeated.
-     */
-
-  }, {
-    key: "lookup",
-    value: function lookup(query) {
-      return this.__qc.get(this, query);
-    }
-    /**
-     * Resets the lookups, must be called before calling this.lookup() during an update.
-     */
-
-  }, {
-    key: "resetLookups",
-    value: function resetLookups() {
-      this.__qc.reset();
-    }
-    /**
-     * Sets the props and updates the view.
-     */
-
-  }, {
-    key: "setProps",
-    value: function setProps(props) {
-      this.props = props;
-      this.update();
-      return this;
-    }
-    /**
-     * Call this if you want to get mount() and unmount() callbacks.
-     */
-
-  }, {
-    key: "trackMounting",
-    value: function trackMounting() {
-      this.__mt.track(this);
-    }
-    /**
-     * Updates the view.
-     */
-
-  }, {
-    key: "update",
-    value: function update() {
-      this.resetLookups();
-      this.updateSelf();
-      this.updateNested();
-    }
-    /**
-     * Loops over watches skipping shielded watches if elements are hidden.
-     */
-
-  }, {
-    key: "updateSelf",
-    value: function updateSelf() {
-      var i = 0,
-          watch,
-          shieldCount,
-          shieldQueryResult,
-          shouldBeVisible;
-      var watches = this.__wc;
-
-      if (!watches) {
-        return;
-      }
-
-      var il = watches.length;
-
-      while (i < il) {
-        watch = watches[i];
-        i++;
-        shouldBeVisible = true;
-
-        if (watch.sq) {
-          // Get the newValue for shieldQuery using lookup
-          shieldQueryResult = this.lookup(watch.sq).n; // Determine if shouldBeVisible based on reverseShield
-          // i.e. whether "shieldQuery==true" means show or hide.
-
-          shouldBeVisible = watch.rv ? shieldQueryResult : !shieldQueryResult; // The number of watches to skip if this element is not visible
-
-          shieldCount = shouldBeVisible ? 0 : watch.sc; // Set the element visibility
-
-          this.el[watch.wk].visible(shouldBeVisible);
-          i += shieldCount;
-        }
-
-        if (shouldBeVisible) {
-          watch.go(this);
-        }
-      }
-    }
-    /**
-     * Update nested views (but not repeat elements).
-     */
-
-  }, {
-    key: "updateNested",
-    value: function updateNested() {
-      // These are user created by calling nest()
-      var items = this.__nv;
-
-      for (var i = 0, il = items.length; i < il; i++) {
-        var child = items[i];
-
-        if (child.__ia()) {
-          child.update();
-        }
-      } // These are created with directives, and whose props arguments may need reprocessed.
-
-
-      for (var key in this.__ip) {
-        var callback = this.__ip[key];
-        var view = this.el[key];
-        view.setProps(callback.apply(this));
-      }
-    }
-    /**
-     * Calls the callback if the value has changed (
-     */
-    // changed(name, callback) {
-    //   const n = this.__ov[name]
-    //   const o = this.props[name]
-    //   if (n !== o) {
-    //     callback(n, o)
-    //   }
-    // }
-
-  }]);
-
-  return View;
-}();
+  s.__ov = {}; // The old values for watches to compare against
+}
 var proto$1 = View.prototype;
+/**
+ * Gets called once immediately after building.
+ * Sets initial props extracted from __html__.
+ */
+
+proto$1.init = function () {
+  for (var key in this.__ip) {
+    var callback = this.__ip[key];
+    var nestedComponent = this.el[key];
+    nestedComponent.props = callback(this, this.props);
+    nestedComponent.init();
+  }
+};
+/**
+ * Calls a function somewhere up the parent tree.
+ */
+
+
+proto$1.bubble = function (name) {
+  var target = this.parent;
+
+  while (!und(target)) {
+    if (target[name]) {
+      // We don't really care about performance here, so accessing arguments is fine.   
+      return target[name].apply(target, Array.prototype.slice.call(arguments, 1));
+    }
+
+    target = target.parent;
+  }
+
+  throw 'Bubble popped.';
+};
+/**
+ * Move the view to new parent. Necessary if sharing a cache.
+ */
+
+
+proto$1.move = function (newParent) {
+  if (this.parent && this.parent.__nv) {
+    var nv = this.parent.__nv;
+    nv.splice(nv.indexOf(this), 1);
+  }
+
+  this.parent = newParent;
+};
+/**
+ * Builds a nested view of the specified class. Its up to you how you use it.
+ */
+
+
+proto$1.nest = function (cls, props) {
+  var child = createView(cls, this, props || this.props);
+
+  this.__nv.push(child);
+
+  return child;
+};
+/**
+ * Lookup a watched value during update. Returns an object with {o, n, c}
+ * (oldValue, newValue, changed).
+ * You must call this.resetLookups before calling this during an update.
+ * The point is to cache the result so it doesn't have to be repeated.
+ */
+
+
+proto$1.lookup = function (query) {
+  return this.__qc.get(this, query);
+};
+/**
+ * Resets the lookups, must be called before calling this.lookup() during an update.
+ */
+
+
+proto$1.resetLookups = function () {
+  this.__qc.reset();
+};
+/**
+ * Sets the props and updates the view.
+ */
+
+
+proto$1.setProps = function (props) {
+  this.props = props;
+  this.update();
+  return this;
+};
+/**
+ * Call this if you want to get mount() and unmount() callbacks.
+ */
+
+
+proto$1.trackMounting = function () {
+  this.__mt.track(this);
+};
+/**
+ * Updates the view.
+ */
+
+
+proto$1.update = function () {
+  this.resetLookups();
+  this.updateSelf();
+  this.updateNested();
+};
+/**
+ * Loops over watches skipping shielded watches if elements are hidden.
+ */
+
+
+proto$1.updateSelf = function () {
+  var i = 0,
+      watch,
+      wrapper,
+      shieldCount,
+      shieldQuery,
+      shieldQueryResult,
+      shouldBeVisible;
+  var watches = this.__wc;
+  var il = watches.length;
+
+  while (i < il) {
+    watch = watches[i];
+    wrapper = this.el[watch.wk];
+    shieldQuery = watch.sq;
+    i++;
+    shouldBeVisible = true;
+
+    if (shieldQuery) {
+      // Get the newValue for shieldQuery using lookup
+      shieldQueryResult = this.lookup(shieldQuery).n; // Determine if shouldBeVisible based on reverseShield
+      // i.e. whether "shieldQuery===true" means show or hide.
+
+      shouldBeVisible = watch.rv ? shieldQueryResult : !shieldQueryResult; // The number of watches to skip if this element is not visible
+
+      shieldCount = shouldBeVisible ? 0 : watch.sc; // Set the element visibility
+
+      wrapper.visible(shouldBeVisible);
+      i += shieldCount;
+    }
+
+    if (shouldBeVisible) {
+      applyWatchCallbacks(this, wrapper, watch.cb);
+    }
+  }
+};
+/**
+ * Update nested views (but not repeat elements).
+ */
+
+
+proto$1.updateNested = function () {
+  // These are user created by calling nest()
+  var items = this.__nv;
+
+  for (var i = 0, il = items.length; i < il; i++) {
+    var child = items[i];
+
+    if (child.__ia()) {
+      child.update();
+    }
+  } // These are created with directives, and whose props arguments may need reprocessed.
+
+
+  for (var key in this.__ip) {
+    var callback = this.__ip[key];
+    var nestedComponent = this.el[key];
+    nestedComponent.setProps(callback(this, this.props));
+  }
+};
+/**
+ * Calls the callback if the value has changed (
+ */
+// changed(name, callback) {
+//   const n = this.__ov[name]
+//   const o = this.props[name]
+//   if (n !== o) {
+//     callback(n, o)
+//   }
+// }
+
+/**
+ * Creates a watch.
+ */
+
+
+proto$1.__wa = function (wrapperKey, shieldQuery, reverseShield, shieldCount, callbacks) {
+  return {
+    wk: wrapperKey,
+    // The key of the corresponding wrapper.
+    sq: shieldQuery,
+    // The shield query key
+    rv: reverseShield,
+    // whether shieldQuery should be flipped
+    sc: shieldCount,
+    // The number of items to shield
+    cb: callbacks // The callbacks - object
+
+  };
+};
+
+var applyWatchCallbacks = function applyWatchCallbacks(view, wrapper, callbacks) {
+  for (var key in callbacks) {
+    var callback = callbacks[key];
+
+    if (key === '*') {
+      callback.call(view, wrapper, view.props, view);
+    } else {
+      // means: {new, old, changed}
+      var _view$lookup = view.lookup(key),
+          n = _view$lookup.n,
+          o = _view$lookup.o,
+          c = _view$lookup.c;
+
+      if (c) {
+        callback.call(view, n, o, wrapper, view.props, view);
+      }
+    }
+  }
+};
 /**
  * The global mount tracker.
  */
+
 
 proto$1.__mt = mountie;
 /**
@@ -838,7 +800,16 @@ proto$1.__bd = function (prototype, clone) {
   }
 
   this.e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht);
-};
+}; // proto.__bd = function(prototype) {
+//   if (prototype.__cn === undefined) {
+//     prototype.__cn = makeEl(prototype.__ht)
+//   }
+//   this.e = prototype.__cn.cloneNode(true)
+// }
+// proto.__bd = function(prototype) {
+//   this.e = makeEl(prototype.__ht)
+// }
+
 /**
  * Returns a regular wrapper around element at path, where path is an array of indices.
  * This is used by the babel plugin.
@@ -877,14 +848,6 @@ proto$1.__ia = function () {
   }
 
   return false;
-};
-/**
- * Creates a watch.
- */
-
-
-proto$1.__wa = function (el, shieldQuery, reverseShield, shieldCount, callbacks) {
-  return new Watch(el, shieldQuery, reverseShield, shieldCount, callbacks);
 };
 /**
  * Creates a lookup.

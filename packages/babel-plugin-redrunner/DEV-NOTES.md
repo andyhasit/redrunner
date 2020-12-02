@@ -9,7 +9,7 @@ lib
   parse
     dom_walker
     inline_directives
-    parse_directives
+    parse_config_directives
     parse_node
     view_templates
   generate

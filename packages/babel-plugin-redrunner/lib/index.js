@@ -2,7 +2,7 @@ const babel = require('@babel/core')
 const {getNodeHtmlString, getNodeHtmlStringDict, removeRedrunnerDefs} = require('./utils/babel')
 const {generateStatements} = require('./generate/code_generator')
 const {viewTemplates} = require('./parse/view_templates')
-const {config} = require('./config')
+const {config} = require('./config/base_config')
 
 
 module.exports = () => {

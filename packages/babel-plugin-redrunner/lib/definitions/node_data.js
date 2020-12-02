@@ -1,4 +1,4 @@
-const {eventCallbackArgs, componentRefInBuild, watchArgs, watchCallbackArgs, watchCallbackArgsAlways} = require('../constants')
+const {eventCallbackArgs, componentRefInBuild} = require('./constants')
 const {replaceArgs} = require('../utils/misc')
 const {Watcher} = require('./watcher')
 
@@ -6,7 +6,8 @@ const {Watcher} = require('./watcher')
  * A NodeData object is created for every HTML node with directives.
  * Its data will be used to generate statements on the component.
  * It exposes methods which enable directives to set that data.
- * It also contains the directive syntax rules (expansion etc...)
+ * It also contains the directive syntax rules (expansion etc...) which we may
+ * want to use in directives in config.
  */
 class NodeData {
   constructor(node, processAsStub) {
@@ -74,7 +75,7 @@ class NodeData {
   buildCacheInit (cacheDef, cacheKey){
     let cacheStatement
     if (cacheDef.startsWith('@')) {
-      cacheStatement = this.parseWatchedValueSlot(cacheDef.substr(1))
+      cacheStatement = this.expandDots(cacheDef.substr(1))
     } else {
       if (cacheKey) {
         const keyFn = `function(props) {return props.${cacheKey}}`
@@ -140,73 +141,13 @@ class NodeData {
   }
 
   /**
-   * Expands a single inline watched property like ".name" in "<i>{.name}</i>".
-   * If it ends with ? then call it with watch callback args.
-   * 
-   * @param {string} field 
-   */
-  expandInlineWatchedProperty(field) {
-    return this.expandDots(addCallIfCallable(field, watchCallbackArgsAlways))
-  }
-
-  /**
-   * Expands the props field. If ends with ? then call it with (this)
+   * Expands the props field.
    * 
    * @param {string} field 
    */
   expandProps(field) {
-    return this.expandDots(addCallIfCallable(field, 'this')) //TODO: not viewArg?
+    return this.expandDots(field)
   }
-
-  /**
-   * Expands the watched property slot, including the expandDots.
-   * Assumes field not function.
-   *
-   *   undefined  >  undefined
-   *   ''         >  undefined
-   *   foo        >  this.props.foo
-   *   foo!       >  this.props.foo
-   *   foo?       >  this.props.foo(props, component)
-   *   .foo       >  this.foo
-   *   ..foo      >  foo
-   *
-   */
-  parseWatchedValueSlot(property) {
-    // TODO: check why I still need this....
-
-
-
-    if (property === '*') {
-      return '*'
-    }
-    if (property === '' || property === undefined) {
-      return undefined
-    }
-
-    // Remove ! because it's just the user explicity marking this a field
-    property = property.endsWith('!') ? property.slice(0, -1) : property
-
-    const expanded = this.expandDots(property)
-    return property.endsWith('?') ? expanded.slice(0, -1) + `(this.props, this)` : expanded
-  }
-}
-
-/**
- * If field ends with '?' then convert in into a call statement with callArgs.
- * If it doesn't then return as is.
- * It it ends with '.' then return without '.'
- * 
- * @param {string} field 
- * @param {string} callArgs 
- */
-const addCallIfCallable = (field, callArgs) => {
-  if (field.endsWith('.')) {
-    field = field.slice(0, -1)
-  }
-  if (field.endsWith('?')) {
-    field = field.slice(0, -1) + `(${callArgs})`
-  }
-  return field
 }
 
 module.exports = {NodeData}

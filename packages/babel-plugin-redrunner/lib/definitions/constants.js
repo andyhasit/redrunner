@@ -12,7 +12,7 @@ const splitter = '|'
 const watchArgs = '(n, o)'
 
 /**
- * The parameters for watch callback functions.
+ * The parameters for various callback functions.
  * The letters mean:
  * 
  *  newValue
@@ -20,14 +20,10 @@ const watchArgs = '(n, o)'
  *  wrapper
  *  props
  *  component
+ *  event
  */
-const watchCallbackArgs = 'n, o, w, p, c'
-
-/**
- * The parameters for an "always" watch callback function ('*')
- * See watchCallbackArgs for letter meaning.
- */
-const watchCallbackArgsAlways = 'w, p, c'
+const watchCallbackArgsWithValue = 'n, o, w, p, c'
+const watchCallbackArgsWithoutValue = 'w, p, c'
 const lookupCallbackArgs = 'c, p'
 const propsCallbackArgs = 'c, p'
 const eventCallbackArgs = 'w, e'
@@ -48,6 +44,6 @@ module.exports = {
   lookupCallbackArgs,
   propsCallbackArgs,
   watchArgs,
-  watchCallbackArgs,
-  watchCallbackArgsAlways
+  watchCallbackArgsWithValue,
+  watchCallbackArgsWithoutValue
 }

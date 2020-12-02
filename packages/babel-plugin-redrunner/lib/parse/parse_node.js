@@ -1,7 +1,7 @@
 const {extractAtts, getAttVal, removeAtt} = require('../utils/dom')
 const {NodeData} = require('../definitions/node_data')
 const {processInlineWatches} = require('./inline_directives')
-const {processDirective} = require('./parse_directives')
+const {processDirective} = require('../config/parse_directives')
 
 /**
  * Extracts the relevant data from the HTML node, and removes parts that need removed.
