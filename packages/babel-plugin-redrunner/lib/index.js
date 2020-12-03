@@ -1,13 +1,43 @@
 const babel = require('@babel/core')
+
+
+const {template} = require('@babel/template')
+const {generate} = require('@babel/generator')
+const t = require('@babel/types')
+
+
 const {getNodeHtmlString, getNodeHtmlStringDict, removeRedrunnerDefs} = require('./utils/babel')
 const {generateStatements} = require('./generate/code_generator')
 const {viewTemplates} = require('./parse/view_templates')
 const {config} = require('./config/base_config')
 
 
+const handleExtendedComponentCall = (path, baseClass) => {
+  path.replaceWithSourceString(`${baseClass}.prototype.__ex`)
+
+}
+
 module.exports = () => {
   return {
     visitor: {
+      MemberExpression(path) {
+        if (path.node.property.name === '__ex__') {
+          const baseClass = path.node.object.name
+          handleExtendedComponentCall(path, baseClass)
+        }
+      },
+      CallExpression(path) {
+        const callee = path.node.callee
+        if (callee.type === 'MemberExpression' && callee.property.name === '__ex__') {
+          const baseClass = callee.object.name
+          console.log(baseClass)
+          //console.log(path.node.arguments)
+          path.node.arguments = [
+            t.identifier(baseClass)
+          ] //.replaceWithSourceString(`fff`)
+          //throw 'stop'
+        }
+      },
       Class(path, state) {
         if (path.type === 'ClassDeclaration') {
           let foundHtmFieldInClass = false
@@ -28,12 +58,13 @@ module.exports = () => {
           removeRedrunnerDefs(path)
 
           // Check views.html for any templates.
-          if (!foundHtmFieldInClass) {
-            let templateFromHtmlFile = viewTemplates.getHtml(state.filename, className)
-            if (templateFromHtmlFile) {
-              viewData.html = templateFromHtmlFile
-            }
-          }
+          // Disabled, may remove feature...
+          // if (!foundHtmFieldInClass) {
+          //   let templateFromHtmlFile = viewTemplates.getHtml(state.filename, className)
+          //   if (templateFromHtmlFile) {
+          //     viewData.html = templateFromHtmlFile
+          //   }
+          // }
 
           // Process stub views
           if (viewData.stubs) {

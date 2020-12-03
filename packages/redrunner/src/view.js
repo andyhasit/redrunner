@@ -217,6 +217,23 @@ proto.__ni = function(path, cls) {
 }
 
 /**
+ * 
+ * @param {function} baseClass 
+ * @param {function} [constructorFunction]
+ */
+View.prototype.__ex = function(baseClass, constructorFunction) {
+  var subClass = constructorFunction || function(parent) {
+    baseClass.apply(this, parent)
+  }
+  subClass.prototype = Object.create(baseClass && baseClass.prototype, {
+    constructor: { value: subClass, writable: true, configurable: true }
+  }); 
+  Object.setPrototypeOf(subClass, baseClass);
+  return subClass
+}
+
+
+/**
  * Create caches.
  */
 proto.__kc = function(cls, keyFn) {
