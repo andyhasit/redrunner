@@ -218,10 +218,11 @@ proto.__ni = function(path, cls) {
 
 /**
  * 
- * @param {function} baseClass 
- * @param {function} [constructorFunction]
+ * @param {function} baseClass - the base class to extend from
+ * @param {object} [prototypeExtras] - an object with extra things to be added to the prototype
+ * @param {function} [prototypeExtras] - the function to be used as constructor
  */
-View.prototype.__ex = function(baseClass, constructorFunction) {
+View.prototype.__ex = function(baseClass, prototypeExtras, constructorFunction) {
   var subClass = constructorFunction || function(parent) {
     baseClass.apply(this, parent)
   }
@@ -229,6 +230,9 @@ View.prototype.__ex = function(baseClass, constructorFunction) {
     constructor: { value: subClass, writable: true, configurable: true }
   }); 
   Object.setPrototypeOf(subClass, baseClass);
+  if (prototypeExtras) {
+    Object.assign(subClass.prototype, prototypeExtras);
+  }
   return subClass
 }
 
@@ -246,23 +250,22 @@ proto.__ic = function(mappings, fallback) {
   return new InstanceCache(mappings, fallback)
 }
 
-
 /**
- * Build the DOM. We pass prototype as local var for speed.
+ * Build the DOM. We pass prototype as local var for compactness.
  */
-proto.__bd = function(prototype, clone) {
-  if (clone && !prototype.__cn) {
+
+proto.__bd = function(prototype) {
+  if (prototype.__cn === undefined) {
     prototype.__cn = makeEl(prototype.__ht)
   }
-  this.e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht)
+  this.e = prototype.__cn.cloneNode(true)
 }
 
-
-// proto.__bd = function(prototype) {
-//   if (prototype.__cn === undefined) {
+// proto.__bd = function(prototype, clone) {
+//   if (clone && !prototype.__cn) {
 //     prototype.__cn = makeEl(prototype.__ht)
 //   }
-//   this.e = prototype.__cn.cloneNode(true)
+//   this.e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht)
 // }
 
 // proto.__bd = function(prototype) {

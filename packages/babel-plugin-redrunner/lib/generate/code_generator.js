@@ -18,6 +18,7 @@ const {
   ObjectStatement,
   ValueStatement
 } = require('./statement_builders')
+const {config} = require('../config/base_config')
 
 const re_lnu = /^\w+$/; // letters_numbers_underscores
 
@@ -39,14 +40,11 @@ const vars = {
  *  - generating JS from html syntax.
  */
 class CodeGenerator {
-  constructor(viewData, babelPath) {
-    this.walker = new DomWalker(viewData.html, nodeInfo => this.processNode(nodeInfo))
-    this.className = viewData.className
+  constructor(className, html, processAsStub, babelPath) {
+    this.walker = new DomWalker(html, nodeInfo => this.processNode(nodeInfo))
+    this.className = className
     this.babelPath = babelPath
-
-    this.clone = viewData.clone
-    this.processAsStub = viewData.processAsStub
-    this.config = viewData.config
+    this.processAsStub = processAsStub
     this.nextElementRefIndex = 0
     this.savedWatchCallArgs = []
 
@@ -78,9 +76,7 @@ class CodeGenerator {
       this.nestedViewProps.buildAssign(`${vars.prototypeVariable}.__ip`),
       this.buildMethod.buildAssign(`${vars.prototypeVariable}.__bv`),
     ]
-    if (this.clone) {
-      statements.push(new ValueStatement('undefined').buildAssign(`${vars.prototypeVariable}.__cn`))
-    }
+    statements.push(new ValueStatement('undefined').buildAssign(`${vars.prototypeVariable}.__cn`))
     return statements.reverse()
   }
   /**
@@ -88,7 +84,7 @@ class CodeGenerator {
    */
   postParsing() {
     this.setShieldCounts()
-    this.buildMethod.add(`${componentRefInBuild}.__bd(prototype, ${this.clone})`)
+    this.buildMethod.add(`${componentRefInBuild}.__bd(prototype)`)
     this.beforeSave.forEach(i => this.buildMethod.add(i))
     this.buildMethod.add(this.savedElements.buildAssign(`${componentRefInBuild}.el`))
     this.afterSave.forEach(i => this.buildMethod.add(i))
@@ -128,7 +124,7 @@ class CodeGenerator {
    */
   processNode(nodeInfo) {
     const {nodePath, node, tagName} = nodeInfo
-    const nodeData = extractNodeData(node, this.config, this.walker, this.processAsStub)
+    const nodeData = extractNodeData(node, this.walker, this.processAsStub)
     if (nodeData) {
       let {
         additionalLookups,
@@ -331,7 +327,6 @@ class CodeGenerator {
     Or one if it is a word followed by ".", "[" or "("
 
     Same will happen with callbacks?
-    console.log(watch, this.babelPath.scope.hasBinding(watch))
     */
     const callback = (watch === '' || watch === undefined) ?
       `function() {return null}` :
@@ -349,9 +344,9 @@ class CodeGenerator {
 }
 
 
-const generateStatements = (viewData, path) => {
+const generateStatements = (className, html, processAsStub, path) => {
   try {
-    const builder = new CodeGenerator(viewData, path)
+    const builder = new CodeGenerator(className, html, processAsStub, path)
     statements = builder.buildStatements()
   } catch (error) {
     if (error instanceof FrameworkError) {

@@ -23,37 +23,29 @@ function removeRedrunnerDefs(path){
  *    string uses quasi quotes instead of normal quotes)
  */
 function getNodeHtmlString(node) {
-  const nodeValue = node.value
-  const type = nodeValue.type
+  const type = node.type
   if (type === 'TemplateLiteral') {
-    return nodeValue.quasis[0].value.raw
+    return node.quasis[0].value.raw
   } else if (type === 'TaggedTemplateExpression') {
-    return nodeValue.quasi.quasis[0].value.raw
+    return node.quasi.quasis[0].value.raw
   } else if (type === 'StringLiteral') {
-    return nodeValue.value
+    return node.value
   }
-  throw new Error(`HTML template value ${node.key.name} must be a TemplateLiteral\
+  throw new Error(`HTML template value must be a TemplateLiteral\
     TaggedTemplateExpression, or StringLiteral (found ${type}).`)
 }
 
-/**
- * Returns the node as an object. Does this even work?
- */
-function getNodeObjectValue(node) {
-  return node.value
-}
 
-function getNodeHtmlStringDict(node) {
+function getNodeHtmlObjectOfStrings(node) {
   const htmlStrings = {}
-  node.value.properties.forEach(element => {
-    htmlStrings[element.key.name] = getNodeHtmlString(element)
+  node.properties.forEach(element => {
+    htmlStrings[element.key.name] = getNodeHtmlString(element.value)
   })
   return htmlStrings
 }
 
 module.exports = {
   getNodeHtmlString,
-  getNodeObjectValue,
-  getNodeHtmlStringDict,
+  getNodeHtmlObjectOfStrings,
   removeRedrunnerDefs
 }

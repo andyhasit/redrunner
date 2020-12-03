@@ -47,10 +47,11 @@ function load(cls, props) {
  * Strips extraneous whitespace from HTML
  */
 function stripHtml(htmlString) {
-  return htmlString.replace(/\n/g, "")
-    .replace(/[\t ]+\</g, "<")
+    return htmlString.replace(/\n/g, "")
+    .replace(/[\t ]+\</g, " <")
+    .replace(/\>[\t ]+$/g, "> ")
     .replace(/\>[\t ]+\</g, "><")
-    .replace(/\>[\t ]+$/g, ">")
+    .trim()
 }
 
 /**
@@ -69,9 +70,9 @@ function tidy(html) {
  *
  */
 expect.extend({
-  toShow(testMount, expectedHtml, flatten=true) {
-    const received = flatten? tidy(testMount.html) : testMount.html
-    const expected = flatten? tidy(expectedHtml) : expectedHtml
+  toShow(testMount, expectedHtml) {
+    const received = tidy(testMount.html)
+    const expected = tidy(expectedHtml)
     const pass = received === expected
     const passMessage = () => 'OK'
     const failMessage = () => {

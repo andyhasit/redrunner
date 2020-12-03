@@ -31,7 +31,7 @@ if (startDelimiter.length !== 1 || endDelimiter .length !== 1) {
  *
  * @return {number} An array of watch objects as [{name, converter, wrapperMethod}...]
  */
-const processInlineWatches = (nodeData, node, config) => {
+const processInlineWatches = (nodeData, node) => {
   const atts = extractAtts(node)
   const restrictedAtts = Object.values(config.directives)
 
@@ -125,7 +125,6 @@ const addInlineWatchesForSingleDirective = (nodeData, wrapperMethod, chunks, wat
 const addInlineWatchesForMultipleDirectives = (nodeData, wrapperMethod, chunks, watchedProperties, saveSingleSpace) => {
   let concatStatement = buildConcatStatement(nodeData, chunks, expandChunkConverterMultipleMode, saveSingleSpace)
   // Put in brackets so it is treated as raw JS.
-  console.log(concatStatement)
   const lookupKey = nodeData.getUniqueKey()
   nodeData.addLookup(lookupKey, concatStatement)
   watchedProperties.forEach(p => 
@@ -188,9 +187,9 @@ const trimIfQuoted = (chunk, trimFrom, saveSingleSpace) => {
     let trimmed = chunk.slice(1, -1)[trimMethod]()
 
     // If string was trimmed and we want to save single space, add it back
-    // to the start or end as appropriate
+    // to the start or end as appropriate.
     if (saveSingleSpace && (chunk.length >  trimmed.length)) {
-      trimmed = trimFrom === 'start' ? ' ' + trimmed : trimmed + ' '
+      trimmed = trimFrom === 'start' ? (' ' + trimmed) : (trimmed + ' ')
     }
     if (trimmed.length > 0 ) {
       return "'" + trimmed + "'"

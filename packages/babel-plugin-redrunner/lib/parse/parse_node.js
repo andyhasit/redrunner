@@ -2,21 +2,21 @@ const {extractAtts, getAttVal, removeAtt} = require('../utils/dom')
 const {NodeData} = require('../definitions/node_data')
 const {processInlineWatches} = require('./inline_directives')
 const {processDirective} = require('../config/parse_directives')
+const {config} = require('../config/base_config')
 
 /**
  * Extracts the relevant data from the HTML node, and removes parts that need removed.
  * Returns a NodeData object if there are directives found.
  * 
  * @param {Object} node - a nodeInfo instance from the walker
- * @param {Object} config - the global config object
  * @param {DomWalker} walker - the walker itself (just for raising exceptions)
  * @param {boolean} processAsStub - indicates whether we are processing a stub.
  */
-function extractNodeData(node, config, walker, processAsStub) {
+function extractNodeData(node, walker, processAsStub) {
   const nodeData = new NodeData(node, processAsStub)
 
   // Check inline calls
-  processInlineWatches(nodeData, node, config)
+  processInlineWatches(nodeData, node)
   let hasData = nodeData.watches.length > 0
 
   // Check attributes for directives

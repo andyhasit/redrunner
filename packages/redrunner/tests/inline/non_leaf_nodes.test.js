@@ -19,5 +19,5 @@ test('Can have inlines in non-leaf nodes', () => {
     <div>
       Title: Flowers for Algernon <a href="#more">Read more</a> Written by Daniel Keyes
     </div>
-  `, false)
+  `)
 })
