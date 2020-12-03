@@ -16,14 +16,6 @@ function getAttVal(node, attName) {
   return node.getAttribute(attName)
 }
 
-/**
- * Determines whether a node from node-html-parser is a leaf node, or rather,
- * whether it only contains TextNodes as children (or no children).
- */
-function isLeafNode(node) {
-  const childNodes = Array.from(node.childNodes)
-  return !childNodes.filter(n => n.nodeType != 3).length > 0
-}
 
 /** Extracts node's atts as an object.
  */
@@ -155,7 +147,6 @@ module.exports = {
   getAttVal,
   getAttDefinition,
   getLookupArgs,
-  isLeafNode,
   parseHTML,
   preprocessHTML,
   removeAtt,

@@ -130,7 +130,18 @@ class CodeGenerator {
     const {nodePath, node, tagName} = nodeInfo
     const nodeData = extractNodeData(node, this.config, this.walker, this.processAsStub)
     if (nodeData) {
-      let {afterSave, beforeSave, saveAs, props, shieldQuery, reverseShield, watches, stubName, replaceWith} = nodeData
+      let {
+        additionalLookups,
+        afterSave,
+        beforeSave,
+        saveAs,
+        props,
+        shieldQuery,
+        reverseShield,
+        watches,
+        stubName,
+        replaceWith
+      } = nodeData
 
       // If this node is a "stub", save it and because there's nothing to do stubs.
       if (stubName) {
@@ -139,6 +150,7 @@ class CodeGenerator {
       }
 
       // Use the saveAs supplied, or get a sequential one
+      // TODO: warn if starts with '___'
       saveAs = saveAs ? saveAs : this.getNextElementRef()
 
       // If replaceWith, then it's a nested view, which needs special treatment.
@@ -181,6 +193,11 @@ class CodeGenerator {
       // TODO: change this, as we may call different functions to make simpler watchers
       const watchCall = new CallStatement(`${vars.prototypeVariable}.${vars.getWatch}`, watchCallArgs)
       this.watches.add(watchCall)
+
+
+      for (const [lookupKey, statement] of Object.entries(additionalLookups)) {
+        this.addLookupEntry(lookupKey, statement)
+      }
     }
   }
   /**
@@ -218,14 +235,19 @@ class CodeGenerator {
     if (methodLines.length > 0) {
       let chainedCalls = 'w'
       methodLines.forEach(line => {
-        const firstArg = line.converter || 'n'
+        
         let methodName = line.wrapperMethod
-        let methodArgs = line.extraArg ? `${firstArg},${line.extraArg}` : firstArg
+        const methodArgs = []
+        // Handle method name being "@style", which would make it att('style')
         if (methodName.startsWith('@')) {
-          methodArgs = `'${methodName.substr(1)}',${methodArgs}`
+          methodArgs.push(`'${methodName.substr(1)}'`)
           methodName = 'att'
         }
-        chainedCalls += `.${methodName}(${methodArgs})`
+        methodArgs.push(this.buildWrapperValueArg(line))
+        if (line.extraArg) {
+          methodArgs.push(line.extraArg)
+        }
+        chainedCalls += `.${methodName}(${methodArgs.join(',')})`
       })
       callback.add(chainedCalls)
     }
@@ -233,9 +255,20 @@ class CodeGenerator {
     const nonMethodLines = lines.filter(line => !line.wrapperMethod)
     nonMethodLines.forEach(line => callback.add(line.converter))
     return callback
-  } 
-
-
+  }
+  /**
+   * Builds the value argument for a wrapper method call.
+   * This will typically end up as the first argument, but may be the second in case
+   * it's a call to wrapper.att().
+   * 
+   * @param {Watcher} watcher 
+   */
+  buildWrapperValueArg(watcher) {
+    if (watcher.lookup) {
+      return `c.lookup('${watcher.lookup}').n`
+    }
+    return line.converter || 'n'
+  }
   /**
    * Add a saved Element.
    */
@@ -283,31 +316,28 @@ class CodeGenerator {
     const chainedCallStatement = chainedCalls.length ? '.' + chainedCalls.join('.') : ''
     this.savedElements.add(saveAs, `${initCall}${chainedCallStatement}`)
   }
-  addWatchQueryCallback(property) {
-    const callback = this.getWatchQueryCallBack(property)
-    if (callback) {
-      this.protoLookupCallbacks.add(property, callback)
+  addWatchQueryCallback(watch) {
+    if (watch !== '*') {
+      this.addLookupEntry(watch, watch)
     }
   }
   /**
-   * Returns the callback for the watch query, or undefined.
-   * TODO: is this necessary? Do we even call these null function?
+   * Adds an entry to the lookups
    */
-  getWatchQueryCallBack(watch) {
-    if (watch !== '*') {
-      /*
-      TODO: fail, or warn if watch is not in scope (if not, babel does very funny stuff!)
-      split string on "." and use first, but not if it is raw Js?
-      Or one if it is a word followed by ".", "[" or "("
+  addLookupEntry(watch, statement) {
+    /*
+    TODO: fail, or warn if watch is not in scope (if not, babel does very funny stuff!)
+    split string on "." and use first, but not if it is raw Js?
+    Or one if it is a word followed by ".", "[" or "("
 
-      Same will happen with callbacks?
-      console.log(watch, this.babelPath.scope.hasBinding(watch))
-      */
-
-      return (watch === '' || watch === undefined) ?
-        `function() {return null}` :
-        `function(${lookupCallbackArgs}) {return ${watch}}`
-    }
+    Same will happen with callbacks?
+    console.log(watch, this.babelPath.scope.hasBinding(watch))
+    */
+    const callback = (watch === '' || watch === undefined) ?
+      `function() {return null}` :
+      `function(${lookupCallbackArgs}) {return ${statement}}`
+    this.protoLookupCallbacks.add(watch, callback)
+    
   }
   /**
    * Gets next name for saving elements.
@@ -318,7 +348,8 @@ class CodeGenerator {
   }
 }
 
-function generateStatements(viewData, path) {
+
+const generateStatements = (viewData, path) => {
   try {
     const builder = new CodeGenerator(viewData, path)
     statements = builder.buildStatements()

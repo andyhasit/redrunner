@@ -26,6 +26,8 @@ class NodeData {
     this.watches = []
     this.beforeSave = []
     this.afterSave = []
+    this.additionalLookups = {}
+    this.seq = 0
   }
   /**
    * Creates a watch on this node.
@@ -70,6 +72,17 @@ class NodeData {
       body = replaceArgs(body, 'p', componentRefInBuild + '.props')
     }
     return `function(${eventCallbackArgs}) {${body}}`
+  }
+
+  /**
+   * Adds an additional lookup, which is needed for certain situations like
+   * multiple inline directives in the same string.
+   * 
+   * @param {string} key - the lookup key
+   * @param {string} statement - the raw statement with value to return 
+   */
+  addLookup(key, statement){
+    this.additionalLookups[key] = statement
   }
   /**
    * Builds the call to create a cache for child views.
@@ -145,7 +158,6 @@ class NodeData {
     }
     return field
   }
-
   /**
    * Expands the props field.
    * 
@@ -153,6 +165,10 @@ class NodeData {
    */
   expandProps(field) {
     return this.expandDots(field)
+  }
+  getUniqueKey() {
+    this.seq ++
+    return '___zzz___' + this.seq
   }
 }
 

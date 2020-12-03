@@ -69,9 +69,9 @@ function tidy(html) {
  *
  */
 expect.extend({
-  toShow(testMount, expectedHtml) {
-    const received = tidy(testMount.html)
-    const expected = tidy(expectedHtml)
+  toShow(testMount, expectedHtml, flatten=true) {
+    const received = flatten? tidy(testMount.html) : testMount.html
+    const expected = flatten? tidy(expectedHtml) : expectedHtml
     const pass = received === expected
     const passMessage = () => 'OK'
     const failMessage = () => {

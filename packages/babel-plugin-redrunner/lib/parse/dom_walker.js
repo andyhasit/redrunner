@@ -27,9 +27,9 @@ class DomWalker {
       this.currentNode = node
       nodePath.push(i)
       const tagName = node.tagName
-      if (tagName) {
-        this.processNode({nodePath, node, tagName})
-      }
+      this.processNode({nodePath, node, tagName})
+      // if (tagName) {
+      // }
       childNodes.forEach(walkNode)
       nodePath.pop()
     }

@@ -3,6 +3,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+Note that the major version is currently **0** meaning *anything* may change at any time.
+
+### [0.9.0] - 2020-12-03
+
+#### Changed
+
+*Major breaking changes!*
+
+* You can/must now specify what arguments your callbacks should receive.
+* Removed `.` and `?` suffixes (every value slot is a field unless it has brackets)
+* Flipped the meaning of prefixes:
+  * `..name` means `props.name` (previously module scope)
+  * `.name` means `component.name` (no change)
+  * `name` (no prefix) means `name` in module scope (previously props) 
+
+#### Added
+
+* You can now have inline directives in text which are not leaf nodes.
+* You can now have multiple inline directives in the same text.
+
+These changes allow for a much more functional approach to designing components. We are also transitioning from calling them views to components.
+
 ### [0.8.6] - 2020-11-28
 
 #### Changed

@@ -20,7 +20,7 @@ function extractNodeData(node, config, walker, processAsStub) {
   let hasData = nodeData.watches.length > 0
 
   // Check attributes for directives
-  if (node.attributes.length > 0) {
+  if (node.attributes && node.attributes.length > 0) {
     for (let [directiveName, directive] of Object.entries(config.directives)) {
       let attVal = getAttVal(node, directiveName)
       if (attVal) {

@@ -4,7 +4,7 @@
  */
 const {splitter} = require('../definitions/constants')
 const {extractAtts, isLeafNode, removeAtt} = require('../utils/dom')
-const {escapeSingleQuotes, clearIfEmpty} = require('../utils/misc')
+const {escapeSingleQuotes, clearIfEmpty, replaceArgs} = require('../utils/misc')
 const {config} = require('../config/base_config')
 
 // Settings for inline directives
@@ -35,38 +35,28 @@ const processInlineWatches = (nodeData, node, config) => {
   const atts = extractAtts(node)
   const restrictedAtts = Object.values(config.directives)
 
-  if (isLeafNode(node)) {
-    if (addInlineWatches(nodeData, node.innerHTML, 'text')) {
-      node.innerHTML = ''
-    }
-  }
-
-  // Look at child nodes too.
-  // console.log(node, node.nodeType, node.innerHTML)
-  // node.childNodes.forEach(n => {
-  //   console.log(n.nodeType)
-  // })
-  // console.log('--------------')
-  // extract from node's text
-  // set textContent = ''
-
   // extract from node's attributes
   for (let [key, value] of Object.entries(atts)) {
     if (value && !restrictedAtts.includes(key)) {
       // The @ notation is handled downstream, but it's class we can conver it to css()
-      let usedKey = key == 'class' ? 'css' : `@${key}`
-      if (addInlineWatches(nodeData, value, usedKey)) {
+      let usedKey = key === 'class' ? 'css' : `@${key}`
+      if (addInlineWatches(nodeData, value, usedKey, false)) {
         removeAtt(node, key)
       }
     }
   }
+
+  if (node.nodeType === 3) {
+    if (addInlineWatches(nodeData, node.textContent, 'text', true)) {
+      node.textContent = 'x'
+    }
+  }
+
 }
 
 
 /**
- * Adds watches as {property, wrapperArgString, wrapperMethod} to
- * nodeData.watches, where wrapperArgString is a string which will be used in a
- * watch callback's call to the wrapper method.
+ * Adds watches to nodeData.watches.
  * 
  * function (n, o, w, p, c) {
  *   // Line goes here
@@ -91,28 +81,56 @@ const processInlineWatches = (nodeData, node, config) => {
  * 
  * Because we don't want to duplicate that code in both callbacks.
  */
-const addInlineWatches = (nodeData, inlineText, wrapperMethod) => {
+const addInlineWatches = (nodeData, inlineText, wrapperMethod, saveSingleSpace) => {
+  if (inlineText === undefined) {
+    return false
+  }
   const {watchedProperties, chunks} = parseInlineText(inlineText)
   const watchedPropertyCount = watchedProperties.length
   if (watchedPropertyCount === 0) {
     return false
   }
   if (watchedPropertyCount === 1) {
-    let watch = watchedProperties[0]
-    let converter = buildConcatStatement(nodeData, chunks, expandChunkConverterSingleMode)
-    // Put in brackets so it is treated as raw JS.
-    converter = `(${converter})`
-    nodeData.addWatch(watch, converter, wrapperMethod)
+    const watch = watchedProperties[0]
+    addInlineWatchesForSingleDirective(nodeData, wrapperMethod, chunks, watchedProperty, saveSingleSpace)
   } else {
-
-    //let converter = buildConcatStatement(nodeData, chunks, expandChunkConverterMultipleMode)
-    
-    // Create a function and add multiple watches
-    //TODO: build this  up
-    //{wrapperMethod, inlineRaw}
-    return true
+    addInlineWatchesForMultipleDirectives(nodeData, wrapperMethod, chunks, watchedProperties, saveSingleSpace)
   }
   return true
+}
+
+/**
+ * Adds in inline watch, for when there is only one directive in the text.
+ * @param {object} nodeData
+ * @param {string} wrapperMethod
+ * @param {Array} chunks 
+ * @param {string} watch 
+ * @param {boolean} saveSingleSpace 
+ */
+const addInlineWatchesForSingleDirective = (nodeData, wrapperMethod, chunks, watchedProperty, saveSingleSpace) => {
+  let converter = buildConcatStatement(nodeData, chunks, expandChunkConverterSingleMode, saveSingleSpace)
+  // Put in brackets so it is treated as raw JS.
+  converter = `(${converter})`
+  nodeData.addWatch(watchedProperty, converter, wrapperMethod)
+}
+
+/**
+ * Adds in inline watch, for when there are multiple directives in the text.
+ * @param {object} nodeData
+ * @param {string} wrapperMethod
+ * @param {Array} chunks 
+ * @param {string} watch 
+ * @param {boolean} saveSingleSpace 
+ */
+const addInlineWatchesForMultipleDirectives = (nodeData, wrapperMethod, chunks, watchedProperties, saveSingleSpace) => {
+  let concatStatement = buildConcatStatement(nodeData, chunks, expandChunkConverterMultipleMode, saveSingleSpace)
+  // Put in brackets so it is treated as raw JS.
+  console.log(concatStatement)
+  const lookupKey = nodeData.getUniqueKey()
+  nodeData.addLookup(lookupKey, concatStatement)
+  watchedProperties.forEach(p => 
+    nodeData.addWatch(p, undefined, wrapperMethod, undefined, lookupKey)
+  )
 }
 
 /**
@@ -123,7 +141,7 @@ const addInlineWatches = (nodeData, inlineText, wrapperMethod) => {
  * @param {Array} chunks 
  * @param {Function} expander 
  */
-const buildConcatStatement = (nodeData, chunks, expander) => {
+const buildConcatStatement = (nodeData, chunks, expander, saveSingleSpace) => {
   chunks = chunks.map(chunk => {
     if (typeof chunk == 'object') {
       return expander(nodeData, chunk)
@@ -139,12 +157,12 @@ const buildConcatStatement = (nodeData, chunks, expander) => {
   const firstItem = chunks[0]
   const lastItem = chunks[chunkCount - 1]
   if (typeof firstItem == 'string') {
-    chunks[0] = trimIfQuoted(firstItem, 'trimStart')
+    chunks[0] = trimIfQuoted(firstItem, 'start', saveSingleSpace)
   }
   if (typeof lastItem == 'string') {
-    chunks[chunkCount - 1] = trimIfQuoted(lastItem, 'trimEnd')
+    chunks[chunkCount - 1] = trimIfQuoted(lastItem, 'end', saveSingleSpace)
   }
-  return chunks.filter(c => c).join('+')
+  return chunks.filter(c => c).join('+') + ' '
 }
 
 /**
@@ -154,16 +172,32 @@ const buildConcatStatement = (nodeData, chunks, expander) => {
  * If string is quoted but contains only whitespace, returns undefined.
  * 
  * @param {string} chunk 
- * @param {string} trimMethod - trimEnd or trimStart
+ * @param {string} trimFrom - start or end
+ * @param {boolean} saveSingleSpace - whether to save a single space at start or end.
  */
-const trimIfQuoted = (chunk, trimMethod) => {
+const trimIfQuoted = (chunk, trimFrom, saveSingleSpace) => {
+  let trimMethod
+  if (trimFrom === 'start') {
+    trimMethod = 'trimStart'
+  } else if (trimFrom === 'end') {
+    trimMethod = 'trimEnd'
+  } else {
+    throw new Error('Argument trimFrom must be "start" or "end", not :' + trimFrom)
+  }
   if (chunk.startsWith("'")) {
-    const trimmed = chunk.slice(1, -1)[trimMethod]()
+    let trimmed = chunk.slice(1, -1)[trimMethod]()
+
+    // If string was trimmed and we want to save single space, add it back
+    // to the start or end as appropriate
+    if (saveSingleSpace && (chunk.length >  trimmed.length)) {
+      trimmed = trimFrom === 'start' ? ' ' + trimmed : trimmed + ' '
+    }
     if (trimmed.length > 0 ) {
       return "'" + trimmed + "'"
     }
     return undefined // we want this.
   }
+  // Not a quoted chunk so we don't want to change anything.
   return chunk
 }
 
@@ -183,17 +217,24 @@ const expandChunkConverterSingleMode = (nodeData, directiveChunk) => {
 }
 
 /**
- * Expands a directive chunk in single mode, i.e. only one watched value,
- * which is already available as 'n'.
+ * Expands a directive chunk in multiple directive mode:
+ * 
+ * <span>The book {..title} was written by {..author|pretty(c, n)}<span>
+ * 
+ * Should give:
+ * 
+ *  ' The book ' + p.book + ' was written by ' + pretty(c, p.author) + ' ' 
  * 
  * @param {Object} nodeData 
- * @param {Object} directiveChunk -- a chun
+ * @param {Object} directiveChunk -- a chunk
  */
 const expandChunkConverterMultipleMode = (nodeData, directiveChunk) => {
+  const value = nodeData.expandValueSlot(directiveChunk.property)
   if (directiveChunk.converter) {
-    return nodeData.expandValueSlot(directiveChunk.converter)
+    const converter = nodeData.expandValueSlot(directiveChunk.converter)
+    return replaceArgs(converter, 'n', value)
   } else {
-    return 'n'
+    return value
   }
 }
 
@@ -207,7 +248,7 @@ const expandChunkConverterMultipleMode = (nodeData, directiveChunk) => {
  * Becomes:
  * 
  *   {
- *     watchedProperties: {firstname: true, date: true},
+ *     watchedProperties: [firstname, date]
  *     chunks: [
  *       "Hello ",
  *       {property: "firstname", converter: "capitalise"},
