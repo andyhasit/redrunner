@@ -22,6 +22,7 @@ Note that the major version is currently **0** meaning *anything* may change at 
 
 * You can now have inline directives in text which are not leaf nodes.
 * You can now have multiple inline directives in the same text.
+* You can use `View.__ex__` instead of classes.
 
 These changes allow for a much more functional approach to designing components. We are also transitioning from calling them views to components.
 
