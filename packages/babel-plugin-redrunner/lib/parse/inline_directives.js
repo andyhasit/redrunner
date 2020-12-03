@@ -91,7 +91,7 @@ const addInlineWatches = (nodeData, inlineText, wrapperMethod, saveSingleSpace) 
     return false
   }
   if (watchedPropertyCount === 1) {
-    const watch = watchedProperties[0]
+    const watchedProperty = watchedProperties[0]
     addInlineWatchesForSingleDirective(nodeData, wrapperMethod, chunks, watchedProperty, saveSingleSpace)
   } else {
     addInlineWatchesForMultipleDirectives(nodeData, wrapperMethod, chunks, watchedProperties, saveSingleSpace)

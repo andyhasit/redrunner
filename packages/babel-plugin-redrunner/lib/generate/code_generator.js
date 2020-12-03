@@ -267,7 +267,7 @@ class CodeGenerator {
     if (watcher.lookup) {
       return `c.lookup('${watcher.lookup}').n`
     }
-    return line.converter || 'n'
+    return watcher.converter || 'n'
   }
   /**
    * Add a saved Element.
