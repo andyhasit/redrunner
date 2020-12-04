@@ -6,13 +6,11 @@ class TestView extends View {
     <div>
       Title: {..title} <a href="#more">Read more</a> Written by {..author}
     </div>
-  `
-  
+  ` 
 }
 
 const props = {title: 'Flowers for Algernon', author: 'Daniel Keyes'}
 
-// TODO: find out why this fails. Generated code seems OK. Test in browser.
 test('Can have inlines in non-leaf nodes', () => {
   const div = load(TestView, props)
   expect(div).toShow(`

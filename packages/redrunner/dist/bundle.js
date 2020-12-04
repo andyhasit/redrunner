@@ -47,26 +47,6 @@ Wrapper.prototype = {
     return this.e.value;
   },
 
-  /**
-   * Returns a promise which resolves after a transition.
-   * Saves having to know times of transitions.
-   */
-  transition: function transition(fn) {
-    var _this = this;
-
-    return new Promise(function (resolve) {
-      fn();
-
-      var transitionEnded = function transitionEnded(e) {
-        _this.e.removeEventListener('transitionend', transitionEnded);
-
-        resolve();
-      };
-
-      _this.e.addEventListener('transitionend', transitionEnded);
-    });
-  },
-
   /* Every method below must return 'this' so it can be chained */
   append: function append(item) {
     this.e.appendChild(this.__ge(item));
@@ -110,23 +90,9 @@ Wrapper.prototype = {
     this.e.classList.add(style);
     return this;
   },
-  cssAddTrans: function cssAddTrans(style) {
-    var _this2 = this;
-
-    return this.transition(function (_) {
-      return _this2.e.classList.add(style);
-    });
-  },
   cssRemove: function cssRemove(style) {
     this.e.classList.remove(style);
     return this;
-  },
-  cssRemoveTrans: function cssRemoveTrans(style) {
-    var _this3 = this;
-
-    return this.transition(function (_) {
-      return _this3.e.classList.remove(style);
-    });
   },
   cssToggle: function cssToggle(style) {
     this.e.classList.toggle(style);
@@ -170,10 +136,10 @@ Wrapper.prototype = {
     return this;
   },
   on: function on(event, callback) {
-    var _this4 = this;
+    var _this = this;
 
     this.e.addEventListener(event, function (e) {
-      return callback(_this4, e);
+      return callback(_this, e);
     });
     return this;
   },
@@ -774,6 +740,34 @@ proto$1.__ni = function (path, cls) {
   return child;
 };
 /**
+ * 
+ * @param {function} baseClass - the base class to extend from
+ * @param {object} [prototypeExtras] - an object with extra things to be added to the prototype
+ * @param {function} [prototypeExtras] - the function to be used as constructor
+ */
+
+
+View.prototype.__ex = function (baseClass, prototypeExtras, constructorFunction) {
+  var subClass = constructorFunction || function (parent) {
+    baseClass.apply(this, parent);
+  };
+
+  subClass.prototype = Object.create(baseClass && baseClass.prototype, {
+    constructor: {
+      value: subClass,
+      writable: true,
+      configurable: true
+    }
+  });
+  Object.setPrototypeOf(subClass, baseClass);
+
+  if (prototypeExtras) {
+    Object.assign(subClass.prototype, prototypeExtras);
+  }
+
+  return subClass;
+};
+/**
  * Create caches.
  */
 
@@ -790,21 +784,21 @@ proto$1.__ic = function (mappings, fallback) {
   return new InstanceCache(mappings, fallback);
 };
 /**
- * Build the DOM. We pass prototype as local var for speed.
+ * Build the DOM. We pass prototype as local var for compactness.
  */
 
 
-proto$1.__bd = function (prototype, clone) {
-  if (clone && !prototype.__cn) {
+proto$1.__bd = function (prototype) {
+  if (prototype.__cn === undefined) {
     prototype.__cn = makeEl(prototype.__ht);
   }
 
-  this.e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht);
-}; // proto.__bd = function(prototype) {
-//   if (prototype.__cn === undefined) {
+  this.e = prototype.__cn.cloneNode(true);
+}; // proto.__bd = function(prototype, clone) {
+//   if (clone && !prototype.__cn) {
 //     prototype.__cn = makeEl(prototype.__ht)
 //   }
-//   this.e = prototype.__cn.cloneNode(true)
+//   this.e = clone ? prototype.__cn.cloneNode(true) : makeEl(prototype.__ht)
 // }
 // proto.__bd = function(prototype) {
 //   this.e = makeEl(prototype.__ht)

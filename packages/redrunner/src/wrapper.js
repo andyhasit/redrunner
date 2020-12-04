@@ -25,23 +25,7 @@ Wrapper.prototype = {
     /* Returns the value of the element */
     return this.e.value
   },
-  /**
-   * Returns a promise which resolves after a transition.
-   * Saves having to know times of transitions.
-   */
-  transition: function(fn) {
-    return new Promise(resolve => {
-      fn()
-      let transitionEnded = e => {
-        this.e.removeEventListener('transitionend', transitionEnded)
-        resolve()
-      }
-    this.e.addEventListener('transitionend', transitionEnded)
-    })
-  },
-
   /* Every method below must return 'this' so it can be chained */
-
   append: function(item) {
     this.e.appendChild(this.__ge(item))
     return this
@@ -83,15 +67,9 @@ Wrapper.prototype = {
     this.e.classList.add(style)
     return this
   },
-  cssAddTrans: function(style) {
-    return this.transition(_ => this.e.classList.add(style))
-  },
   cssRemove: function(style) {
     this.e.classList.remove(style)
     return this
-  },
-  cssRemoveTrans: function(style) {
-    return this.transition(_ => this.e.classList.remove(style))
   },
   cssToggle: function(style) {
     this.e.classList.toggle(style)
