@@ -34,9 +34,12 @@ const eventCallbackArgs = 'w, e'
 const componentRefInBuild = 'view'
 const callableWatchArgs = `${componentRefInBuild}, props`
 
-
 function FrameworkError (msg) {
   this.msg = msg
+}
+
+function RequestsHelp (topic) {
+  this.topic = topic
 }
 
 FrameworkError.prototype = new Error();
@@ -51,6 +54,7 @@ module.exports = {
   componentRefInBuild,
   lookupCallbackArgs,
   propsCallbackArgs,
+  RequestsHelp,
   watchArgs,
   watchCallbackArgsWithValue,
   watchCallbackArgsWithoutValue

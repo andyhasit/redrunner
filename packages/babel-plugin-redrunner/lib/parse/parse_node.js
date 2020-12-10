@@ -1,4 +1,5 @@
-const {extractAtts, getAttVal, removeAtt} = require('../utils/dom')
+const {extractAtts, getAttNames, getAttVal, removeAtt} = require('../utils/dom')
+const {RequestsHelp} = require('../definitions/constants')
 const {NodeData} = require('../definitions/node_data')
 const {processInlineWatches} = require('./inline_directives')
 const {processDirective} = require('../config/parse_directives')
@@ -14,10 +15,18 @@ const {config} = require('../config/base_config')
  */
 function extractNodeData(node, walker, processAsStub) {
   const nodeData = new NodeData(node, processAsStub)
+  let hasData = false
 
-  // Check inline calls
-  processInlineWatches(nodeData, node)
-  let hasData = nodeData.watches.length > 0
+  // First check for help, as there is potentially broken syntax further down
+  const attNames = getAttNames(node)
+  const helpCallIndex = attNames.indexOf('?')
+  let helpTopic = undefined
+  if (helpCallIndex > -1) {
+    if (attNames.length > helpCallIndex + 1) {
+      helpTopic = attNames[helpCallIndex + 1]
+    }
+    throw new RequestsHelp(helpTopic)
+  }
 
   // Check attributes for directives
   if (node.attributes && node.attributes.length > 0) {
@@ -31,7 +40,7 @@ function extractNodeData(node, walker, processAsStub) {
     }
   }
 
-  // Process event attributes
+  // Process event attributes, we need to call extractAtts() again.
   const remainingAtts = extractAtts(node)
   if (remainingAtts) {
     for (let [key, value] of Object.entries(remainingAtts)) {
@@ -49,6 +58,10 @@ function extractNodeData(node, walker, processAsStub) {
       }
     }
   }
+
+  // Check inline calls
+  processInlineWatches(nodeData, node)
+  hasData = hasData || nodeData.watches.length > 0
 
   return hasData ? nodeData : undefined
 }

@@ -32,6 +32,24 @@ function extractAtts(node) {
   return obj
 }
 
+
+/** Extracts node's attribute names as an Array.
+ */
+function getAttNames(node) {
+  const throwAway = document.createElement('template')
+  throwAway.innerHTML = node.outerHTML
+  const attributes = throwAway.content.firstChild.attributes
+  const attributeNames = []
+  if (attributes) {
+    for (let i = 0, len = attributes.length; i < len; i++) {
+      attributeNames.push(attributes[i].name);
+    }
+  }
+  return attributeNames
+}
+
+
+
 /**
  * Extracts the whole attribute (e.g. "as=me" from rawAttrs
  * Note that it does not allow spaces around the = sign!
@@ -145,6 +163,7 @@ module.exports = {
   extractAtts,
   findNextClosingTagOrWhiteSpace,
   getAttVal,
+  getAttNames,
   getAttDefinition,
   getLookupArgs,
   parseHTML,

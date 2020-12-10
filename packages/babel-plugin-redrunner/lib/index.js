@@ -1,43 +1,18 @@
-const babel = require('@babel/core')
-
-
-const {template} = require('@babel/template')
-const {generate} = require('@babel/generator')
 const t = require('@babel/types')
+const {handleHtml, handleStubs} = require('./handlers')
+const {
+  getNodeHtmlString, 
+  getNodeHtmlObjectOfStrings, 
+  insertStatementsAfter, 
+  removeRedrunnerDefs
+} = require('./utils/babel')
 
-
-const {getNodeHtmlString, getNodeHtmlObjectOfStrings, removeRedrunnerDefs} = require('./utils/babel')
-const {generateStatements} = require('./generate/code_generator')
-
-
-const processStubs = (componentName, stubs, path) => {
-  const statements = []
-  for (const [stubName, stubHtml] of Object.entries(stubs)) {
-    let anonymousCls = path.scope.generateUidIdentifier("sv").name
-    generateStatements(anonymousCls, stubHtml, true, path).forEach(statement => {
-      statements.push(statement)
-    })
-    statements.push(`${componentName}.prototype.__stubs__${stubName} = ${anonymousCls};`)
-    statements.push(`var ${anonymousCls} = ${componentName}.prototype.__sv();`)
-  }
-  return statements
-}
-
-
-const processHtmlString = (componentName, html, path) => {
-  return generateStatements(componentName, html, false, path)
-}
-
-const insertStatementsAfter = (path, statements) => {
-  statements.forEach(statement =>
-    path.insertAfter(babel.template.ast(statement))
-  )
-}
 
 module.exports = () => {
   return {
     visitor: {
       MemberExpression(path) {
+        // TODO, maybe move this into the CallExpression or at least do the same checks.
         if (path.node.property.name === '__ex__') {
           const baseClass = path.node.object.name
           path.replaceWithSourceString(`${baseClass}.prototype.__ex`)
@@ -72,12 +47,12 @@ module.exports = () => {
           }
 
           if (data.html) {
-            let statements = processHtmlString(componentName, getNodeHtmlString(data.html), path)
+            let statements = handleHtml(componentName, getNodeHtmlString(data.html), path)
             insertStatementsAfter(nodeToInsertAfter, statements)
           }
 
           if (data.stubs) {
-            let statements = processStubs(componentName, getNodeHtmlObjectOfStrings(data.stubs), path)
+            let statements = handleStubs(componentName, getNodeHtmlObjectOfStrings(data.stubs), path)
             insertStatementsAfter(nodeToInsertAfter, statements)
           }
           
@@ -126,11 +101,11 @@ module.exports = () => {
           // }
 
           if (html) {
-            insertStatementsAfter(path, processHtmlString(componentName, html, path))
+            insertStatementsAfter(path, handleHtml(componentName, html, path))
           }
 
           if (stubs) {
-            insertStatementsAfter(path, processStubs(componentName, stubs, path))
+            insertStatementsAfter(path, handleStubs(componentName, stubs, path))
           }
 
         }

@@ -1,7 +1,8 @@
+const babel = require('@babel/core')
 const {redrunnerDefs} = require("../definitions/constants")
 
 /**
- * A visitor which removes a property, because that's Babel wants you to do it.
+ * A visitor which removes a property, because that's how Babel wants you to do it.
  */
 const RemoveClassPropertyVisitor = {
   ClassProperty(path) {
@@ -20,7 +21,7 @@ function removeRedrunnerDefs(path){
 
 /**
  * Returns the node's HTML as a string (as it is stored differently if the
- *    string uses quasi quotes instead of normal quotes)
+ * string uses quasi quotes instead of normal quotes)
  */
 function getNodeHtmlString(node) {
   const type = node.type
@@ -44,8 +45,21 @@ function getNodeHtmlObjectOfStrings(node) {
   return htmlStrings
 }
 
+/**
+ * Inserts statements after the given path.
+ * 
+ * @param {*} path 
+ * @param {Array} statements - an array of strings
+ */
+const insertStatementsAfter = (path, statements) => {
+  statements.reverse().forEach(statement =>
+    path.insertAfter(babel.template.ast(statement))
+  )
+}
+
 module.exports = {
   getNodeHtmlString,
   getNodeHtmlObjectOfStrings,
+  insertStatementsAfter,
   removeRedrunnerDefs
 }

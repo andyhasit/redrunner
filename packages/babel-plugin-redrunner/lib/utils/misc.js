@@ -109,6 +109,7 @@ const extractShieldCounts = (paths) => {
 
 
 const escapeSingleQuotes = (text) => text.replace(/'/g, "\\'")
+const escapeDoubleQuotes = (text) => text.replace(/"/g, '\\"')
 
 
 module.exports = {
@@ -116,6 +117,7 @@ module.exports = {
 	capitalize,
 	clearIfEmpty,
 	escapeSingleQuotes,
+	escapeDoubleQuotes,
 	extractShieldCounts,
 	groupArray,
 	isFunc,

@@ -45,36 +45,46 @@ class ArrayStatement extends BaseStatement {
  * Creates a call statement, where parameters are expanded.
  */
 class CallStatement extends BaseStatement {
-  constructor(start, items) {
+  /**
+   * 
+   * @param {string} call - e.g. "foo" or "foo.bar"
+   * @param {array} args - the args to pass
+   */
+  constructor(call, args) {
     super()
-    this.start = start
-    this.items = items || []
+    this.call = call
+    this.args = args || []
   }
   add(value) {
-    this.items.push(value)
+    this.args.push(value)
   }
   buildValue() {
-    const callArgs = this.items.map(i => expand(i)).join(', ')
-    return this.start + '(' + callArgs + ')'
+    const callArgs = this.args.map(i => expand(i)).join(', ')
+    return this.call + '(' + callArgs + ')'
   }
 }
 
 class FunctionStatement extends BaseStatement {
-  constructor(argString, items) {
+  /**
+   * 
+   * @param {string} argString - a string 
+   * @param {array} lines - the body lines
+   */
+  constructor(argString, lines) {
     super()
     this.argString = argString
-    this.items = items || []
+    this.lines = lines || []
   }
   add(value) {
-    this.items.push(value)
+    this.lines.push(value)
   }
   buildValue() {
-    const lines = [`function(${this.argString}) {`]
-    this.items.forEach(value => {
-      lines.push(`${expand(value)}`)
+    const finalLines = [`function(${this.argString}) {`]
+    this.lines.forEach(value => {
+      finalLines.push(`${expand(value)}`)
     })
-    lines.push('}')
-    return lines.join(EOL)
+    finalLines.push('}')
+    return finalLines.join(EOL)
   }
 }
 

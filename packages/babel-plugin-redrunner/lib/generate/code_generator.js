@@ -35,9 +35,6 @@ const vars = {
  *  - Building the fields and methods for the prototype
  *  - Tracking state during the parsing (e.g. next DOMRef, and shielding)
  *
- * Does not deal with:
- *
- *  - generating JS from html syntax.
  */
 class CodeGenerator {
   constructor(className, html, processAsStub, babelPath) {
@@ -77,7 +74,7 @@ class CodeGenerator {
       this.buildMethod.buildAssign(`${vars.prototypeVariable}.__bv`),
     ]
     statements.push(new ValueStatement('undefined').buildAssign(`${vars.prototypeVariable}.__cn`))
-    return statements.reverse()
+    return statements
   }
   /**
    * Consolidates various bits after parsing.
@@ -348,24 +345,4 @@ class CodeGenerator {
   }
 }
 
-
-const generateStatements = (className, html, processAsStub, path) => {
-  try {
-    const builder = new CodeGenerator(className, html, processAsStub, path)
-    statements = builder.buildStatements()
-  } catch (error) {
-    if (error instanceof FrameworkError) {
-      const bar = '|'
-      const hr =     '|----------------------------------------------------------------------'
-      const header = '|  Error in component definition (specific location not available yet).'
-      const errorMessage = `${bar}  > ${error.msg}`
-      const fullMessage = ['\n', hr, bar, header, bar, errorMessage, bar, hr].join('\n')
-      throw path.buildCodeFrameError(fullMessage)
-     } else {
-       throw error
-     }
-  }
-  return statements
-}
-
-module.exports = {CodeGenerator, generateStatements}
+module.exports = {CodeGenerator}

@@ -51,4 +51,13 @@ const parseArgValue = (param, raw, i) => {
   return raw
 }
 
-module.exports = {processDirective}
+const extractDocumentation = (name, directive) => {
+  return {
+    name: name,
+    params: directive.params
+  }
+}
+
+
+
+module.exports = {processDirective, extractDocumentation}
