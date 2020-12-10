@@ -19,6 +19,13 @@ Wrapper.prototype = {
     return item.e || doc.createTextNode(item)
   },
   /**
+   * Gets an attribute from the element. Cannot be chained.
+   */
+  getAtt: function(name) {
+    /* Returns the value of the element */
+    return this.e[name]
+  },
+  /**
    * Gets the element's value. Cannot be chained.
    */
   getValue: function() {
