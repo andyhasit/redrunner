@@ -232,13 +232,18 @@ class CodeGenerator {
       let chainedCalls = 'w'
       methodLines.forEach(line => {
         
-        let methodName = line.wrapperMethod
+        let [methodName, firstArg] = line.wrapperMethod.split(':')
         const methodArgs = []
         // Handle method name being "@style", which would make it att('style')
         if (methodName.startsWith('@')) {
           methodArgs.push(`'${methodName.substr(1)}'`)
           methodName = 'att'
         }
+
+        if (firstArg) {
+          methodArgs.push(`'${firstArg}'`)
+        }
+
         methodArgs.push(this.buildWrapperValueArg(line))
         if (line.extraArg) {
           methodArgs.push(line.extraArg)
