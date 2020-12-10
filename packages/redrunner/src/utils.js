@@ -11,7 +11,7 @@ import {Wrapper} from './wrapper'
  */
 export function mount(elementOrId, cls, props, parent) {
   const view = createView(cls, parent, props)
-  const nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId
+  const nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId) : elementOrId
   nodeToReplace.parentNode.replaceChild(view.e, nodeToReplace)
   return view
 }
