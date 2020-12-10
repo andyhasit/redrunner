@@ -17,11 +17,11 @@ const handleStubs = (componentName, stubs, path) => {
   const statements = []
   for (const [stubName, stubHtml] of Object.entries(stubs)) {
     let anonymousCls = path.scope.generateUidIdentifier("sv").name
+    statements.push(`var ${anonymousCls} = ${componentName}.prototype.__sv();`)
+    statements.push(`${componentName}.prototype.__stubs__${stubName} = ${anonymousCls};`)
     generateStatements(anonymousCls, stubHtml, true, path).forEach(statement => {
       statements.push(statement)
     })
-    statements.push(`${componentName}.prototype.__stubs__${stubName} = ${anonymousCls};`)
-    statements.push(`var ${anonymousCls} = ${componentName}.prototype.__sv();`)
   }
   return statements
 }

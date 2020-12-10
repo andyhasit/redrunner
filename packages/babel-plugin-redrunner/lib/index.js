@@ -27,24 +27,11 @@ module.exports = () => {
           path.parent &&
           path.parent.type === 'VariableDeclarator'
           ) {
- 
-          if (path.node.arguments.length !== 1) {
-            throw new Error('__ex__() takes only one argument: a string or an object')
-          }
-          
-          const data = {}
-          const argument = path.node.arguments[0]
+                  
           const baseClass = callee.object.name
           const componentName = path.parent.id.name
           const nodeToInsertAfter = path.parentPath.parentPath
-          
-          if (argument.type == 'ObjectExpression') {
-            argument.properties.forEach(element => {
-              data[element.key.name] = element.value
-            })
-          } else {
-            data['html'] = argument
-          }
+          const data = parseExArguments(path)
 
           if (data.html) {
             let statements = handleHtml(componentName, getNodeHtmlString(data.html), path)
@@ -58,7 +45,7 @@ module.exports = () => {
           
           const newArgs = [t.identifier(baseClass)]
           
-          // If either is supplied, we include both, because of order
+          // If either is supplied, we must still include both arguments to the call.
           let protoArg, constructorArg
           if (data.hasOwnProperty('prototype')) {
             protoArg = data.prototype
@@ -71,7 +58,6 @@ module.exports = () => {
             newArgs.push(constructorArg)
           }
           path.node.arguments = newArgs
-
         }
       },
       Class(path, state) {
@@ -90,26 +76,54 @@ module.exports = () => {
             }
           }
           removeRedrunnerDefs(path)
-
-          // Check views.html for any templates.
-          // Disabled, may remove feature...
-          // if (!foundHtmFieldInClass) {
-          //   let templateFromHtmlFile = viewTemplates.getHtml(state.filename, componentName)
-          //   if (templateFromHtmlFile) {
-          //     viewData.html = templateFromHtmlFile
-          //   }
-          // }
-
-          if (html) {
-            insertStatementsAfter(path, handleHtml(componentName, html, path))
-          }
-
           if (stubs) {
             insertStatementsAfter(path, handleStubs(componentName, stubs, path))
           }
-
+          if (html) {
+            insertStatementsAfter(path, handleHtml(componentName, html, path))
+          }
         }
       }
     }
   }
 }
+
+
+const allowedHtmlTypes = [
+  'TaggedTemplateExpression',
+  'TemplateLiteral',
+  'StringLiteral',
+]
+const eitherAllowedTypes = [...allowedHtmlTypes, 'ObjectExpression']
+
+const assertType = (path, thing, types, description) => {
+  if (!types.includes(thing.type)) {
+    throw path.buildCodeFrameError(`${description} must be of type ${types} but is a ${thing.type}.`)
+  }
+  return thing
+}
+
+const parseExArguments = (path) => {
+  const args = path.node.arguments
+  const data = {}
+
+  if (args.length == 1) {
+    // Must be html or an ObjectExpression - not an identifier
+    const argument = assertType(path, args[0], eitherAllowedTypes, 'Argument to __ex__()')
+    if (argument.type == 'ObjectExpression') {
+      argument.properties.forEach(element => {
+        data[element.key.name] = element.value
+      })
+    } else {
+      data['html'] = assertType(path, args[0], allowedHtmlTypes, 'Argument to __ex__()')
+    }
+  } else if (args.length == 2) {
+    // Must be __ex__(html, methods) where methods can be an object literal or an identifier.
+
+    data['html'] = assertType(path, args[0], allowedHtmlTypes, 'First Argument to __ex__()')
+    data['prototype'] = assertType(path, args[1], ['ObjectExpression', 'Identifier'], 'Second Argument to __ex__()')
+  } else {
+    throw path.buildCodeFrameError(`__ex__() takes either one or two arguments, Received ${args.length}.`)
+  }
+  return data
+} 
