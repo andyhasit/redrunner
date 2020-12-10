@@ -6,6 +6,10 @@
 const fs = require('fs');
 const path = require('path');
 const componentRefVariable = 'c'; // The variable name by which the component will be known.
+const watchAlways = '*';
+const watchNever = '';
+
+
 
 const config = {
   options: {
@@ -30,6 +34,24 @@ const config = {
       }
     },
     ':items': {
+      params: 'converter, cacheDef?, cacheKey?',
+      handle: function(converter, cacheDef, cacheKey) {
+        if (cacheDef) {
+          this.chainedCalls.push(`cache(${this.buildCacheInit(cacheDef, cacheKey)})`)
+        }
+        this.addWatch(watchAlways, converter, 'items', componentRefVariable)
+      }
+    },
+    ':items-o': {
+      params: 'converter, cacheDef?, cacheKey?',
+      handle: function(converter, cacheDef, cacheKey) {
+        if (cacheDef) {
+          this.chainedCalls.push(`cache(${this.buildCacheInit(cacheDef, cacheKey)})`)
+        }
+        this.addWatch(watchNever, converter, 'items', componentRefVariable)
+      }
+    },
+    ':items-w': {
       params: 'watch, converter, cacheDef?, cacheKey?',
       handle: function(watch, converter, cacheDef, cacheKey) {
         if (cacheDef) {

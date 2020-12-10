@@ -15,7 +15,7 @@ class Item extends View {
 
 class CustomModal extends BaseModal {
   __stubs__ = {
-    inner: html`<ul :items="*|.items()|Item"></ul>`
+    inner: html`<ul :items=".items()|Item"></ul>`
   }
   items() {
     return ['a', 'b']

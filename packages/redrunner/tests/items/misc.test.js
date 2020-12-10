@@ -3,7 +3,7 @@ import {load, View} from '../utils'
 
 class TestView extends View {
   __html__ = html`
-    <div :items="*|.items|Child">
+    <div :items=".items|Child">
     </div>
   `
   init() {
