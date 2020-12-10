@@ -1,0 +1,22 @@
+{
+  "name": "testing",
+  "private": true,
+  "scripts": {
+    "build-prod": "webpack -p",
+    "build-dev": "webpack -d",
+    "copy-local": "./copy-local-packages.sh",
+    "start": "webpack-dev-server --host 0.0.0.0",
+    "watch": "webpack --watch"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.7.4",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.7.4",
+    "babel-loader": "^8.0.6",
+    "redrunner": "^0.9.0",
+    "babel-plugin-redrunner": "^0.9.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.9.0"
+  }
+}

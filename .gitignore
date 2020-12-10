@@ -2,4 +2,7 @@
 coverage/
 node_modules/
 demo/dist/
+packages/playground/dist/
+packages/playground/src/
+packages/playground/package-lock.json
 lerna-debug.log
