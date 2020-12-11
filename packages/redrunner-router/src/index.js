@@ -31,7 +31,7 @@ export const Router = View.__ex__('<div><div/>', {
     }
     window.addEventListener('hashchange', e => this._hashChanged())
     window.addEventListener('load', e => this._hashChanged())
-    super.init()
+    View.prototype.init.apply(this)
   },
   /*
   */

@@ -20,43 +20,6 @@ function _typeof(obj) {
   return _typeof(obj);
 }
 
-function _getPrototypeOf(o) {
-  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
-    return o.__proto__ || Object.getPrototypeOf(o);
-  };
-  return _getPrototypeOf(o);
-}
-
-function _superPropBase(object, property) {
-  while (!Object.prototype.hasOwnProperty.call(object, property)) {
-    object = _getPrototypeOf(object);
-    if (object === null) break;
-  }
-
-  return object;
-}
-
-function _get(target, property, receiver) {
-  if (typeof Reflect !== "undefined" && Reflect.get) {
-    _get = Reflect.get;
-  } else {
-    _get = function _get(target, property, receiver) {
-      var base = _superPropBase(target, property);
-
-      if (!base) return;
-      var desc = Object.getOwnPropertyDescriptor(base, property);
-
-      if (desc.get) {
-        return desc.get.call(receiver);
-      }
-
-      return desc.value;
-    };
-  }
-
-  return _get(target, property, receiver || target);
-}
-
 function _slicedToArray(arr, i) {
   return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
 }
@@ -121,7 +84,6 @@ function _nonIterableRest() {
   throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 }
 
-var _obj;
 /*
  * The defaultKeyFn for a route's ViewCache.
  * It returns 1, which causes the same view to be reused each time, which is most likely
@@ -141,7 +103,7 @@ var defaultKeyFn = function defaultKeyFn(_) {
  */
 
 
-var Router = redrunner.View.prototype.__ex(redrunner.View, _obj = {
+var Router = redrunner.View.prototype.__ex(redrunner.View, {
   init: function init() {
     var _this = this;
 
@@ -172,8 +134,7 @@ var Router = redrunner.View.prototype.__ex(redrunner.View, _obj = {
     window.addEventListener('load', function (e) {
       return _this._hashChanged();
     });
-
-    _get(_getPrototypeOf(_obj), "init", this).call(this);
+    redrunner.View.prototype.init.apply(this);
   },
 
   /*
