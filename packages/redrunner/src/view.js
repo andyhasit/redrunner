@@ -224,12 +224,11 @@ proto.__ni = function(path, cls) {
  */
 View.prototype.__ex = function(baseClass, prototypeExtras, constructorFunction) {
   var subClass = constructorFunction || function(parent) {
-    baseClass.apply(this, parent)
+    baseClass.call(this, parent)
   }
   subClass.prototype = Object.create(baseClass && baseClass.prototype, {
     constructor: { value: subClass, writable: true, configurable: true }
   }); 
-  Object.setPrototypeOf(subClass, baseClass);
   if (prototypeExtras) {
     Object.assign(subClass.prototype, prototypeExtras);
   }
