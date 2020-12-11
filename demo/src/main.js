@@ -1,39 +1,21 @@
-/*
-
-Run the Demo with `npm run start`
-
-By commenting out sections below you can toggle between running the Smoothies
-demo app, and a simple view for quick experiments.
-
-*/
-
-import {mount, View} from 'redrunner'    // Imports for both sections
-window.c = console;                      // Just helps debugging :-)
-
-
-/*
--------------------------------------------------------------------------------
-This section provides a simple view for quick experiments.
-Comment out the other section before uncommenting this one.
--------------------------------------------------------------------------------
-*/
-// const props = {name: 'RedRunner'}
-// class TestView extends View {
-//   __html__ = `
-//     <div>
-//       <h1>Hello {name}</h1>
-//     </div>
-//   `
-// }
-// mount('#main', TestView, props)
-
-
-/*
--------------------------------------------------------------------------------
-This section runs the Smoothies demo app.
-Comment out the other section before uncommenting this one.
--------------------------------------------------------------------------------
-*/
+import {mount} from 'redrunner'
 import {Router} from 'redrunner-router'
-import {routerConfig} from './routes'
-mount('#main', Router, routerConfig)
+
+// Import all the examples and give them a route.
+import {WelcomePage} from './welcome'
+import {Navbar} from './navbar'
+import {TodoList} from './examples/todo-list'
+
+/**
+ * These containg data for the router and the menu.
+ */
+const pages = [
+  {path: '/', cls: WelcomePage, name: 'Home'},
+  {path: '/todos', cls: TodoList, name: 'Todos'},
+]
+
+// {path: '/smoothies/{id}', cls: SmoothieDetail, resolve: getSmoothie}
+// const getSmoothie = (routeData) => Promise.resolve(routeData)
+
+mount('navbar', Navbar, pages)
+mount('router', Router, {routes: pages})

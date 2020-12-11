@@ -12,9 +12,14 @@ function _copy () {
   echo "copied files to node_modules/$1"
 }
 
-_rebuild 'redrunner-router'
-_rebuild 'redrunner'
+function _link () {
+  ABS=`realpath ../packages/$1`
+  rm -rf node_modules/$1
+  ln -s $ABS node_modules/$1
+  echo $ABS
+}
 
-_copy 'redrunner/dist'
+_rebuild 'redrunner-router'
 _copy 'redrunner-router/dist'
-_copy 'babel-plugin-redrunner/lib'
+_link 'redrunner'
+_link 'babel-plugin-redrunner'

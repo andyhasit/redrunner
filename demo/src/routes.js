@@ -1,14 +1,12 @@
-import {LandingPage, SmoothieListing, SmoothieDetail, SmoothieForm} from './views'
-import {smoothiesService} from './services/smoothies'
+import {WelcomePage} from './examples/landing'
 
-const getSmoothie = (routeData) => Promise.resolve(smoothiesService.get(routeData.args.id))
-
+const getSmoothie = (routeData) => Promise.resolve(routeData)
 
 export const routerConfig = {
   routes: [
     {path: '/', cls: LandingPage},
-    {path: '/smoothies', cls: SmoothieListing},
-    {path: '/smoothies/new', cls: SmoothieForm},
-    {path: '/smoothies/{id}', cls: SmoothieDetail, resolve: getSmoothie}
+    // {path: '/routes', cls: },
+    // {path: '/smoothies/new', cls: SmoothieForm},
+    // {path: '/smoothies/{id}', cls: SmoothieDetail, resolve: getSmoothie}
   ]
 }
