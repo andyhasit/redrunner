@@ -3,7 +3,7 @@
   "version": "0.9.0",
   "description": "A tiny framework with legs",
   "scripts": {
-    "prepublish": "npm test && npm run build",
+    "prepublish": "npm run build",
     "build": "NODE_ENV=production rollup -c",
     "test": "jest --clearCache && jest",
     "clear-jest": "jest --clearCache"
