@@ -5,6 +5,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Note that the major version is currently **0** meaning *anything* may change at any time.
 
+### [0.10.0] - 2020-12-11
+
+#### Added:
+
+* Offline help system
+* `View.__ex__` allows prototype as second argument.
+* Wrapper `getAtt` and `isChecked`
+
+#### Changed
+
+* `mount()` no longer requires or accepts `#` on id string.
+* `:items`  no longer accepts a watch value, so is now `<div :items="todos|ToDo">`
+
+#### Fixed
+
+* Using `:` in a watch, like `<div :watch="||style:color">`
+
 ### [0.9.0] - 2020-12-03
 
 #### Changed

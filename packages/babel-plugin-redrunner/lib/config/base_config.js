@@ -16,6 +16,12 @@ const config = {
     inlineDelimiters: ['{', '}']
   },
   directives: {
+    ':checked': {
+      params: 'watch, converter?',
+      handle: function(watch, converter) {
+        this.addWatch(watch, converter, 'checked')
+      }
+    },
     ':el': {
       handle: function(arg) {
         this.saveAs = arg

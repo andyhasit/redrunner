@@ -4,7 +4,6 @@
   "scripts": {
     "build-prod": "webpack -p",
     "build-dev": "webpack -d",
-    "copy-local": "./copy-local-packages.sh",
     "start": "webpack-dev-server --host 0.0.0.0",
     "watch": "webpack --watch"
   },
@@ -14,6 +13,7 @@
     "@babel/preset-env": "^7.7.4",
     "babel-loader": "^8.0.6",
     "redrunner": "^0.9.0",
+    "redrunner-router": "^0.9.0",
     "babel-plugin-redrunner": "^0.9.0",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
