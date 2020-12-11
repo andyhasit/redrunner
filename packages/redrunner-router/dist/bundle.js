@@ -20,105 +20,11 @@ function _typeof(obj) {
   return _typeof(obj);
 }
 
-function _classCallCheck(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-}
-
-function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
-  }
-}
-
-function _createClass(Constructor, protoProps, staticProps) {
-  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) _defineProperties(Constructor, staticProps);
-  return Constructor;
-}
-
-function _inherits(subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function");
-  }
-
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) _setPrototypeOf(subClass, superClass);
-}
-
 function _getPrototypeOf(o) {
   _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
     return o.__proto__ || Object.getPrototypeOf(o);
   };
   return _getPrototypeOf(o);
-}
-
-function _setPrototypeOf(o, p) {
-  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-    o.__proto__ = p;
-    return o;
-  };
-
-  return _setPrototypeOf(o, p);
-}
-
-function _isNativeReflectConstruct() {
-  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
-  if (Reflect.construct.sham) return false;
-  if (typeof Proxy === "function") return true;
-
-  try {
-    Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-function _assertThisInitialized(self) {
-  if (self === void 0) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return self;
-}
-
-function _possibleConstructorReturn(self, call) {
-  if (call && (typeof call === "object" || typeof call === "function")) {
-    return call;
-  }
-
-  return _assertThisInitialized(self);
-}
-
-function _createSuper(Derived) {
-  var hasNativeReflectConstruct = _isNativeReflectConstruct();
-
-  return function () {
-    var Super = _getPrototypeOf(Derived),
-        result;
-
-    if (hasNativeReflectConstruct) {
-      var NewTarget = _getPrototypeOf(this).constructor;
-
-      result = Reflect.construct(Super, arguments, NewTarget);
-    } else {
-      result = Super.apply(this, arguments);
-    }
-
-    return _possibleConstructorReturn(this, result);
-  };
 }
 
 function _superPropBase(object, property) {
@@ -215,6 +121,7 @@ function _nonIterableRest() {
   throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 }
 
+var _obj;
 /*
  * The defaultKeyFn for a route's ViewCache.
  * It returns 1, which causes the same view to be reused each time, which is most likely
@@ -234,131 +141,110 @@ var defaultKeyFn = function defaultKeyFn(_) {
  */
 
 
-var Router = /*#__PURE__*/function (_View) {
-  _inherits(Router, _View);
+var Router = redrunner.View.prototype.__ex(redrunner.View, _obj = {
+  init: function init() {
+    var _this = this;
 
-  var _super = _createSuper(Router);
+    var _this$props = this.props,
+        routes = _this$props.routes,
+        resources = _this$props.resources;
+    this._routes = routes.map(function (config) {
+      return new Route(config);
+    });
+    this._resources = {};
 
-  function Router() {
-    _classCallCheck(this, Router);
+    if (resources) {
+      for (var _i = 0, _Object$entries = Object.entries(resources); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+            name = _Object$entries$_i[0],
+            func = _Object$entries$_i[1];
 
-    return _super.apply(this, arguments);
-  }
+        this._resources[name] = {
+          loaded: false,
+          func: func
+        };
+      }
+    }
 
-  _createClass(Router, [{
-    key: "init",
-    value: function init() {
-      var _this = this;
+    window.addEventListener('hashchange', function (e) {
+      return _this._hashChanged();
+    });
+    window.addEventListener('load', function (e) {
+      return _this._hashChanged();
+    });
 
-      var _this$props = this.props,
-          routes = _this$props.routes,
-          resources = _this$props.resources;
-      this._routes = routes.map(function (config) {
-        return new Route(config);
-      });
-      this._resources = {};
+    _get(_getPrototypeOf(_obj), "init", this).call(this);
+  },
 
-      if (resources) {
-        for (var _i = 0, _Object$entries = Object.entries(resources); _i < _Object$entries.length; _i++) {
-          var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-              name = _Object$entries$_i[0],
-              func = _Object$entries$_i[1];
+  /*
+  */
+  _resolveResources: function _resolveResources(resources) {
+    var _this2 = this;
 
-          this._resources[name] = {
-            loaded: false,
-            func: func
-          };
+    var promises = [];
+
+    if (resources) {
+      resources.forEach(function (name) {
+        var resource = _this2._resources[name];
+
+        if (!resource.loaded) {
+          promises.push(resource.func(_this2));
         }
-      }
-
-      window.addEventListener('hashchange', function (e) {
-        return _this._hashChanged();
       });
-      window.addEventListener('load', function (e) {
-        return _this._hashChanged();
-      });
-
-      _get(_getPrototypeOf(Router.prototype), "init", this).call(this);
     }
-    /*
-     */
 
-  }, {
-    key: "_resolveResources",
-    value: function _resolveResources(resources) {
-      var _this2 = this;
+    return Promise.all(promises);
+  },
+  _hashChanged: function _hashChanged() {
+    var url = location.hash.slice(1) || '/';
 
-      var promises = [];
+    this._matchRoute(url);
+  },
 
-      if (resources) {
-        resources.forEach(function (name) {
-          var resource = _this2._resources[name];
+  /*
+   * Tries to find a view based on url, and will build it
+   */
+  _matchRoute: function _matchRoute(url) {
+    var _this3 = this;
 
-          if (!resource.loaded) {
-            promises.push(resource.func(_this2));
-          }
-        });
-      }
+    var len = this._routes.length,
+        matched = false;
 
-      return Promise.all(promises);
-    }
-  }, {
-    key: "_hashChanged",
-    value: function _hashChanged() {
-      var url = location.hash.slice(1) || '/';
+    var _loop = function _loop(i) {
+      var route = _this3._routes[i];
+      var routeData = route.match(url);
 
-      this._matchRoute(url);
-    }
-    /*
-     * Tries to find a view based on url, and will build it
-     */
+      if (routeData) {
+        matched = true;
 
-  }, {
-    key: "_matchRoute",
-    value: function _matchRoute(url) {
-      var _this3 = this;
+        _this3._resolveResources(route.resources).then(function (_) {
+          route.getView(routeData).then(function (view) {
+            _this3.e.innerHTML = '';
 
-      var len = this._routes.length,
-          matched = false;
+            _this3.e.appendChild(view.e);
 
-      var _loop = function _loop(i) {
-        var route = _this3._routes[i];
-        var routeData = route.match(url);
+            _this3.__mt.flush(); // Use this? bubble?
+            // call back?
+            //this.app.emit('route_changed', {routeData, url, view})
 
-        if (routeData) {
-          matched = true;
-
-          _this3._resolveResources(route.resources).then(function (_) {
-            route.getView(routeData).then(function (view) {
-              _this3.e.innerHTML = '';
-
-              _this3.e.appendChild(view.e);
-
-              _this3.__mt.flush(); // Use this? bubble?
-              // call back?
-              //this.app.emit('route_changed', {routeData, url, view})
-
-            });
           });
+        });
 
-          return "break";
-        }
-      };
-
-      for (var i = 0; i < len; i++) {
-        var _ret = _loop(i);
-
-        if (_ret === "break") break;
+        return "break";
       }
+    };
 
-      if (!matched) {
-        throw new Error('Route not matched: ' + url);
-      }
+    for (var i = 0; i < len; i++) {
+      var _ret = _loop(i);
+
+      if (_ret === "break") break;
     }
-  }]);
 
-  return Router;
-}(redrunner.View);
+    if (!matched) {
+      throw new Error('Route not matched: ' + url);
+    }
+  }
+}, );
 /*
  * A route.
  * The path is used for matching and extracting args & params.
@@ -390,206 +276,187 @@ var Router = /*#__PURE__*/function (_View) {
  */
 
 var p = Router.prototype;
-p.__ht = '<div></div>';
+p.__ht = '<div><div></div></div>';
 p.__wc = [];
 p.__qc = p.__lu({});
 p.__ip = {};
 
 p.__bv = function (view, prototype) {
-  view.__bd(prototype, false);
+  view.__bd(prototype);
 
-  view.dom = {};
+  view.el = {};
 };
 
-var Route = /*#__PURE__*/function () {
-  function Route(config) {
-    _classCallCheck(this, Route);
+p.__cn = undefined;
+function Route(config) {
+  this.resources = config.resources;
+  var paramStr,
+      path = config.path;
+  this._vc = new redrunner.KeyedCache(config.cls, config.keyFn || defaultKeyFn);
 
-    this.resources = config.resources;
-    var paramStr,
-        path = config.path;
-    this._vc = new redrunner.KeyedCache(config.cls, config.keyFn || defaultKeyFn);
+  var _path$split = path.split('?');
 
-    var _path$split = path.split('?');
+  var _path$split2 = _slicedToArray(_path$split, 2);
 
-    var _path$split2 = _slicedToArray(_path$split, 2);
+  path = _path$split2[0];
+  paramStr = _path$split2[1];
+  this.chunks = this.buildChunks(path); // An array of string or RouteArg
 
-    path = _path$split2[0];
-    paramStr = _path$split2[1];
-    this.chunks = this.buildChunks(path); // An array of string or RouteArg
+  this.params = this.buildParams(paramStr);
+  this.resolve = config.resolve || this.defautResolve;
+}
+var p = Route.prototype;
 
-    this.params = this.buildParams(paramStr);
-    this.resolve = config.resolve || this.defautResolve;
+p.defautResolve = function (routeData) {
+  return Promise.resolve(routeData);
+};
+
+p.buildChunks = function (path) {
+  return path.split('/').map(function (s) {
+    if (s.startsWith('{')) {
+      return new RouteArg(s.slice(1, -1));
+    }
+
+    return s;
+  });
+};
+
+p.buildParams = function (paramStr) {
+  var params = {};
+
+  if (paramStr) {
+    paramStr.split(',').forEach(function (s) {
+      var r = new RouteArg(s.trim());
+      params[r.name] = r;
+    });
   }
 
-  _createClass(Route, [{
-    key: "defautResolve",
-    value: function defautResolve(routeData) {
-      return Promise.resolve(routeData);
-    }
-  }, {
-    key: "buildChunks",
-    value: function buildChunks(path) {
-      return path.split('/').map(function (s) {
-        if (s.startsWith('{')) {
-          return new RouteArg(s.slice(1, -1));
-        }
+  return params;
+};
 
-        return s;
-      });
-    }
-  }, {
-    key: "buildParams",
-    value: function buildParams(paramStr) {
-      var params = {};
+p.getView = function (routeData) {
+  var _this4 = this;
 
-      if (paramStr) {
-        paramStr.split(',').forEach(function (s) {
-          var r = new RouteArg(s.trim());
-          params[r.name] = r;
-        });
-      }
+  return this.resolve(routeData, this).then(function (result) {
+    return _this4._vc.getOne(result, _this4);
+  });
+};
 
-      return params;
-    }
-  }, {
-    key: "getView",
-    value: function getView(routeData) {
-      var _this4 = this;
+p.match = function (url) {
+  var _this5 = this;
 
-      return this.resolve(routeData, this).then(function (result) {
-        return _this4._vc.getOne(result, _this4).view;
-      });
-    }
-  }, {
-    key: "match",
-    value: function match(url) {
-      var _this5 = this;
+  var front,
+      paramStr,
+      definedChunkCount = this.chunks.length,
+      args = {};
 
-      var front,
-          paramStr,
-          definedChunkCount = this.chunks.length,
-          args = {};
+  var _url$split = url.split('?');
 
-      var _url$split = url.split('?');
+  var _url$split2 = _toArray(_url$split);
 
-      var _url$split2 = _toArray(_url$split);
+  front = _url$split2[0];
+  paramStr = _url$split2.slice(1);
+  var foundChunks = front.split('/');
 
-      front = _url$split2[0];
-      paramStr = _url$split2.slice(1);
-      var foundChunks = front.split('/');
-
-      if (definedChunkCount !== foundChunks.length) {
-        return false;
-      } // determine if non interpreted chunks match.
+  if (definedChunkCount !== foundChunks.length) {
+    return false;
+  } // determine if non interpreted chunks match.
 
 
-      var _loop2 = function _loop2(i) {
-        var definedChunk = _this5.chunks[i];
-        var foundChunk = foundChunks[i];
+  var _loop2 = function _loop2(i) {
+    var definedChunk = _this5.chunks[i];
+    var foundChunk = foundChunks[i];
 
-        if (definedChunk instanceof RouteArg) {
-          args[definedChunk.name] = function (_) {
-            return definedChunk.convert(foundChunk);
-          };
-        } else if (redrunner.isStr(definedChunk) && definedChunk != foundChunk) {
-          return {
-            v: false
-          };
-        }
+    if (definedChunk instanceof RouteArg) {
+      args[definedChunk.name] = function (_) {
+        return definedChunk.convert(foundChunk);
       };
-
-      for (var i = 0; i < definedChunkCount; i++) {
-        var _ret2 = _loop2(i);
-
-        if (_typeof(_ret2) === "object") return _ret2.v;
-      } // If we reach here, url matches, so process args and params
-
-
-      for (var a in args) {
-        args[a] = args[a]();
-      } // paramStr had to be an array in case multiple "?" in url
-
-
-      var params = {};
-
-      if (paramStr) {
-        paramStr.join('').split('&').forEach(function (e) {
-          var k, v;
-
-          var _e$split = e.split('=');
-
-          var _e$split2 = _slicedToArray(_e$split, 2);
-
-          k = _e$split2[0];
-          v = _e$split2[1];
-          v = decodeURIComponent(v).split('+').join(' ');
-
-          if (_this5.params.hasOwnProperty(k)) {
-            params[k] = _this5.params[k].convert(v);
-          } else {
-            params[k] = v;
-          }
-        });
-      }
-
+    } else if (redrunner.isStr(definedChunk) && definedChunk != foundChunk) {
       return {
-        args: args,
-        params: params,
-        url: url
+        v: false
       };
     }
-  }]);
+  };
 
-  return Route;
-}();
-var RouteArg = /*#__PURE__*/function () {
-  function RouteArg(str) {
-    _classCallCheck(this, RouteArg);
+  for (var i = 0; i < definedChunkCount; i++) {
+    var _ret2 = _loop2(i);
 
-    // No error checks :-(
-    var name, conv;
+    if (_typeof(_ret2) === "object") return _ret2.v;
+  } // If we reach here, url matches, so process args and params
 
-    var _str$split = str.split(':');
 
-    var _str$split2 = _slicedToArray(_str$split, 2);
+  for (var a in args) {
+    args[a] = args[a]();
+  } // paramStr had to be an array in case multiple "?" in url
 
-    name = _str$split2[0];
-    conv = _str$split2[1];
-    this.name = name;
 
-    switch (conv) {
-      case 'int':
-        this.conv = function (v) {
-          return parseInt(v);
-        };
+  var params = {};
 
-        break;
+  if (paramStr) {
+    paramStr.join('').split('&').forEach(function (e) {
+      var k, v;
 
-      case 'float':
-        this.conv = function (v) {
-          return parseFloat(v);
-        };
+      var _e$split = e.split('=');
 
-        break;
+      var _e$split2 = _slicedToArray(_e$split, 2);
 
-      default:
-        this.conv = function (v) {
-          return v;
-        };
+      k = _e$split2[0];
+      v = _e$split2[1];
+      v = decodeURIComponent(v).split('+').join(' ');
 
-    }
+      if (_this5.params.hasOwnProperty(k)) {
+        params[k] = _this5.params[k].convert(v);
+      } else {
+        params[k] = v;
+      }
+    });
   }
 
-  _createClass(RouteArg, [{
-    key: "convert",
-    value: function convert(val) {
-      return this.conv(val);
-    }
-  }]);
+  return {
+    args: args,
+    params: params,
+    url: url
+  };
+};
 
-  return RouteArg;
-}();
+function RouteArg(str) {
+  // No error checks :-(
+  var name, conv;
+
+  var _str$split = str.split(':');
+
+  var _str$split2 = _slicedToArray(_str$split, 2);
+
+  name = _str$split2[0];
+  conv = _str$split2[1];
+  this.name = name;
+
+  switch (conv) {
+    case 'int':
+      this.conv = function (v) {
+        return parseInt(v);
+      };
+
+      break;
+
+    case 'float':
+      this.conv = function (v) {
+        return parseFloat(v);
+      };
+
+      break;
+
+    default:
+      this.conv = function (v) {
+        return v;
+      };
+
+  }
+}
+
+RouteArg.prototype.convert = function (val) {
+  return this.conv(val);
+};
 
 exports.Route = Route;
 exports.RouteArg = RouteArg;
