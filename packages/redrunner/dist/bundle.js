@@ -40,11 +40,20 @@ Wrapper.prototype = {
   },
 
   /**
+   * Gets an attribute from the element. Cannot be chained.
+   */
+  getAtt: function getAtt(name) {
+    return this.e[name];
+  },
+
+  /**
    * Gets the element's value. Cannot be chained.
    */
   getValue: function getValue() {
-    /* Returns the value of the element */
     return this.e.value;
+  },
+  isChecked: function isChecked() {
+    return this.e.checked;
   },
 
   /* Every method below must return 'this' so it can be chained */
@@ -74,7 +83,7 @@ Wrapper.prototype = {
     return this;
   },
   checked: function checked(value) {
-    this.e.checked = value;
+    this.e.checked = !!value;
     return this;
   },
   child: function child(wrapper) {
@@ -183,7 +192,7 @@ Wrapper.prototype = {
 
 function mount(elementOrId, cls, props, parent) {
   var view = createView(cls, parent, props);
-  var nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId.slice(1)) : elementOrId;
+  var nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId) : elementOrId;
   nodeToReplace.parentNode.replaceChild(view.e, nodeToReplace);
   return view;
 }

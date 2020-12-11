@@ -22,15 +22,16 @@ Wrapper.prototype = {
    * Gets an attribute from the element. Cannot be chained.
    */
   getAtt: function(name) {
-    /* Returns the value of the element */
     return this.e[name]
   },
   /**
    * Gets the element's value. Cannot be chained.
    */
   getValue: function() {
-    /* Returns the value of the element */
     return this.e.value
+  },
+  isChecked: function() {
+    return this.e.checked
   },
   /* Every method below must return 'this' so it can be chained */
   append: function(item) {
@@ -58,7 +59,7 @@ Wrapper.prototype = {
     return this
   },
   checked: function(value) {
-    this.e.checked = value
+    this.e.checked = !!value
     return this
   },
   child: function(wrapper) {
