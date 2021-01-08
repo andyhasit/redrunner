@@ -6,46 +6,19 @@ import {View, KeyedCache, isStr} from 'redrunner'
  * what we want, but means the view should must be stateless.
  */
 const defaultKeyFn = _ => 1
-
+const defautResolve = (routeData) => Promise.resolve(routeData)
 
 /* RouterView
  * A view which responds to changes in the hash url.
- * Arg 'data' must be an object like {routes, resources}
- *
- * @data.routes: an array of objects which will get passed as arg 'config' to new Route()
- * @data.resources: an object representing load-once resources as name:function
- *   the function will be called with (this) and must return a promise.
+ * The props must be an array of routes.
  */
-export const Router = View.__ex__('<div><div/>', {
+export const Router = View.__ex__('<div></div>', {
   init() {
-    let {routes, resources} = this.props
-    this._routes = routes.map(config => new Route(config))
-    this._resources = {}
-    if (resources) {
-      for (let [name, func] of Object.entries(resources)) {
-        this._resources[name] = {
-          loaded: false,
-          func: func
-        }
-      }
-    }
+    this._routes = this.props.map(config => new Route(config))
+    this._active = undefined
     window.addEventListener('hashchange', e => this._hashChanged())
     window.addEventListener('load', e => this._hashChanged())
     View.prototype.init.apply(this)
-  },
-  /*
-  */
- _resolveResources(resources) {
-   let promises = []
-   if (resources) {
-     resources.forEach(name => {
-        let resource = this._resources[name]
-        if (!resource.loaded) {
-          promises.push(resource.func(this))
-        }
-      })
-    }
-    return Promise.all(promises)
   },
   _hashChanged() {
     let url = location.hash.slice(1) || '/';
@@ -61,15 +34,11 @@ export const Router = View.__ex__('<div><div/>', {
       let routeData = route.match(url)
       if (routeData) {
         matched = true
-        this._resolveResources(route.resources).then(_ => {
-          route.getView(routeData).then(view => {
-            this.e.innerHTML = ''
-            this.e.appendChild(view.e)
-            this.__mt.flush()
-            // Use this? bubble?
-            // call back?
-            //this.app.emit('route_changed', {routeData, url, view})
-          })
+        route.getView(routeData).then(view => {
+          this.e.innerHTML = ''
+          this.e.appendChild(view.e)
+          this.__mt.flush()
+          this._active = view
         })
         break
       }
@@ -77,6 +46,11 @@ export const Router = View.__ex__('<div><div/>', {
     if (!matched) {
       throw new Error('Route not matched: ' + url)
     }
+  },
+  update() {
+    if (this._active) {
+      this._active.update()
+    } 
   }
 })
 
@@ -96,7 +70,6 @@ export const Router = View.__ex__('<div><div/>', {
  * Config example:
  * {
  *   path: '/todos',
- *   resources: ['todos', 'settings'],
  *   cls: TodoView,
  *   keyFn: foo,            # optional used as cache arg for view
  *   resolve: foo,          # optional used to create data for view
@@ -110,86 +83,88 @@ export const Router = View.__ex__('<div><div/>', {
  * value is passed as data to the view. routeData is {args, params, url}
  */
 export function Route(config) {
-  this.resources = config.resources
-  let paramStr, path = config.path;
   this._vc = new KeyedCache(config.cls, config.keyFn || defaultKeyFn);
-  [path, paramStr] = path.split('?')
-  this.chunks = this.buildChunks(path) // An array of string or RouteArg
-  this.params = this.buildParams(paramStr)
-  this.resolve = config.resolve || this.defautResolve
-}
-var p = Route.prototype
-p.defautResolve = function(routeData) {
-  return Promise.resolve(routeData)
-}
-p.buildChunks = function(path) {
-  return path.split('/').map(s => {
-    if (s.startsWith('{')) {
-      return new RouteArg(s.slice(1,-1))
-    }
-    return s
-  })
+  this.chunks = this.buildChunks(config.path)
+  this.resolve = config.resolve || defautResolve
 }
 
-p.buildParams = function(paramStr) {
-  let params = {}
-  if (paramStr) {
-    paramStr.split(',').forEach(s => {
-      let r = new RouteArg(s.trim());
-      params[r.name] = r;
+Route.prototype = {
+  buildChunks(path) {
+    return path.split('/').map(s => {
+      if (s.startsWith('{')) {
+        return new RouteArg(s.slice(1, -1))
+      }
+      return s
     })
-  }
-  return params
-}
-
-p.getView = function(routeData) {
-  return this.resolve(routeData, this).then(result => this._vc.getOne(result, this))
-}
-
-p.match = function(url) {
-  let front, paramStr, definedChunkCount = this.chunks.length, args = {};
-  [front, ...paramStr] = url.split('?')
-  let foundChunks = front.split('/')
-  if (definedChunkCount !== foundChunks.length) {
-    return false
-  }
-  // determine if non interpreted chunks match.
-  for (let i=0; i<definedChunkCount; i++) {
-    let definedChunk = this.chunks[i]
-    let foundChunk = foundChunks[i]
-    if (definedChunk instanceof RouteArg) {
-      args[definedChunk.name] = _ => definedChunk.convert(foundChunk)
-    } else if (isStr(definedChunk) && definedChunk != foundChunk) {
+  },
+  getView(routeData) {
+    return this.resolve(routeData, this).then(result => this._vc.getOne(result, this))
+  },
+  match(url) {
+    const definedChunkCount = this.chunks.length, args = {};
+    let foundChunks = url.split('?', 1)[0].split('/')
+    if (definedChunkCount !== foundChunks.length) {
       return false
     }
-  }
-  // If we reach here, url matches, so process args and params
-  for (let a in args) {
-    args[a] = args[a]()
-  }
-  // paramStr had to be an array in case multiple "?" in url
-  let params = {}
-  if (paramStr) {
-    paramStr.join('').split('&').forEach(e => {
-      let k, v;
-      [k,v] = e.split('=')
-      v = decodeURIComponent(v).split('+').join(' ');
-      if (this.params.hasOwnProperty(k)) {
-        params[k] = this.params[k].convert(v)
-      } else {
-        params[k] = v
+    // determine if non interpreted chunks match.
+    for (let i=0; i<definedChunkCount; i++) {
+      let definedChunk = this.chunks[i]
+      let foundChunk = foundChunks[i]
+      if (definedChunk instanceof RouteArg) {
+        args[definedChunk.name] = [definedChunk, foundChunk]
+      } else if (isStr(definedChunk) && definedChunk != foundChunk) {
+        return false
       }
-    })
+    }
+    // If we reach here, url matches, so process args and params
+    Object.keys(args).forEach(function(key) {
+      let definedChunk = args[key][0]
+      let foundChunk = args[key][1]
+      args[key] = definedChunk.convert(foundChunk)
+    });
+
+    /*
+    TODO: consider replacing with something like this:
+      queryParams: function() {
+      var reducer = function(accumulator, currentValue) {
+        if (currentValue.includes('=')) {
+          var chunks = currentValue.split('=')
+          c.log(chunks);
+          c.log(decodeURIComponent(chunks[1]));
+          accumulator[chunks[0]] = replaceAll(decodeURIComponent(chunks[1]), '+', ' ')
+        }
+        return accumulator
+      };
+      return window.location.search.substring(1).split('&').reduce(reducer, {});
+    },
+  */
+    let params = {}
+    // if (paramStr) {
+    //   paramStr.split('&').forEach(e => {
+    //     let keyValue = e.split('=')
+    //     let k = keyValue[0]
+    //     let v = keyValue[1]
+    //     v = decodeURIComponent(v).split('+').join(' ');
+    //     if (this.params.hasOwnProperty(k)) {
+    //       params[k] = this.params[k].convert(v)
+    //     } else {
+    //       params[k] = v
+    //     }
+    //   })
+    // }
+    return {args, params, url}
   }
-  return {args, params, url}
 }
 
 export function RouteArg(str) {
-    // No error checks :-(
-  let name, conv;
-  [name, conv] = str.split(':')
-  this.name = name
-  switch (conv) {
+  // No error checks :-(
+  let name, argType
+  let chunks = str.split(':')
+  this.name = chunks[0]
+  if (chunks.length > 0) {
+    argType = chunks[1]
+  }
+  switch (argType) {
     case 'int':
       this.conv = v => parseInt(v);
       break;
