@@ -16,10 +16,29 @@ const config = {
     inlineDelimiters: ['{', '}']
   },
   directives: {
+    ':bind': {
+      params: 'watch, event?',
+      handle: function(watch, event='change') {
+        this.addWatch(watch, undefined, 'value')
+        this.addEventListener(event, `${watch} = w.getValue()`)
+      }
+    },
     ':checked': {
       params: 'watch, converter?',
       handle: function(watch, converter) {
         this.addWatch(watch, converter, 'checked')
+      }
+    },
+    ':css': {
+      params: 'watch, converter?',
+      handle: function(watch, converter) {
+        this.addWatch(watch, converter, 'css')
+      }
+    },
+    ':css-f': {
+      params: 'value',
+      handle: function(value) {
+        this.addWatch(watchNever, value, 'css')
       }
     },
     ':el': {
@@ -85,6 +104,12 @@ const config = {
         this.reverseShield = 1
       }
     },
+    ':stub': {
+      params: 'stubName',
+      handle: function(stubName) {
+        this.stubName = stubName
+      }
+    },
     ':swap': {
       params: 'watch, mappings, fallback?',
       handle: function(watch, mappings, fallback) {
@@ -105,10 +130,10 @@ const config = {
         }
       }
     },
-    ':stub': {
-      params: 'stubName',
-      handle: function(stubName) {
-        this.stubName = stubName
+    ':value': {
+      params: 'watch, converter?',
+      handle: function(watch, converter) {
+        this.addWatch(watch, converter, 'value')
       }
     },
     ':watch': {
