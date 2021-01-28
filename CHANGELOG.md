@@ -7,6 +7,12 @@ Note that the major version is currently **0** meaning *anything* may change at 
 
 ### [0.10.0] - 2020-12-11
 
+#### Changed:
+
+* (Breaking) no longer pass parent props by default.
+
+### [0.10.0] - 2020-12-11
+
 #### Added:
 
 * Offline help system
