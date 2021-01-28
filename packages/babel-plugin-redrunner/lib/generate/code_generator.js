@@ -18,12 +18,10 @@ const {
   ObjectStatement,
   ValueStatement
 } = require('./statement_builders')
-const {config} = require('../config/base_config')
 
 const re_lnu = /^\w+$/; // letters_numbers_underscores
 
 const vars = {
-  prototypeVariable: 'p',
   getWatch: '__wa',
   getLookup: '__lu',
 }
@@ -40,6 +38,8 @@ class CodeGenerator {
   constructor(className, html, processAsStub, babelPath) {
     this.walker = new DomWalker(html, nodeInfo => this.processNode(nodeInfo))
     this.className = className
+
+    this.prototypeVariable = `${className}_prototype`
     this.babelPath = babelPath
     this.processAsStub = processAsStub
     this.nextElementRefIndex = 0
@@ -56,7 +56,7 @@ class CodeGenerator {
     this.watches = new ArrayStatement()
     this.protoLookupCallbacks = new ObjectStatement()
     this.nestedViewProps = new ObjectStatement()
-    this.createLookupCall = new CallStatement(`${vars.prototypeVariable}.${vars.getLookup}`)
+    this.createLookupCall = new CallStatement(`${this.prototypeVariable}.${vars.getLookup}`)
     this.createLookupCall.add(this.protoLookupCallbacks)
   }
   /**
@@ -66,14 +66,14 @@ class CodeGenerator {
     this.walker.parse()
     this.postParsing()
     const statements = [
-      `var ${vars.prototypeVariable} = ${this.className}.prototype;`,
-      this.htmlString.buildAssign(`${vars.prototypeVariable}.__ht`),
-      this.watches.buildAssign(`${vars.prototypeVariable}.__wc`),
-      this.createLookupCall.buildAssign(`${vars.prototypeVariable}.__qc`),
-      this.nestedViewProps.buildAssign(`${vars.prototypeVariable}.__ip`),
-      this.buildMethod.buildAssign(`${vars.prototypeVariable}.__bv`),
+      `var ${this.prototypeVariable} = ${this.className}.prototype;`,
+      this.htmlString.buildAssign(`${this.prototypeVariable}.__ht`),
+      this.watches.buildAssign(`${this.prototypeVariable}.__wc`),
+      this.createLookupCall.buildAssign(`${this.prototypeVariable}.__qc`),
+      this.nestedViewProps.buildAssign(`${this.prototypeVariable}.__ip`),
+      this.buildMethod.buildAssign(`${this.prototypeVariable}.__bv`),
     ]
-    statements.push(new ValueStatement('undefined').buildAssign(`${vars.prototypeVariable}.__cn`))
+    statements.push(new ValueStatement('undefined').buildAssign(`${this.prototypeVariable}.__cn`))
     return statements
   }
   /**
@@ -184,7 +184,7 @@ class CodeGenerator {
       this.saveWatchCallArgs(nodePath.slice(), watchCallArgs)
 
       // TODO: change this, as we may call different functions to make simpler watchers
-      const watchCall = new CallStatement(`${vars.prototypeVariable}.${vars.getWatch}`, watchCallArgs)
+      const watchCall = new CallStatement(`${this.prototypeVariable}.${vars.getWatch}`, watchCallArgs)
       this.watches.add(watchCall)
 
 
