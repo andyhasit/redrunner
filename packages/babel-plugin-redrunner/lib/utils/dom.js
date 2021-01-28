@@ -130,16 +130,17 @@ function stripHtml(htmlString) {
 }
 
 /**
- * A hack to allow the following syntac 
+ * A hack to allow the following syntax:
  * 
  *    <use:Child/>
  *    <use=Child/>
+ *    <stub:Child/>
+ *    <stub=Child/>
  * 
  * With the JSDOM parser. It coverts those to:
  * 
  *    <br :use=Child/>
  * 
- * which will work
  */
 function preprocessHTML(htmlString) {
   return htmlString.replace(/<use:/g, "<br :use=")

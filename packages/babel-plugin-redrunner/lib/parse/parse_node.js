@@ -33,6 +33,10 @@ function extractNodeData(node, walker, processAsStub) {
     for (let [directiveName, directive] of Object.entries(config.directives)) {
       let attVal = getAttVal(node, directiveName)
       if (attVal) {
+        // To deal with <use:Child/>
+        if (attVal.endsWith('/')) {
+          attVal = attVal.substring(0, attVal.length -1)
+        }
         hasData = true
         processDirective(nodeData, directiveName, directive, attVal)
         removeAtt(node, directiveName)

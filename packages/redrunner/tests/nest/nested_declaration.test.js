@@ -5,6 +5,10 @@ class Child extends View {
   __html__ = '<span>{..name}</span>'
 }
 
+class Www extends View {
+  __html__ = '<span>www</span>'
+}
+
 class TestView extends View {
   __html__ = html`
     <div>
@@ -12,6 +16,10 @@ class TestView extends View {
       <use:Child :props=".child2"/>
       <use=Child :props=".child3(c)">
       <use=Child :props="child4Props(c)">
+      <use=Www >
+      <use=Www />
+      <use=Www>
+      <use=Www/>
     </div>
   `
   init() {
@@ -43,19 +51,27 @@ test('Nest accepts props', () => {
       <span>alice</span>
       <span>jess</span>
       <span>ja</span>
-    </div>
-  `)
-  child1.name = 'ems'
-  child4.name = 'boo'
-  div.update()
-  expect(div).toShow(`
-    <div>
+      <span>www</span>
+      <span>www</span>
+      <span>www</span>
+      <span>www</span>
+      </div>
+      `)
+      child1.name = 'ems'
+      child4.name = 'boo'
+      div.update()
+      expect(div).toShow(`
+      <div>
       <span>ems</span>
       <span>alice</span>
       <span>jess</span>
       <span>boo</span>
-    </div>
-  `)
+      <span>www</span>
+      <span>www</span>
+      <span>www</span>
+      <span>www</span>
+      </div>
+      `)
   expect(args3).toEqual(div.view)
   expect(args4).toEqual(div.view)
 })
