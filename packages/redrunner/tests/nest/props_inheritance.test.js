@@ -4,7 +4,7 @@ class TestView extends View {
   __html__ = html`
     <div>
       <div :el="main"></div>
-      <div><use:Child></div>
+      <div><use:Child :props="p"></div>
     </div>
   `
   init() {
@@ -19,7 +19,7 @@ class Child extends View {
 }
 
 
-test('Nest passes parent props by default', () => {
+test('Nest can access parent props', () => {
   const props = {name: 'jo'}
   const div = load(TestView, props)
   expect(div).toShow(`

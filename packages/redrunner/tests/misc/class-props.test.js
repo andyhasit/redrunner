@@ -1,7 +1,7 @@
 import {load, View} from '../utils'
 
 class View1 extends View {
-  __html__ = `
+  __html__ = html`
     <div>meh</div>
   `
   yolo = 1
@@ -9,11 +9,11 @@ class View1 extends View {
 
 
 class View2 extends View {
-  __html__ = `
+  __html__ = html`
     <div>meh</div>
   `
   __stubs__ = {
-    footer: `<span>{footer}</span>`
+    footer: html`<span>{footer}</span>`
   }
   yolo = 2
 }

@@ -295,10 +295,11 @@ class CodeGenerator {
   }
   saveNestedView(nodePath, saveAs, nodeData, tagName, props, replaceWith) {
     const nestedViewClass = replaceWith || tagName
-    if (isUnd(props)) {
-      props = 'c.props'
+    if (props) {
+      this.nestedViewProps.add(saveAs, new FunctionStatement(propsCallbackArgs, [`return ${props}`]))
+    } else {
+      this.nestedViewProps.add(saveAs, '0')
     }
-    this.nestedViewProps.add(saveAs, new FunctionStatement(propsCallbackArgs, [`return ${props}`]))
     const initCall = `${componentRefInBuild}.__ni(${getLookupArgs(nodePath)}, ${nestedViewClass})`
     this.saveElement(saveAs, initCall, nodeData.chainedCalls)
   }

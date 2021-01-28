@@ -7,9 +7,12 @@ import {h, createView, mount, View, Wrapper} from '../src/index'
 /**
  * Returns a new div appended to the document body.
  */
-function getDiv() {
+function getDiv(id) {
   const div = document.createElement('div')
   document.body.appendChild(div)
+  if (id) {
+    div.id = id
+  }
   return div
 }
 
@@ -89,8 +92,11 @@ expect.extend({
 module.exports = {
   c,
   createView,
+  getDiv,
   h,
   load,
+  mount,
+  TestMount,
   View,
   Wrapper
 }
