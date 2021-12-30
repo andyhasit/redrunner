@@ -5,9 +5,9 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var redrunner = require('redrunner');
 
 /*
- * The defaultKeyFn for a route's ViewCache.
- * It returns 1, which causes the same view to be reused each time, which is most likely
- * what we want, but means the view should must be stateless.
+ * The defaultKeyFn for a route's ComponentPool.
+ * It returns 1, which causes the same component to be reused each time, which is most likely
+ * what we want, but means the component should must be stateless.
  */
 
 var defaultKeyFn = function defaultKeyFn(_) {
@@ -17,13 +17,13 @@ var defaultKeyFn = function defaultKeyFn(_) {
 var defautResolve = function defautResolve(routeData) {
   return Promise.resolve(routeData);
 };
-/* RouterView
- * A view which responds to changes in the hash url.
+/* RouterComponent
+ * A component which responds to changes in the hash url.
  * The props must be an array of routes.
  */
 
 
-var Router = redrunner.View.prototype.__ex(redrunner.View, {
+var Router = redrunner.Component.prototype.__ex(redrunner.Component, {
   init: function init() {
     var _this = this;
 
@@ -37,7 +37,7 @@ var Router = redrunner.View.prototype.__ex(redrunner.View, {
     window.addEventListener('load', function (e) {
       return _this._hashChanged();
     });
-    redrunner.View.prototype.init.apply(this);
+    redrunner.Component.prototype.init.apply(this);
   },
   _hashChanged: function _hashChanged() {
     var url = location.hash.slice(1) || '/';
@@ -46,7 +46,7 @@ var Router = redrunner.View.prototype.__ex(redrunner.View, {
   },
 
   /*
-   * Tries to find a view based on url, and will build it
+   * Tries to find a component based on url, and will build it
    */
   _matchRoute: function _matchRoute(url) {
     var _this2 = this;
@@ -60,14 +60,14 @@ var Router = redrunner.View.prototype.__ex(redrunner.View, {
 
       if (routeData) {
         matched = true;
-        route.getView(routeData).then(function (view) {
+        route.getComponent(routeData).then(function (component) {
           _this2.e.innerHTML = '';
 
-          _this2.e.appendChild(view.e);
+          _this2.e.appendChild(component.e);
 
           _this2.__mt.flush();
 
-          _this2._active = view;
+          _this2._active = component;
         });
         break;
       }
@@ -99,17 +99,17 @@ var Router = redrunner.View.prototype.__ex(redrunner.View, {
  * Config example:
  * {
  *   path: '/todos',
- *   cls: TodoView,
- *   keyFn: foo,            # optional used as cache arg for view
- *   resolve: foo,          # optional used to create data for view
+ *   cls: TodoComponent,
+ *   keyFn: foo,            # optional used as cache arg for component
+ *   resolve: foo,          # optional used to create data for component
  * }
  *
- * The path may specify params after ? (but all params are passed to the view anyway)
+ * The path may specify params after ? (but all params are passed to the component anyway)
  *  /todos/detail?id,date
  *
  * Args and params may specify a type, in which case they are converted.
  * resolve gets called with (routeData, [this router]) and must return a promise, the return
- * value is passed as data to the view. routeData is {args, params, url}
+ * value is passed as data to the component. routeData is {args, params, url}
  */
 
 var Router_prototype = Router.prototype;
@@ -118,15 +118,15 @@ Router_prototype.__wc = [];
 Router_prototype.__qc = Router_prototype.__lu({});
 Router_prototype.__ip = {};
 
-Router_prototype.__bv = function (view, prototype) {
-  view.__bd(prototype);
+Router_prototype.__bv = function (component, prototype) {
+  component.__bd(prototype);
 
-  view.el = {};
+  component.el = {};
 };
 
 Router_prototype.__cn = undefined;
 function Route(config) {
-  this._vc = new redrunner.KeyedCache(config.cls, config.keyFn || defaultKeyFn);
+  this._vc = new redrunner.KeyedPool(config.cls, config.keyFn || defaultKeyFn);
   this.chunks = this.buildChunks(config.path);
   this.resolve = config.resolve || defautResolve;
 }
@@ -140,7 +140,7 @@ Route.prototype = {
       return s;
     });
   },
-  getView: function getView(routeData) {
+  getComponent: function getComponent(routeData) {
     var _this3 = this;
 
     return this.resolve(routeData, this).then(function (result) {

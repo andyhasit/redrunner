@@ -1,7 +1,7 @@
-import {Component, KeyedCache, isStr} from 'redrunner'
+import {Component, KeyedPool, isStr} from 'redrunner'
 
 /*
- * The defaultKeyFn for a route's ComponentCache.
+ * The defaultKeyFn for a route's ComponentPool.
  * It returns 1, which causes the same component to be reused each time, which is most likely
  * what we want, but means the component should must be stateless.
  */
@@ -83,7 +83,7 @@ export const Router = Component.__ex__('<div></div>', {
  * value is passed as data to the component. routeData is {args, params, url}
  */
 export function Route(config) {
-  this._vc = new KeyedCache(config.cls, config.keyFn || defaultKeyFn);
+  this._vc = new KeyedPool(config.cls, config.keyFn || defaultKeyFn);
   this.chunks = this.buildChunks(config.path)
   this.resolve = config.resolve || defautResolve
 }

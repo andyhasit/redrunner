@@ -29,7 +29,7 @@ var isStr = function isStr(x) {
 
 function Wrapper(element) {
   this.e = element;
-  this._cache = undefined;
+  this._pool = undefined;
 }
 Wrapper.prototype = {
   /**
@@ -72,8 +72,8 @@ Wrapper.prototype = {
 
     return this;
   },
-  cache: function cache(_cache) {
-    this._cache = _cache;
+  pool: function pool(_pool) {
+    this._pool = _pool;
     return this;
   },
   clear: function clear() {
@@ -137,10 +137,10 @@ Wrapper.prototype = {
   },
 
   /*
-   * Set items from cache.
+   * Set items from pool.
    */
   items: function items(_items, parent) {
-    this._cache.patch(this.e, _items, parent);
+    this._pool.patch(this.e, _items, parent);
 
     return this;
   },
@@ -164,7 +164,7 @@ Wrapper.prototype = {
     return this;
   },
   swap: function swap(key, parent) {
-    this.child(this._cache.getOne(key, parent));
+    this.child(this._pool.getOne(key, parent));
     return this;
   },
   text: function text(value) {
@@ -231,21 +231,21 @@ function h(tag) {
 }
 
 /**
- * Caches same type components, retrieving by sequence.
+ * Pools same type components, retrieving by sequence.
  * Must not be shared.
  * 
  * @param {class} componentClass - The class of Component to create.
- * @param {function} keyFn - A function which obtains the key to cache by
+ * @param {function} keyFn - A function which obtains the key to pool by
  */
 
-function KeyedCache(componentClass, keyFn) {
+function KeyedPool(componentClass, keyFn) {
   this._v = componentClass;
   this._f = keyFn;
   this._k = []; // keys
 
   this._p = {}; // pool of component instances
 }
-var proto = KeyedCache.prototype;
+var proto = KeyedPool.prototype;
 /**
  * Retrieves a single component. Though not used in RedRunner itself, it may
  * be used elsewhere, such as in the router.
@@ -313,14 +313,14 @@ proto._get = function (pool, componentClass, key, item, parent) {
   return component;
 };
 /**
- * Caches same type components, retrieving by sequence.
+ * Pools same type components, retrieving by sequence.
  * Must not be shared.
  * 
  * @param {class} componentClass - The class of Component to create.
  */
 
 
-function SequentialCache(componentClass) {
+function SequentialPool(componentClass) {
   this._v = componentClass;
   this._p = []; // pool of component instances
 
@@ -335,7 +335,7 @@ function SequentialCache(componentClass) {
  * @param {Component} parent - The parent component.
  */
 
-SequentialCache.prototype.patch = function (e, items, parent) {
+SequentialPool.prototype.patch = function (e, items, parent) {
   var pool = this._p;
   var componentClass = this._v;
   var childNodes = e.childNodes;
@@ -366,7 +366,7 @@ SequentialCache.prototype.patch = function (e, items, parent) {
   trimChildren(e, childNodes, itemsLength);
 };
 /**
- * An object which creates and caches components according to the mappings provided.
+ * An object which creates and pools components according to the mappings provided.
  * If there is no match in the mappings, the fallback function is called.
  * 
  * Note that the fallback must return an instance (of Component or Wrapper) whereas
@@ -380,13 +380,13 @@ SequentialCache.prototype.patch = function (e, items, parent) {
  */
 
 
-function InstanceCache(mappings, fallback) {
+function InstancePool(mappings, fallback) {
   this._m = mappings;
   this._f = fallback;
   this._i = {}; // Instances
 }
 
-InstanceCache.prototype.getOne = function (key, parentComponent) {
+InstancePool.prototype.getOne = function (key, parentComponent) {
   if (!this._i.hasOwnProperty(key)) {
     this._i[key] = this._m.hasOwnProperty(key) ? parentComponent.nest(this._m[key]) : this._f(key, parentComponent);
   }
@@ -455,7 +455,7 @@ var mountie = {
 
 /**
  * Used internally.
- * An object which caches the results of lookup queries so we don't have to
+ * An object which pools the results of lookup queries so we don't have to
  * repeat them in the same component.
  * The Lookup instance will be shared between instances of a component.
  * Must call reset() on every update.
@@ -551,7 +551,7 @@ proto$1.bubble = function (name) {
   throw 'Bubble popped.';
 };
 /**
- * Move the component to new parent. Necessary if sharing a cache.
+ * Move the component to new parent. Necessary if sharing a pool.
  */
 
 
@@ -579,7 +579,7 @@ proto$1.nest = function (cls, props) {
  * Lookup a watched value during update. Returns an object with {o, n, c}
  * (oldValue, newValue, changed).
  * You must call this.resetLookups before calling this during an update.
- * The point is to cache the result so it doesn't have to be repeated.
+ * The point is to pool the result so it doesn't have to be repeated.
  */
 
 
@@ -787,20 +787,20 @@ Component.prototype.__ex = function (baseClass, prototypeExtras, constructorFunc
   return subClass;
 };
 /**
- * Create caches.
+ * Create pools.
  */
 
 
 proto$1.__kc = function (cls, keyFn) {
-  return new KeyedCache(cls, keyFn);
+  return new KeyedPool(cls, keyFn);
 };
 
 proto$1.__sc = function (cls) {
-  return new SequentialCache(cls);
+  return new SequentialPool(cls);
 };
 
 proto$1.__ic = function (mappings, fallback) {
-  return new InstanceCache(mappings, fallback);
+  return new InstancePool(mappings, fallback);
 };
 /**
  * Build the DOM. We pass prototype as local var for compactness.
@@ -896,10 +896,10 @@ module.exports = {
   createComponent: createComponent,
   h: h,
   mount: mount,
-  KeyedCache: KeyedCache,
-  InstanceCache: InstanceCache,
+  KeyedPool: KeyedPool,
+  InstancePool: InstancePool,
   isStr: isStr,
-  SequentialCache: SequentialCache,
+  SequentialPool: SequentialPool,
   Component: Component,
   Wrapper: Wrapper
 };
