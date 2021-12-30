@@ -4,7 +4,9 @@ class TestComponent extends Component {
   __html__ = html`
     <div>
       <div :el="main"></div>
-      <div><use:Child :props="p"></div>
+      <div>
+        <use:Child :props="p">
+      </div>
     </div>
   `
   init() {

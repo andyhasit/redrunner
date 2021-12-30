@@ -89,20 +89,21 @@ class NodeData {
    * 
    * @param {string} poolDef - the name of the component class to pool, or if it
    * starts with @ then it is the path to a pool object (e.g. @..sharedPool ).
-   * @param {string} poolKey - the field on the props to pool by.
+   * @param {string} key - the field on the props to pool by.
    */
-  buildPoolInit (poolDef, poolKey){
+  buildPoolInit (poolDef, key){
     let poolStatement
-    if (poolDef.startsWith('@')) {
-      poolStatement = this.expandDots(poolDef.substr(1))
-    } else {
-      if (poolKey) {
-        const keyFn = `function(props) {return props.${poolKey}}`
-        poolStatement = `component.__kc(${poolDef}, ${keyFn})`
+    // if (poolDef.startsWith('@')) {
+    //   poolStatement = this.expandDots(poolDef.substr(1))
+    // } else {
+      console.log(key)
+      if (key) {
+        const keyFn = `function(props) {return props.${key}}`
+        poolStatement = `component.pool(${poolDef}, ${keyFn})`
       } else {
-        poolStatement = `component.__sc(${poolDef})`
+        poolStatement = `component.pool(${poolDef})`
       }
-    }
+    //}
     return poolStatement
   }
   /**

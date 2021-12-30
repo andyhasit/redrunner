@@ -3,8 +3,7 @@ import {load, Component} from '../utils'
 
 class TestComponent extends Component {
   __html__ = html`
-    <div :items=".items|Child">
-    </div>
+    <div :use="Child" :items="*|.items"></div>
   `
   init() {
     this.name = 'jo'

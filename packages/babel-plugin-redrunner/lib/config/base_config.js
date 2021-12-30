@@ -15,6 +15,9 @@ const config = {
   options: {
     inlineDelimiters: ['{', '}']
   },
+  aliases: {
+    '': 'watch'
+  },
   directives: {
     ':bind': {
       params: 'watch, event?',
@@ -59,29 +62,8 @@ const config = {
       }
     },
     ':items': {
-      params: 'converter, poolDef?, poolKey?',
-      handle: function(converter, poolDef, poolKey) {
-        if (poolDef) {
-          this.chainedCalls.push(`pool(${this.buildPoolInit(poolDef, poolKey)})`)
-        }
-        this.addWatch(watchAlways, converter, 'items', componentRefVariable)
-      }
-    },
-    ':items-o': {
-      params: 'converter, poolDef?, poolKey?',
-      handle: function(converter, poolDef, poolKey) {
-        if (poolDef) {
-          this.chainedCalls.push(`pool(${this.buildPoolInit(poolDef, poolKey)})`)
-        }
-        this.addWatch(watchNever, converter, 'items', componentRefVariable)
-      }
-    },
-    ':items-w': {
-      params: 'watch, converter, poolDef?, poolKey?',
-      handle: function(watch, converter, poolDef, poolKey) {
-        if (poolDef) {
-          this.chainedCalls.push(`pool(${this.buildPoolInit(poolDef, poolKey)})`)
-        }
+      params: 'watch, converter?',
+      handle: function(watch, converter) {
         this.addWatch(watch, converter, 'items', componentRefVariable)
       }
     },
@@ -95,6 +77,15 @@ const config = {
       params: 'args',
       handle: function(args) {
         this.props = this.expandProps(args)
+      }
+    },
+    ':replace': {
+      params: 'componentCls, props?',
+      handle: function(componentCls, props) {
+        this.replaceWith = componentCls
+        if (props) {
+          this.props = this.expandProps(props)
+        }
       }
     },
     ':show': {
@@ -122,12 +113,9 @@ const config = {
       }
     },
     ':use': {
-      params: 'componentCls, props?',
-      handle: function(componentCls, props) {
-        this.replaceWith = componentCls
-        if (props) {
-          this.props = this.expandProps(props)
-        }
+      params: 'componentDef, key?',
+      handle: function(componentDef, key) {
+        this.chainedCalls.push(`pool(${this.buildPoolInit(componentDef, key)})`)
       }
     },
     ':value': {
@@ -152,12 +140,23 @@ const config = {
   }
 }
 
-// Use config file if there is one.
-const configFile = path.join(process.cwd(), 'redrunner.config.js')
-if (fs.existsSync(configFile)) {
-  var userConfig = require(configFile)
-  Object.assign(config.directives, userConfig.directives)
-  Object.assign(config.options, userConfig.options)
+
+
+
+// Use customm config file if there is one.
+const customConfigFile = path.join(process.cwd(), 'redrunner.config.js')
+
+if (fs.existsSync(customConfigFile)) {
+  var customConfig = require(customConfigFile)
+  Object.assign(config.directives, customConfig.directives)
+  Object.assign(config.options, customConfig.options)
 }
+
+const directives = config.directives
+
+for (const [key, value] of Object.entries(config.aliases)) {
+  directives[':' + key] = directives[':' + value]
+}
+
 
 module.exports = {config}

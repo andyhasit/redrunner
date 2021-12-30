@@ -2,7 +2,7 @@ import {c, load, Component, Wrapper} from '../utils'
 import {KeyedPool, SequentialPool} from '../../src/index'
 
 class Container extends Component {
-  __html__ = '<div :items=".props|Child|id"></div>'
+  __html__ = '<div :use="Child|id" :items="*|.props"></div>'
 }
 
 class Child extends Component {

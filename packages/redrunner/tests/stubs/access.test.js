@@ -15,7 +15,7 @@ class Item extends Component {
 
 class CustomModal extends BaseModal {
   __stubs__ = {
-    inner: html`<ul :items=".items()|Item"></ul>`
+    inner: html`<ul :use="Item" :items=".items()"></ul>`
   }
   items() {
     return ['a', 'b']

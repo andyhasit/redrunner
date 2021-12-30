@@ -8,10 +8,7 @@ import {load, Component} from '../utils'
 
 
 class TestComponent extends Component {
-  __html__ = `
-    <div :items="names|NestedComponent">
-    </div>
-  `
+  __html__ = html`<div :use="NestedComponent" :items="*|names"></div>`
 }
 
 class NestedComponent extends Component {

@@ -139,12 +139,12 @@ function stripHtml(htmlString) {
  * 
  * With the JSDOM parser. It coverts those to:
  * 
- *    <br :use=Child/>
+ *    <br :replace=Child/>
  * 
  */
 function preprocessHTML(htmlString) {
-  return htmlString.replace(/<use:/g, "<br :use=")
-    .replace(/<use=/g, "<br :use=")
+  return htmlString.replace(/<use:/g, "<br :replace=")
+    .replace(/<use=/g, "<br :replace=")
     .replace(/<stub:/g, "<br :stub=")
     .replace(/<stub=/g, "<br :stub=")
 }

@@ -245,14 +245,15 @@ Component.prototype.__ex = function(baseClass, prototypeExtras, constructorFunct
 
 
 /**
- * Create pools.
+ * Create a component pool.
  */
-proto.__kc = function(cls, keyFn) {
-  return new KeyedPool(cls, keyFn)
+proto.pool = function(cls, keyFn) {
+  return keyFn ? new KeyedPool(cls, keyFn) : new SequentialPool(cls)
 }
-proto.__sc = function(cls) {
-  return new SequentialPool(cls)
-}
+
+/**
+ * Create an instanc pool, for switches.
+ */
 proto.__ic = function(mappings, fallback) {
   return new InstancePool(mappings, fallback)
 }
@@ -260,7 +261,6 @@ proto.__ic = function(mappings, fallback) {
 /**
  * Build the DOM. We pass prototype as local var for compactness.
  */
-
 proto.__bd = function(prototype) {
   if (prototype.__cn === undefined) {
     prototype.__cn = makeEl(prototype.__ht)

@@ -9,7 +9,7 @@ import {c, load, Component} from '../utils'
 
 class TestComponent extends Component {
   __html__ = `
-    <div :items="names|NestedComponent">
+    <div :use="NestedComponent" :items="*|names">
     </div>
   `
 }

@@ -4,7 +4,7 @@ import {c, load, Component} from '../utils'
 class TestComponent extends Component {
   __html__ = `
     <div>
-      <span :watch="..height||@height"></span>
+      <span :="..height||@height"></span>
       <span :watch="..color||style:color"></span>
     </div>
   `
