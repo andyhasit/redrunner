@@ -1,23 +1,24 @@
 import {View} from 'redrunner'
 
-const todos = []
-
-export const TodoList = View.__ex__(html`
+export class TodoList extends View{
+  __html__ = html`
   <div>
-    <div>Completed: {stats()}</div>
+    <div>Completed: {stats(c)}</div>
+    <div>Meh: {c.todos.length * 2|prettyFormat(n, p)}</div>
     <button :onClick=".addItem()">+</button>
-    <div :items="todos|TodoItem"></div>
+    <div :items="c.todos|TodoItem"></div>
   </div>
-`, {
+  `
+  todos = []
   addItem() {
-    todos.push({text: '', done: false})
+    this.todos.push({text: '', done: false})
     this.update()
-  },
+  }
   taskChanged() {
     this.update()
   }
-})
-
+}
+const prettyFormat = (n, p) => {console.log(p)}
 const TodoItem = View.__ex__(html`
   <div>
     <input type="checkbox" :checked="..done" :onChange="toggleTask(w, p, c)"/>
@@ -35,7 +36,7 @@ const toggleTask = (w, p, c) => {
   c.bubble('taskChanged')
 }
 
-const stats = () => {
-  const done = todos.filter(t => t.done).length
-  return `${done}/${todos.length}`
+const stats = (c) => {
+  const done = c.todos.filter(t => t.done).length
+  return `${done}/${c.todos.length}`
 }

@@ -5,7 +5,7 @@ const menuVisible = false
 export const Navbar = View.__ex__(html`
   <nav>
     <h3>RedRunner Demo</h3>
-    <use:Menu />
+    <use:Menu :props="p"/>
   </nav>
 `)
 

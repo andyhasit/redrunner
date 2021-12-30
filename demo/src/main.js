@@ -18,4 +18,4 @@ const pages = [
 // const getSmoothie = (routeData) => Promise.resolve(routeData)
 
 mount('navbar', Navbar, pages)
-mount('router', Router, {routes: pages})
+mount('router', Router, pages)
