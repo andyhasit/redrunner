@@ -515,13 +515,19 @@ var proto$1 = View.prototype;
 /**
  * Gets called once immediately after building.
  * Sets initial props extracted from __html__.
+ * Note there is an issue here, in that we rely on there being initial props to call init
+ * on nested views.
  */
 
 proto$1.init = function () {
   for (var key in this.__ip) {
-    var callback = this.__ip[key];
     var nestedComponent = this.el[key];
-    nestedComponent.props = callback(this, this.props);
+    var callback = this.__ip[key];
+
+    if (callback) {
+      nestedComponent.props = callback(this, this.props);
+    }
+
     nestedComponent.init();
   }
 };
@@ -678,7 +684,12 @@ proto$1.updateNested = function () {
   for (var key in this.__ip) {
     var callback = this.__ip[key];
     var nestedComponent = this.el[key];
-    nestedComponent.setProps(callback(this, this.props));
+
+    if (callback) {
+      nestedComponent.setProps(callback(this, this.props));
+    } else {
+      nestedComponent.update();
+    }
   }
 };
 /**

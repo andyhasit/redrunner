@@ -112,19 +112,19 @@ var Router = redrunner.View.prototype.__ex(redrunner.View, {
  * value is passed as data to the view. routeData is {args, params, url}
  */
 
-var p = Router.prototype;
-p.__ht = '<div></div>';
-p.__wc = [];
-p.__qc = p.__lu({});
-p.__ip = {};
+var Router_prototype = Router.prototype;
+Router_prototype.__ht = '<div></div>';
+Router_prototype.__wc = [];
+Router_prototype.__qc = Router_prototype.__lu({});
+Router_prototype.__ip = {};
 
-p.__bv = function (view, prototype) {
+Router_prototype.__bv = function (view, prototype) {
   view.__bd(prototype);
 
   view.el = {};
 };
 
-p.__cn = undefined;
+Router_prototype.__cn = undefined;
 function Route(config) {
   this._vc = new redrunner.KeyedCache(config.cls, config.keyFn || defaultKeyFn);
   this.chunks = this.buildChunks(config.path);
