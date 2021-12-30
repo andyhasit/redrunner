@@ -28,6 +28,7 @@ const handleStubs = (componentName, stubs, path) => {
 
 
 const generateStatements = (className, html, processAsStub, path) => {
+  let statements
   try {
     const builder = new CodeGenerator(className, html, processAsStub, path)
     statements = builder.buildStatements()

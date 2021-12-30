@@ -1,4 +1,5 @@
-import {c, parseHTML} from '../lib/utils/constants'
+import {c} from '../lib/definitions/constants'
+import {parseHTML} from '../lib/utils/dom'
 import diff from 'jest-diff'
 
 const EOL = require('os').EOL

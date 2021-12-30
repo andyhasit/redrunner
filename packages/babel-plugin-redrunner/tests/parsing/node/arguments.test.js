@@ -1,5 +1,5 @@
 import {c, getNode} from '../../utils'
-import {extractNodeData} from '../../../lib/redrunner/extract_node_data'
+import {extractNodeData} from '../../../lib/parse/parse_node'
 
 
 test('Missing arg throws error', () => {

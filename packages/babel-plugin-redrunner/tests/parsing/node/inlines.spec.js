@@ -1,6 +1,5 @@
 import {c, getNode} from '../../utils'
-import {extractNodeData} from '../../../lib/redrunner/extract_node_data'
-import {config} from '../../../lib/redrunner/config'
+import {extractNodeData} from '../../../lib/parse/parse_node'
 
 test('Simple inline', () => {
   const directives = {}

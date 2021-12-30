@@ -1,6 +1,6 @@
 import {c, getNode} from '../../utils'
-import {extractNodeData} from '../../../lib/redrunner/extract_node_data'
-import {config} from '../../../lib/redrunner/config'
+import {extractNodeData} from '../../../lib/parse/parse_node'
+import {config} from '../../../lib/config/base_config'
 
 
 test('Node without relevant data returns undefined', () => {

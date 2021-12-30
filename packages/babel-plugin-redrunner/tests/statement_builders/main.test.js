@@ -1,14 +1,13 @@
 /*
 Note: in some cases you HAVE to test using an assignment.
 */
-import {c, getNode} from '../utils'
 import {
   ArrayStatement,
   CallStatement,
   FunctionStatement,
   ObjectStatement,
   ValueStatement
-} from '../../lib/utils/statement_builders'
+} from '../../lib/generate/statement_builders'
 
 
 test('ArrayStatement', () => {
