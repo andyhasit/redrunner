@@ -1,18 +1,18 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
 
-const TestView = View.__ex__({
+const TestComponent = Component.__ex__({
   html: html`
     <div>{.foo}</div>
   `,
   constructor: function(parent) {
     this.foo = 'A'
-    View.apply(this, parent)
+    Component.apply(this, parent)
   }  
 })
 
 test("Component uses provided constructor", () => {
-  let div = load(TestView)
+  let div = load(TestComponent)
   expect(div).toShow(`
     <div>A</div>
   `)

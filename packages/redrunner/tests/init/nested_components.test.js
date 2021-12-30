@@ -1,12 +1,12 @@
-import {c, h, load, View} from '../utils'
+import {c, h, load, Component} from '../utils'
 
 const names = []
 
-class ParentView extends View {
+class ParentComponent extends Component {
   __html__ = `
     <div>
-      <use:ChildView :props=".child1Props"/>
-      <use:ChildView :props=".child2Props"/>
+      <use:ChildComponent :props=".child1Props"/>
+      <use:ChildComponent :props=".child2Props"/>
     </div>
   `
   init() {
@@ -23,7 +23,7 @@ class ParentView extends View {
   }
 }
 
-class ChildView extends View {
+class ChildComponent extends Component {
   __html__ = `
     <div>
       {..name}
@@ -40,7 +40,7 @@ test("Child's init method can access props declared in parent's init", () => {
     {name: 'alice'},
     {name: 'elsa'}
   ]
-  const div = load(ParentView, props)
+  const div = load(ParentComponent, props)
   expect(names).toEqual(['alice', 'elsa'])
 })
 
@@ -49,7 +49,7 @@ test("Child's props to be updated", () => {
     {name: 'alice'},
     {name: 'elsa'}
   ]
-  const div = load(ParentView, props)
+  const div = load(ParentComponent, props)
   expect(div).toShow(`
     <div>
       <div>alice</div>

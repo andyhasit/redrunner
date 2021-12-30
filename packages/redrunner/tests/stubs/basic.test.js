@@ -1,6 +1,6 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
-class BaseModal extends View {
+class BaseModal extends Component {
   __html__ = `
     <div>
       <div>{..title}</div>
@@ -26,13 +26,13 @@ test("CustomModal uses parent props", () => {
 })
 
 /**
- * This test is required to ensure that View.prototype.__av (which gets an anonymous view)
- * doesn't accidentally add stuff to the View.prototype, which it did in previous commit.
+ * This test is required to ensure that Component.prototype.__av (which gets an anonymous component)
+ * doesn't accidentally add stuff to the Component.prototype, which it did in previous commit.
  */
 
-class JustChecking extends View {}
+class JustChecking extends Component {}
 
-test("We haven't broken View prototype", () => {
+test("We haven't broken Component prototype", () => {
   const v = new JustChecking()
   expect(v.__ht).toBe(undefined)
   expect(v.__qc).toBe(undefined)

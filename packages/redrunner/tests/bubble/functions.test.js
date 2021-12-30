@@ -2,9 +2,9 @@
  * This test is absolutely necessary, as it flags up issues with __ex__ functionality.
  */
 
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
-const TestView = View.__ex__(html`
+const TestComponent = Component.__ex__(html`
     <div>
       <span>{.count}</span>
       <use:Button>
@@ -20,7 +20,7 @@ const TestView = View.__ex__(html`
 })
 
 
-const Button = View.__ex__(html`
+const Button = Component.__ex__(html`
     <button :onClick=".clicked(c, p)">Go</button>
   `, {
   clicked() {
@@ -32,9 +32,9 @@ const Button = View.__ex__(html`
 })
 
 test('bubble function as expected', () => {
-  const view = load(TestView)
-  const btn = view.el.childNodes[1]
-  expect(view).toShow(`
+  const component = load(TestComponent)
+  const btn = component.el.childNodes[1]
+  expect(component).toShow(`
     <div>
       <span>0</span>
       <button>Go</button>
@@ -42,7 +42,7 @@ test('bubble function as expected', () => {
   `)
   btn.click()
   setTimeout(() => {
-    expect(view).toShow(`
+    expect(component).toShow(`
       <div>
         <span>2</span>
         <button>Go</button>

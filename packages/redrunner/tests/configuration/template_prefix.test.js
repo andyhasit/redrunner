@@ -3,26 +3,26 @@ This test ensures we can have a tag in front of a html templated string,
 which some html-in-es6 syntax highlighters require to work.
 */
 
-import {c, h, load, View} from '../utils'
+import {c, h, load, Component} from '../utils'
 
-class TestView1 extends View {
+class TestComponent1 extends Component {
   __html__ = `<div>Hello</div>`
 }
 
-class TestView2 extends View {
+class TestComponent2 extends Component {
   __html__ = html`<div>Hello</div>`
 }
 
-class TestView3 extends View {
+class TestComponent3 extends Component {
   __html__ = '<div>Hello</div>'
 }
 
 
 test('Prefix is ignored', () => {
-  let div = load(TestView1)
+  let div = load(TestComponent1)
   expect(div).toShow(`<div>Hello</div>`)
-  div = load(TestView2)
+  div = load(TestComponent2)
   expect(div).toShow(`<div>Hello</div>`)
-  div = load(TestView3)
+  div = load(TestComponent3)
   expect(div).toShow(`<div>Hello</div>`)
 })

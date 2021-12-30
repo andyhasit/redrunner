@@ -1,36 +1,36 @@
-import {KeyedCache, InstanceCache, SequentialCache} from './viewcache'
-import {buildView, createView} from  './utils'
+import {KeyedPool, InstancePool, SequentialPool} from './pool'
+import {buildComponent, createComponent} from  './utils'
 import {und, makeEl} from './helpers'
 import mountie from './mountie'
 import {Wrapper} from './wrapper'
 import {Lookup} from './lookup'
 
 /**
- * Represents a view.
+ * Represents a component.
  */
-export function View(parent) {
+export function Component(parent) {
   const s = this
-  s.parent = parent       // The parent view
-  s.props = undefined     // The props passed to the view. May be changed.
+  s.parent = parent       // The parent component
+  s.props = undefined     // The props passed to the component. May be changed.
 
   // These will be set during build
   s.e = null              // the element
   s.el = null             // the named wrappers
 
   // Internal state objects
-  s.__nv = []             // Nested views
+  s.__nv = []             // Nested components
   s.__ov = {}             // The old values for watches to compare against
 } 
 
 
-var proto = View.prototype
+var proto = Component.prototype
 
 
 /**
  * Gets called once immediately after building.
  * Sets initial props extracted from __html__.
  * Note there is an issue here, in that we rely on there being initial props to call init
- * on nested views.
+ * on nested components.
  */
 proto.init = function() {
   for (let key in this.__ip) {
@@ -57,7 +57,7 @@ proto.bubble = function(name) {
   throw 'Bubble popped.'
 }
 /**
- * Move the view to new parent. Necessary if sharing a cache.
+ * Move the component to new parent. Necessary if sharing a pool.
  */
 proto.move = function(newParent) {
   if (this.parent && this.parent.__nv) {
@@ -67,10 +67,10 @@ proto.move = function(newParent) {
   this.parent = newParent
 }
 /**
- * Builds a nested view of the specified class. Its up to you how you use it.
+ * Builds a nested component of the specified class. Its up to you how you use it.
  */
 proto.nest = function(cls, props) {
-  const child = createView(cls, this, props || this.props)
+  const child = createComponent(cls, this, props || this.props)
   this.__nv.push(child)
   return child
 }
@@ -78,7 +78,7 @@ proto.nest = function(cls, props) {
  * Lookup a watched value during update. Returns an object with {o, n, c}
  * (oldValue, newValue, changed).
  * You must call this.resetLookups before calling this during an update.
- * The point is to cache the result so it doesn't have to be repeated.
+ * The point is to pool the result so it doesn't have to be repeated.
  */
 proto.lookup = function(query) {
   return this.__qc.get(this, query)
@@ -90,7 +90,7 @@ proto.resetLookups = function() {
   this.__qc.reset()
 }
 /**
- * Sets the props and updates the view.
+ * Sets the props and updates the component.
  */
 proto.setProps = function(props) {
   this.props = props
@@ -104,7 +104,7 @@ proto.trackMounting = function() {
   this.__mt.track(this)
 }
 /**
- * Updates the view.
+ * Updates the component.
  */
 proto.update = function() {
   this.resetLookups()
@@ -145,7 +145,7 @@ proto.updateSelf = function() {
   }
 }
 /**
- * Update nested views (but not repeat elements).
+ * Update nested components (but not repeat elements).
  */
 proto.updateNested = function() {
   // These are user created by calling nest()
@@ -193,17 +193,17 @@ proto.__wa = function(wrapperKey, shieldQuery, reverseShield, shieldCount, callb
 }
 
 
-const applyWatchCallbacks = (view, wrapper, callbacks) => {
+const applyWatchCallbacks = (component, wrapper, callbacks) => {
   
   for (let key in callbacks) {
     let callback = callbacks[key]
     if (key === '*') {
-      callback.call(view, wrapper, view.props, view)
+      callback.call(component, wrapper, component.props, component)
     } else {
       // means: {new, old, changed}
-      const {n, o, c} = view.lookup(key)
+      const {n, o, c} = component.lookup(key)
       if (c) {
-        callback.call(view, n, o, wrapper, view.props, view)
+        callback.call(component, n, o, wrapper, component.props, component)
       }
     }
   }
@@ -216,10 +216,10 @@ const applyWatchCallbacks = (view, wrapper, callbacks) => {
 proto.__mt = mountie
 
 /**
- * Nest Internal. For building a nested view declared in the html.
+ * Nest Internal. For building a nested component declared in the html.
  */
 proto.__ni = function(path, cls) {
-  const child = buildView(cls, this)
+  const child = buildComponent(cls, this)
   this.__gw(path).replace(child.e)
   return child
 }
@@ -230,7 +230,7 @@ proto.__ni = function(path, cls) {
  * @param {object} [prototypeExtras] - an object with extra things to be added to the prototype
  * @param {function} [prototypeExtras] - the function to be used as constructor
  */
-View.prototype.__ex = function(baseClass, prototypeExtras, constructorFunction) {
+Component.prototype.__ex = function(baseClass, prototypeExtras, constructorFunction) {
   var subClass = constructorFunction || function(parent) {
     baseClass.call(this, parent)
   }
@@ -245,16 +245,16 @@ View.prototype.__ex = function(baseClass, prototypeExtras, constructorFunction) 
 
 
 /**
- * Create caches.
+ * Create pools.
  */
 proto.__kc = function(cls, keyFn) {
-  return new KeyedCache(cls, keyFn)
+  return new KeyedPool(cls, keyFn)
 }
 proto.__sc = function(cls) {
-  return new SequentialCache(cls)
+  return new SequentialPool(cls)
 }
 proto.__ic = function(mappings, fallback) {
-  return new InstanceCache(mappings, fallback)
+  return new InstancePool(mappings, fallback)
 }
 
 /**
@@ -297,7 +297,7 @@ proto.__fe = function(path) {
 
 /**
  * Is Attached.
- * Determines whether this view is attached to the DOM.
+ * Determines whether this component is attached to the DOM.
  */
 proto.__ia = function() {
   let e = this.e
@@ -318,13 +318,13 @@ proto.__lu = function(callbacks) {
 }
 
 /**
- * Creates an anonymous stub view class
+ * Creates an anonymous stub component class
  */
 proto.__sv = function() {
   const cls = function(parent) {
-    View.call(this, parent)
+    Component.call(this, parent)
   }
-  cls.prototype = new View()
+  cls.prototype = new Component()
   return cls
 }
 

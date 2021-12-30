@@ -1,7 +1,7 @@
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
       <span>{.count}</span>
@@ -18,7 +18,7 @@ class TestView extends View {
 }
 
 
-class Button extends View {
+class Button extends Component {
   __html__ = `
     <button :onClick=".clicked(c, p)">Go</button>
   `
@@ -31,9 +31,9 @@ class Button extends View {
 }
 
 test('bubble function as expected', () => {
-  const view = load(TestView)
-  const btn = view.el.childNodes[1]
-  expect(view).toShow(`
+  const component = load(TestComponent)
+  const btn = component.el.childNodes[1]
+  expect(component).toShow(`
     <div>
       <span>0</span>
       <button>Go</button>
@@ -41,7 +41,7 @@ test('bubble function as expected', () => {
   `)
   btn.click()
   setTimeout(() => {
-    expect(view).toShow(`
+    expect(component).toShow(`
       <div>
         <span>2</span>
         <button>Go</button>

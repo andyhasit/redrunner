@@ -1,7 +1,7 @@
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div :el="x">
       <div>
@@ -18,7 +18,7 @@ class TestView extends View {
 }
 
 test('Named elements saved correctly', () => {
-  const div = load(TestView)
+  const div = load(TestComponent)
   expect(div).toShow(`
     <div class="x">
       <div>

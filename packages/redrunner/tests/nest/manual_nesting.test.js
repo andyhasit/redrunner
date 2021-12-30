@@ -1,10 +1,10 @@
-import {c, h, load, View} from '../utils'
+import {c, h, load, Component} from '../utils'
 
 
 const child1 = {name: 'jo'}
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = html`
     <div :el="main">
     </div>
@@ -20,13 +20,13 @@ class TestView extends View {
 }
 
 
-class Child extends View {
+class Child extends Component {
   __html__ = '<span>{..name}</span>'
 }
 
 
 test('Nest accepts props', () => {
-  const div = load(TestView)
+  const div = load(TestComponent)
   expect(div).toShow(`
     <div>
       <span>jo</span>

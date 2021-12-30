@@ -1,8 +1,8 @@
-const {c, EOL, transform, view} = require('../utils')
+const {c, EOL, transform, component} = require('../utils')
 
 
 test('Simple inline', () => {
-  const src = view(`
+  const src = component(`
     <div>
       <span>{{name}}</span>
     </div>
@@ -11,7 +11,7 @@ test('Simple inline', () => {
 });
 
 test('Inline leaves atts alone', () => {
-  const src = view(`
+  const src = component(`
     <div>
       <span>{{name | .getName?}}</span>
       <span id="hey" class="  my-style {{style}}"></span>
@@ -21,7 +21,7 @@ test('Inline leaves atts alone', () => {
 });
 
 test('Inline with different endings', () => {
-  const src = view(`
+  const src = component(`
     <div>
       <span>{{name|.getName}}</span>
       <span>{{name|.getName?}}</span>

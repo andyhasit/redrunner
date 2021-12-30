@@ -182,45 +182,45 @@ Wrapper.prototype = {
 };
 
 /**
- * Creates and mounts a view onto an element.
+ * Creates and mounts a component onto an element.
  *
  * @param {unsure} elementOrId Either a string representing an id, or an element.
- * @param {class} cls The class of View to create
- * @param {object} props The props to pass to the view (optional)
- * @param {object} parent The parent view (optional)
+ * @param {class} cls The class of Component to create
+ * @param {object} props The props to pass to the component (optional)
+ * @param {object} parent The parent component (optional)
  */
 
 function mount(elementOrId, cls, props, parent) {
-  var view = createView(cls, parent, props);
+  var component = createComponent(cls, parent, props);
   var nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId) : elementOrId;
-  nodeToReplace.parentNode.replaceChild(view.e, nodeToReplace);
-  return view;
+  nodeToReplace.parentNode.replaceChild(component.e, nodeToReplace);
+  return component;
 }
 /**
- * Creates a view and initialises it.
+ * Creates a component and initialises it.
  *
- * @param {class} cls The class of View to create
- * @param {object} parent The parent view (optional)
- * @param {object} props The props to pass to the view (optional)
+ * @param {class} cls The class of Component to create
+ * @param {object} parent The parent component (optional)
+ * @param {object} props The props to pass to the component (optional)
  */
 
-function createView(cls, parent, props) {
-  var view = buildView(cls, parent);
-  view.props = props;
-  view.init();
-  view.update();
-  return view;
+function createComponent(cls, parent, props) {
+  var component = buildComponent(cls, parent);
+  component.props = props;
+  component.init();
+  component.update();
+  return component;
 }
 /**
- * Builds a view.
+ * Builds a component.
  */
 
-function buildView(cls, parent) {
-  var view = new cls(parent);
+function buildComponent(cls, parent) {
+  var component = new cls(parent);
 
-  view.__bv(view, cls.prototype);
+  component.__bv(component, cls.prototype);
 
-  return view;
+  return component;
 }
 /**
  * Creates a wrapper of type tag e.g. h('div')
@@ -231,27 +231,27 @@ function h(tag) {
 }
 
 /**
- * Caches same type views, retrieving by sequence.
+ * Caches same type components, retrieving by sequence.
  * Must not be shared.
  * 
- * @param {class} viewClass - The class of View to create.
+ * @param {class} componentClass - The class of Component to create.
  * @param {function} keyFn - A function which obtains the key to cache by
  */
 
-function KeyedCache(viewClass, keyFn) {
-  this._v = viewClass;
+function KeyedCache(componentClass, keyFn) {
+  this._v = componentClass;
   this._f = keyFn;
   this._k = []; // keys
 
-  this._p = {}; // pool of view instances
+  this._p = {}; // pool of component instances
 }
 var proto = KeyedCache.prototype;
 /**
- * Retrieves a single view. Though not used in RedRunner itself, it may
+ * Retrieves a single component. Though not used in RedRunner itself, it may
  * be used elsewhere, such as in the router.
  * 
  * @param {Object} item - The item which will be passed as props.
- * @param {View} parent - The parent view.
+ * @param {Component} parent - The parent component.
  */
 
 proto.getOne = function (item, parent) {
@@ -263,13 +263,13 @@ proto.getOne = function (item, parent) {
  * 
  * @param {DOMElement} e - The DOM element to patch.
  * @param {Array} items - Array of items which will be passed as props.
- * @param {View} parent - The parent view.
+ * @param {Component} parent - The parent component.
  */
 
 
 proto.patch = function (e, items, parent) {
   var pool = this._p;
-  var viewClass = this._v;
+  var componentClass = this._v;
   var keyFn = this._f;
   var childNodes = e.childNodes;
   var itemsLength = items.length;
@@ -277,19 +277,19 @@ proto.patch = function (e, items, parent) {
   var newKeys = [];
   var item,
       key,
-      view,
+      component,
       childElementCount = oldKeySequence.length + 1;
 
   for (var i = 0; i < itemsLength; i++) {
     item = items[i];
     key = keyFn(item);
-    view = this._get(pool, viewClass, key, item, parent);
+    component = this._get(pool, componentClass, key, item, parent);
     newKeys.push(key);
 
     if (i > childElementCount) {
-      e.appendChild(view.e);
+      e.appendChild(component.e);
     } else if (key !== oldKeySequence[i]) {
-      e.insertBefore(view.e, childNodes[i]);
+      e.insertBefore(component.e, childNodes[i]);
       pull(oldKeySequence, key, i);
     }
   }
@@ -299,30 +299,30 @@ proto.patch = function (e, items, parent) {
 }; // Internal
 
 
-proto._get = function (pool, viewClass, key, item, parent) {
-  var view;
+proto._get = function (pool, componentClass, key, item, parent) {
+  var component;
 
   if (pool.hasOwnProperty(key)) {
-    view = pool[key];
-    view.setProps(item);
+    component = pool[key];
+    component.setProps(item);
   } else {
-    view = createView(viewClass, parent, item);
-    pool[key] = view;
+    component = createComponent(componentClass, parent, item);
+    pool[key] = component;
   }
 
-  return view;
+  return component;
 };
 /**
- * Caches same type views, retrieving by sequence.
+ * Caches same type components, retrieving by sequence.
  * Must not be shared.
  * 
- * @param {class} viewClass - The class of View to create.
+ * @param {class} componentClass - The class of Component to create.
  */
 
 
-function SequentialCache(viewClass) {
-  this._v = viewClass;
-  this._p = []; // pool of view instances
+function SequentialCache(componentClass) {
+  this._v = componentClass;
+  this._p = []; // pool of component instances
 
   this._c = 0; // Child element count
 }
@@ -332,16 +332,16 @@ function SequentialCache(viewClass) {
  * 
  * @param {DOMElement} e - The DOM element to patch.
  * @param {Array} items - Array of items which will be passed as props.
- * @param {View} parent - The parent view.
+ * @param {Component} parent - The parent component.
  */
 
 SequentialCache.prototype.patch = function (e, items, parent) {
   var pool = this._p;
-  var viewClass = this._v;
+  var componentClass = this._v;
   var childNodes = e.childNodes;
   var itemsLength = items.length;
   var item,
-      view,
+      component,
       poolCount = pool.length,
       childElementCount = this._c;
 
@@ -349,16 +349,16 @@ SequentialCache.prototype.patch = function (e, items, parent) {
     item = items[i];
 
     if (i < poolCount) {
-      view = pool[i];
-      view.setProps(item);
+      component = pool[i];
+      component.setProps(item);
     } else {
-      view = createView(viewClass, parent, item);
-      pool.push(view);
+      component = createComponent(componentClass, parent, item);
+      pool.push(component);
       poolCount++;
     }
 
     if (i >= childElementCount) {
-      e.appendChild(view.e);
+      e.appendChild(component.e);
     }
   }
 
@@ -366,15 +366,15 @@ SequentialCache.prototype.patch = function (e, items, parent) {
   trimChildren(e, childNodes, itemsLength);
 };
 /**
- * An object which creates and caches views according to the mappings provided.
+ * An object which creates and caches components according to the mappings provided.
  * If there is no match in the mappings, the fallback function is called.
  * 
- * Note that the fallback must return an instance (of View or Wrapper) whereas
- * mappings must specify view classes. 
+ * Note that the fallback must return an instance (of Component or Wrapper) whereas
+ * mappings must specify component classes. 
  * 
  * You can rely solely on the fallback if you like.
  * 
- * @param {Object} mappings - a mapping of format key->viewClass
+ * @param {Object} mappings - a mapping of format key->componentClass
  * @param {function} fallback - a function to call when no key is provided.
  * 
  */
@@ -386,9 +386,9 @@ function InstanceCache(mappings, fallback) {
   this._i = {}; // Instances
 }
 
-InstanceCache.prototype.getOne = function (key, parentView) {
+InstanceCache.prototype.getOne = function (key, parentComponent) {
   if (!this._i.hasOwnProperty(key)) {
-    this._i[key] = this._m.hasOwnProperty(key) ? parentView.nest(this._m[key]) : this._f(key, parentView);
+    this._i[key] = this._m.hasOwnProperty(key) ? parentComponent.nest(this._m[key]) : this._f(key, parentComponent);
   }
 
   return this._i[key];
@@ -429,25 +429,25 @@ function pull(arr, item, to) {
 /**
  * RedRunner's crude way of tracking mounting and unmounting.
  */
-var trackedViews = [];
+var trackedComponents = [];
 var mountie = {
-  track: function track(view) {
-    trackedViews.push({
-      view: view,
-      isAttached: view.__ia()
+  track: function track(component) {
+    trackedComponents.push({
+      component: component,
+      isAttached: component.__ia()
     });
   },
   flush: function flush() {
-    for (var i = 0, il = trackedViews.length; i < il; i++) {
-      var trackedView = trackedViews[i];
-      var view = trackedView.view;
+    for (var i = 0, il = trackedComponents.length; i < il; i++) {
+      var trackedComponent = trackedComponents[i];
+      var component = trackedComponent.component;
 
-      var attachedNow = view.__ia();
+      var attachedNow = component.__ia();
 
-      if (attachedNow !== trackedView.isAttached) {
-        var fn = attachedNow ? view.mount : view.unmount;
-        fn.apply(view);
-        trackedView.isAttached = attachedNow;
+      if (attachedNow !== trackedComponent.isAttached) {
+        var fn = attachedNow ? component.mount : component.unmount;
+        fn.apply(component);
+        trackedComponent.isAttached = attachedNow;
       }
     }
   }
@@ -456,8 +456,8 @@ var mountie = {
 /**
  * Used internally.
  * An object which caches the results of lookup queries so we don't have to
- * repeat them in the same view.
- * The Lookup instance will be shared between instances of a view.
+ * repeat them in the same component.
+ * The Lookup instance will be shared between instances of a component.
  * Must call reset() on every update.
  */
 function Lookup(callbacks) {
@@ -465,16 +465,16 @@ function Lookup(callbacks) {
   this.run = {};
 }
 Lookup.prototype = {
-  get: function get(view, key) {
+  get: function get(component, key) {
     var run = this.run;
 
     if (run[key] === undefined) {
       // Verbose but efficient way as it avoids lookups?
       // Or is this harmful to performance because we're just reading values more than calling functions?
-      var o = view.__ov[key];
-      var n = this.callbacks[key](view, view.props);
+      var o = component.__ov[key];
+      var n = this.callbacks[key](component, component.props);
       var c = n !== o;
-      view.__ov[key] = n;
+      component.__ov[key] = n;
       var rtn = {
         n: n,
         o: o,
@@ -492,14 +492,14 @@ Lookup.prototype = {
 };
 
 /**
- * Represents a view.
+ * Represents a component.
  */
 
-function View(parent) {
+function Component(parent) {
   var s = this;
-  s.parent = parent; // The parent view
+  s.parent = parent; // The parent component
 
-  s.props = undefined; // The props passed to the view. May be changed.
+  s.props = undefined; // The props passed to the component. May be changed.
   // These will be set during build
 
   s.e = null; // the element
@@ -507,16 +507,16 @@ function View(parent) {
   s.el = null; // the named wrappers
   // Internal state objects
 
-  s.__nv = []; // Nested views
+  s.__nv = []; // Nested components
 
   s.__ov = {}; // The old values for watches to compare against
 }
-var proto$1 = View.prototype;
+var proto$1 = Component.prototype;
 /**
  * Gets called once immediately after building.
  * Sets initial props extracted from __html__.
  * Note there is an issue here, in that we rely on there being initial props to call init
- * on nested views.
+ * on nested components.
  */
 
 proto$1.init = function () {
@@ -551,7 +551,7 @@ proto$1.bubble = function (name) {
   throw 'Bubble popped.';
 };
 /**
- * Move the view to new parent. Necessary if sharing a cache.
+ * Move the component to new parent. Necessary if sharing a cache.
  */
 
 
@@ -564,12 +564,12 @@ proto$1.move = function (newParent) {
   this.parent = newParent;
 };
 /**
- * Builds a nested view of the specified class. Its up to you how you use it.
+ * Builds a nested component of the specified class. Its up to you how you use it.
  */
 
 
 proto$1.nest = function (cls, props) {
-  var child = createView(cls, this, props || this.props);
+  var child = createComponent(cls, this, props || this.props);
 
   this.__nv.push(child);
 
@@ -595,7 +595,7 @@ proto$1.resetLookups = function () {
   this.__qc.reset();
 };
 /**
- * Sets the props and updates the view.
+ * Sets the props and updates the component.
  */
 
 
@@ -613,7 +613,7 @@ proto$1.trackMounting = function () {
   this.__mt.track(this);
 };
 /**
- * Updates the view.
+ * Updates the component.
  */
 
 
@@ -664,7 +664,7 @@ proto$1.updateSelf = function () {
   }
 };
 /**
- * Update nested views (but not repeat elements).
+ * Update nested components (but not repeat elements).
  */
 
 
@@ -723,21 +723,21 @@ proto$1.__wa = function (wrapperKey, shieldQuery, reverseShield, shieldCount, ca
   };
 };
 
-var applyWatchCallbacks = function applyWatchCallbacks(view, wrapper, callbacks) {
+var applyWatchCallbacks = function applyWatchCallbacks(component, wrapper, callbacks) {
   for (var key in callbacks) {
     var callback = callbacks[key];
 
     if (key === '*') {
-      callback.call(view, wrapper, view.props, view);
+      callback.call(component, wrapper, component.props, component);
     } else {
       // means: {new, old, changed}
-      var _view$lookup = view.lookup(key),
-          n = _view$lookup.n,
-          o = _view$lookup.o,
-          c = _view$lookup.c;
+      var _component$lookup = component.lookup(key),
+          n = _component$lookup.n,
+          o = _component$lookup.o,
+          c = _component$lookup.c;
 
       if (c) {
-        callback.call(view, n, o, wrapper, view.props, view);
+        callback.call(component, n, o, wrapper, component.props, component);
       }
     }
   }
@@ -749,11 +749,11 @@ var applyWatchCallbacks = function applyWatchCallbacks(view, wrapper, callbacks)
 
 proto$1.__mt = mountie;
 /**
- * Nest Internal. For building a nested view declared in the html.
+ * Nest Internal. For building a nested component declared in the html.
  */
 
 proto$1.__ni = function (path, cls) {
-  var child = buildView(cls, this);
+  var child = buildComponent(cls, this);
 
   this.__gw(path).replace(child.e);
 
@@ -767,7 +767,7 @@ proto$1.__ni = function (path, cls) {
  */
 
 
-View.prototype.__ex = function (baseClass, prototypeExtras, constructorFunction) {
+Component.prototype.__ex = function (baseClass, prototypeExtras, constructorFunction) {
   var subClass = constructorFunction || function (parent) {
     baseClass.call(this, parent);
   };
@@ -845,7 +845,7 @@ proto$1.__fe = function (path) {
 };
 /**
  * Is Attached.
- * Determines whether this view is attached to the DOM.
+ * Determines whether this component is attached to the DOM.
  */
 
 
@@ -871,16 +871,16 @@ proto$1.__lu = function (callbacks) {
   return new Lookup(callbacks);
 };
 /**
- * Creates an anonymous stub view class
+ * Creates an anonymous stub component class
  */
 
 
 proto$1.__sv = function () {
   var cls = function cls(parent) {
-    View.call(this, parent);
+    Component.call(this, parent);
   };
 
-  cls.prototype = new View();
+  cls.prototype = new Component();
   return cls;
 };
 /**
@@ -893,13 +893,13 @@ proto$1.visible = function (visible) {
 };
 
 module.exports = {
-  createView: createView,
+  createComponent: createComponent,
   h: h,
   mount: mount,
   KeyedCache: KeyedCache,
   InstanceCache: InstanceCache,
   isStr: isStr,
   SequentialCache: SequentialCache,
-  View: View,
+  Component: Component,
   Wrapper: Wrapper
 };

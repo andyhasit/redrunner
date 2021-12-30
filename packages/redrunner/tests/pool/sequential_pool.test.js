@@ -1,20 +1,20 @@
 /*
-This checks whether nested views which are detached get told to update,
+This checks whether nested components which are detached get told to update,
 which they shouldn't.
 
 */
 
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
-    <div :items="names|NestedView">
+    <div :items="names|NestedComponent">
     </div>
   `
 }
 
-class NestedView extends View {
+class NestedComponent extends Component {
   __html__ = `
     <span>{.props}</span>
   `
@@ -28,7 +28,7 @@ class NestedView extends View {
 }
 
 /*
-Code to track how many times each view was updated.
+Code to track how many times each component was updated.
 */
 let _seq = 0
 const _counter = {}
@@ -45,10 +45,10 @@ const updateCounter = (uniqueSeq) => {
 
 
 const names = ['apple', 'carrot', 'kiwi']
-const div = load(TestView)
+const div = load(TestComponent)
 
 /* Important to make sure load isn't accidentally called twice somewhere */
-test('Nested views update just once on load', () => {
+test('Nested components update just once on load', () => {
   expect(div).toShow(`
     <div>
       <span>apple</span>
@@ -59,7 +59,7 @@ test('Nested views update just once on load', () => {
   expect(_counter).toEqual({1:1, 2:1, 3:1})
 })
 
-test('Nested views update again', () => {
+test('Nested components update again', () => {
   names.push('orange')
   div.update()
   expect(div).toShow(`
@@ -73,7 +73,7 @@ test('Nested views update again', () => {
   expect(_counter).toEqual({1:2, 2:2, 3:2, 4:1})
 })
 
-test('Removed views are not updated', () => {
+test('Removed components are not updated', () => {
   names.length = 0
   names.push('lemons')
   div.update()
@@ -85,7 +85,7 @@ test('Removed views are not updated', () => {
   expect(_counter).toEqual({1:3, 2:2, 3:2, 4:1})
 })
 
-test('Re-added views are updated', () => {
+test('Re-added components are updated', () => {
   names.push('limes')
   div.update()
   expect(div).toShow(`

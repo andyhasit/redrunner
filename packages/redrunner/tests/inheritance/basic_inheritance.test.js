@@ -1,10 +1,10 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
 
 const caps = (n) => n.toUpperCase()
 const person = {name: 'Hortense'}
 
-class ParentView extends View {
+class ParentComponent extends Component {
   __html__ = `
     <div>
       <div>{..name}</div>
@@ -16,13 +16,13 @@ class ParentView extends View {
   }
 }
 
-class ChildView1 extends ParentView {
+class ChildComponent1 extends ParentComponent {
   getHeight() {
     return 200
   }
 }
 
-class ChildView2 extends ParentView {
+class ChildComponent2 extends ParentComponent {
   __html__ = `
     <div>
       <div>{..name | caps(n)}</div>
@@ -31,8 +31,8 @@ class ChildView2 extends ParentView {
   `
 }
 
-test("ChildView1 uses parent's generated code", () => {
-  const div = load(ChildView1, person)
+test("ChildComponent1 uses parent's generated code", () => {
+  const div = load(ChildComponent1, person)
   expect(div).toShow(`
     <div>
       <div>Hortense</div>
@@ -41,8 +41,8 @@ test("ChildView1 uses parent's generated code", () => {
   `)
 })
 
-test("ChildView2 uses own generated code, but inherits method", () => {
-  const div = load(ChildView2, person)
+test("ChildComponent2 uses own generated code, but inherits method", () => {
+  const div = load(ChildComponent2, person)
   expect(div).toShow(`
     <div>
       <div>HORTENSE</div>

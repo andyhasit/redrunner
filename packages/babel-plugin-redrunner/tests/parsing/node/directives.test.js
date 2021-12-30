@@ -36,7 +36,7 @@ test('Adding chainedCalls', () => {
   }
   const domNode = getNode('<div :on="click|.handleClick"></div>')
   const nodeData = extractNodeData(domNode, {directives})
-  expect(nodeData.chainedCalls[0]).toMatch("on('click', function(w, e) {view.handleClick(w, e)})")
+  expect(nodeData.chainedCalls[0]).toMatch("on('click', function(w, e) {component.handleClick(w, e)})")
 })
 
 
@@ -44,5 +44,5 @@ test('Generated directives work', () => {
   // Use somethin we know is added to config
   const domNode = getNode('<div :onClick=".handleClick"></div>')
   const nodeData = extractNodeData(domNode, config)
-  expect(nodeData.chainedCalls[0]).toMatch("on('click', function(w, e) {view.handleClick(w, e)})")
+  expect(nodeData.chainedCalls[0]).toMatch("on('click', function(w, e) {component.handleClick(w, e)})")
 })

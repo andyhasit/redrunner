@@ -1,6 +1,6 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
-class BaseModal extends View {
+class BaseModal extends Component {
   __html__ = `
     <div>
       <div>{..title}</div>
@@ -9,7 +9,7 @@ class BaseModal extends View {
   `
 }
 
-class Item extends View {
+class Item extends Component {
   __html__ = `<li>{.props}</li>`
 }
 

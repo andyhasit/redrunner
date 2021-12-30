@@ -1,6 +1,6 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
-class ViewWithOwnProps extends View {
+class ComponentWithOwnProps extends Component {
   __html__ = html`
     <div>{..name}</div>
   `
@@ -10,8 +10,8 @@ class ViewWithOwnProps extends View {
   }
 }
 
-test("Mounted view can create own props", () => {
-  const div = load(ViewWithOwnProps)
+test("Mounted component can create own props", () => {
+  const div = load(ComponentWithOwnProps)
   expect(div).toShow(`
     <div>
       jo
@@ -19,16 +19,16 @@ test("Mounted view can create own props", () => {
   `)
 })
 
-class View1 extends View {
+class Component1 extends Component {
   __html__ = html`
     <div>
-      <use:ViewWithOwnProps />
+      <use:ComponentWithOwnProps />
     </div>
   `
 }
 
-test("View can create own props", () => {
-  const div = load(View1)
+test("Component can create own props", () => {
+  const div = load(Component1)
   expect(div).toShow(`
   <div>
     <div>

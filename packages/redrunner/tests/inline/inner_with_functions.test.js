@@ -1,4 +1,4 @@
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
 const props = {
@@ -19,7 +19,7 @@ const service = {
 }
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
       <span>{..getName()}</span>
@@ -38,7 +38,7 @@ class TestView extends View {
 
 
 test('Inline functions called on load', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   expect(div).toShow(`
     <div>
       <span>bob</span>
@@ -50,8 +50,8 @@ test('Inline functions called on load', () => {
 })
 
 test('Inline functions called on update', () => {
-  const div = load(TestView, props)
-  div.view.name = 'alice'
+  const div = load(TestComponent, props)
+  div.component.name = 'alice'
   service.name = 'jana'
   div.update()
   expect(div).toShow(`

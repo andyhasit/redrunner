@@ -1,19 +1,19 @@
 /*
-This checks whether nested views which are detached get told to update,
+This checks whether nested components which are detached get told to update,
 which they shouldn't.
 
 */
 
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
-    <div :items="fruit|NestedView|id"/>
+    <div :items="fruit|NestedComponent|id"/>
   `
 }
 
-class NestedView extends View {
+class NestedComponent extends Component {
   __html__ = `
     <div>{..name}</div>
   `
@@ -54,11 +54,11 @@ class UpdateCounter {
 let fruit, div, counter = new UpdateCounter()
 function init() {
   counter.reset()
-  div = load(TestView)
+  div = load(TestComponent)
 }
 
 // Run this first to make sure update isn't accidentally called twice somewhere.
-test('Nested views update just once on load', () => {
+test('Nested components update just once on load', () => {
   fruit = [
     {id: 1, name: 'apple'},
     {id: 2, name: 'carrot'},
@@ -75,7 +75,7 @@ test('Nested views update just once on load', () => {
   expect(counter.updates).toEqual({1:1, 2:1, 3:1})
 })
 
-test('Nested views update again', () => {
+test('Nested components update again', () => {
   fruit = [
     {id: 1, name: 'apple'},
     {id: 2, name: 'carrot'},
@@ -96,7 +96,7 @@ test('Nested views update again', () => {
 })
 
 
-test('Removed views are not updated', () => {
+test('Removed components are not updated', () => {
   fruit = [
     {id: 1, name: 'apple'},
     {id: 2, name: 'carrot'},
@@ -116,7 +116,7 @@ test('Removed views are not updated', () => {
   expect(counter.updates).toEqual({1:1, 2:1, 3:1, 4:1})
 })
 
-test('Re-added items use their old views', () => {
+test('Re-added items use their old components', () => {
   fruit = [
     {id: 1, name: 'apple'},
     {id: 2, name: 'carrot'},

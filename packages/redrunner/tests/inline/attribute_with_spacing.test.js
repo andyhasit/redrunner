@@ -1,46 +1,46 @@
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
-class TestView1 extends View {
+class TestComponent1 extends Component {
   __html__ = '<span class="  {..style} "></span>'
 }
 test('Start and end spacing are stripped', () => {
-  const div = load(TestView1, {style: 'danger'})
+  const div = load(TestComponent1, {style: 'danger'})
   expect(div).toShow('<span class="danger"></span>')
 })
 
 
-class TestView2 extends View {
+class TestComponent2 extends Component {
   __html__ = '<span class="span-{..style}"></span>'
 }
 test('No space added before if there is none', () => {
-  const div = load(TestView2, {style: 'danger'})
+  const div = load(TestComponent2, {style: 'danger'})
   expect(div).toShow('<span class="span-danger"></span>')
 })
 
 
-class TestView3 extends View {
+class TestComponent3 extends Component {
   __html__ = '<span class="span {..style}  "></span>'
 }
 test('Space before is preserved if there is any', () => {
-  const div = load(TestView3, {style: 'danger'})
+  const div = load(TestComponent3, {style: 'danger'})
   expect(div).toShow('<span class="span danger"></span>')
 })
 
 
-class TestView4 extends View {
+class TestComponent4 extends Component {
   __html__ = '<span class=" {..style} special "></span>'
 }
 test('Space after is preserved if there is any', () => {
-  const div = load(TestView4, {style: 'danger'})
+  const div = load(TestComponent4, {style: 'danger'})
   expect(div).toShow('<span class="danger special"></span>')
 })
 
 
-class TestView5 extends View {
+class TestComponent5 extends Component {
   __html__ = '<span class="{..style}-special"></span>'
 }
 test('No space added after if there is none', () => {
-  const div = load(TestView5, {style: 'danger'})
+  const div = load(TestComponent5, {style: 'danger'})
   expect(div).toShow('<span class="danger-special"></span>')
 })

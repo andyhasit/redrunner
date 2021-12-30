@@ -1,7 +1,7 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
 
-const TestView = View.__ex__(html`
+const TestComponent = Component.__ex__(html`
   <div>
     <input :el="checkbox" type="checkbox">
     <span :el="span">{c.el.checkbox.e.checked}</span>
@@ -12,9 +12,9 @@ const TestView = View.__ex__(html`
 
 // test('isChecked reads correctly', () => {
 
-//   const div = load(TestView)
-//   const view = div.view
-//   const checkboxElement = view.el.checkbox.e
+//   const div = load(TestComponent)
+//   const component = div.component
+//   const checkboxElement = component.el.checkbox.e
 
 //   expect(div).toShow(`
 //     <div>
@@ -23,7 +23,7 @@ const TestView = View.__ex__(html`
 //     </div>
 //   `)
 //   checkboxElement.change = true
-//   //view.update()
+//   //component.update()
 //   console.log(checkboxElement.checked)
 //   expect(div).toShow(`
 //     <div>
@@ -34,7 +34,7 @@ const TestView = View.__ex__(html`
 // })
 
 
-const TestView2 = View.__ex__(html`
+const TestComponent2 = Component.__ex__(html`
   <div>
     <input :el="checkbox" type="checkbox" :checked=".done">
     <span :el="span">{c.el.checkbox.isChecked()}</span>
@@ -44,8 +44,8 @@ const TestView2 = View.__ex__(html`
 
 test('Checked directive obeys', () => {
 
-  const div = load(TestView2)
-  const view = div.view
+  const div = load(TestComponent2)
+  const component = div.component
 
   expect(div).toShow(`
     <div>
@@ -54,8 +54,8 @@ test('Checked directive obeys', () => {
     </div>
   `)
 
-  view.done = true
-  view.update()
+  component.done = true
+  component.update()
   expect(div).toShow(`
     <div>
       <input type="checkbox">
@@ -63,8 +63,8 @@ test('Checked directive obeys', () => {
     </div>
   `)
 
-  view.done = false
-  view.update()
+  component.done = false
+  component.update()
   expect(div).toShow(`
     <div>
       <input type="checkbox">

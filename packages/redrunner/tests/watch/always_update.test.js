@@ -1,4 +1,4 @@
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 let next = 0
 function getNext() {
@@ -6,14 +6,14 @@ function getNext() {
   return next
 }
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = '<span :watch="*|getNext()|text"></span>'
 }
 
 const props = {name: 'joe'}
 
 test('Empty property notation always updates', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   expect(div).toShow('<span>1</span>')
   div.update()
   expect(div).toShow('<span>2</span>')

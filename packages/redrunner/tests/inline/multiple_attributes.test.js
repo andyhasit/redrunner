@@ -1,7 +1,7 @@
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
       <span id="{..id}" class="{..style}"></span>
@@ -15,7 +15,7 @@ class TestView extends View {
 const props = {style: 'alert', id: 8}
 
 test('Attributes display correct initial values', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   expect(div).toShow(`
     <div>
       <span id="8" class="alert"></span>

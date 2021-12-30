@@ -1,23 +1,23 @@
 import { h } from '../../src/utils'
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `<div :swap="..choice|mappings|myFallback"></div>`
 }
 
 
-class ViewA extends View {
+class ComponentA extends Component {
   __html__ = `<span>A</span>`
 }
 
-class ViewB extends View {
+class ComponentB extends Component {
   __html__ = `<span>B</span>`
 }
 
 const mappings = {
-  a: ViewA,
-  b: ViewB,
+  a: ComponentA,
+  b: ComponentB,
 }
 
 const myFallback = k => h('span').text(k)
@@ -25,7 +25,7 @@ const myFallback = k => h('span').text(k)
 const props = {choice: 'a'}
 
 test('Swap syntax works', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   expect(div).toShow(`
     <div>
       <span>A</span>

@@ -1,7 +1,7 @@
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
       <span>{.age|(n * 2)}</span>
@@ -13,7 +13,7 @@ class TestView extends View {
 }
 
 test('Expression syntax works', () => {
-  const div = load(TestView)
+  const div = load(TestComponent)
   expect(div).toShow(`
     <div>
       <span>8</span>

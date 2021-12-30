@@ -1,31 +1,31 @@
-import {View, KeyedCache, isStr} from 'redrunner'
+import {Component, KeyedCache, isStr} from 'redrunner'
 
 /*
- * The defaultKeyFn for a route's ViewCache.
- * It returns 1, which causes the same view to be reused each time, which is most likely
- * what we want, but means the view should must be stateless.
+ * The defaultKeyFn for a route's ComponentCache.
+ * It returns 1, which causes the same component to be reused each time, which is most likely
+ * what we want, but means the component should must be stateless.
  */
 const defaultKeyFn = _ => 1
 const defautResolve = (routeData) => Promise.resolve(routeData)
 
-/* RouterView
- * A view which responds to changes in the hash url.
+/* RouterComponent
+ * A component which responds to changes in the hash url.
  * The props must be an array of routes.
  */
-export const Router = View.__ex__('<div></div>', {
+export const Router = Component.__ex__('<div></div>', {
   init() {
     this._routes = this.props.map(config => new Route(config))
     this._active = undefined
     window.addEventListener('hashchange', e => this._hashChanged())
     window.addEventListener('load', e => this._hashChanged())
-    View.prototype.init.apply(this)
+    Component.prototype.init.apply(this)
   },
   _hashChanged() {
     let url = location.hash.slice(1) || '/';
     this._matchRoute(url);
   },
   /*
-   * Tries to find a view based on url, and will build it
+   * Tries to find a component based on url, and will build it
    */
   _matchRoute(url) {
     let len = this._routes.length, matched=false;
@@ -34,11 +34,11 @@ export const Router = View.__ex__('<div></div>', {
       let routeData = route.match(url)
       if (routeData) {
         matched = true
-        route.getView(routeData).then(view => {
+        route.getComponent(routeData).then(component => {
           this.e.innerHTML = ''
-          this.e.appendChild(view.e)
+          this.e.appendChild(component.e)
           this.__mt.flush()
-          this._active = view
+          this._active = component
         })
         break
       }
@@ -70,17 +70,17 @@ export const Router = View.__ex__('<div></div>', {
  * Config example:
  * {
  *   path: '/todos',
- *   cls: TodoView,
- *   keyFn: foo,            # optional used as cache arg for view
- *   resolve: foo,          # optional used to create data for view
+ *   cls: TodoComponent,
+ *   keyFn: foo,            # optional used as cache arg for component
+ *   resolve: foo,          # optional used to create data for component
  * }
  *
- * The path may specify params after ? (but all params are passed to the view anyway)
+ * The path may specify params after ? (but all params are passed to the component anyway)
  *  /todos/detail?id,date
  *
  * Args and params may specify a type, in which case they are converted.
  * resolve gets called with (routeData, [this router]) and must return a promise, the return
- * value is passed as data to the view. routeData is {args, params, url}
+ * value is passed as data to the component. routeData is {args, params, url}
  */
 export function Route(config) {
   this._vc = new KeyedCache(config.cls, config.keyFn || defaultKeyFn);
@@ -97,7 +97,7 @@ Route.prototype = {
       return s
     })
   },
-  getView(routeData) {
+  getComponent(routeData) {
     return this.resolve(routeData, this).then(result => this._vc.getOne(result, this))
   },
   match(url) {

@@ -1,7 +1,7 @@
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
       <span>{..name}</span>
@@ -18,7 +18,7 @@ const props = {name: 'bob'}
 const service = {name: 'jane'}
 
 test('Inner display correct initial values', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   expect(div).toShow(`
     <div>
       <span>bob</span>
@@ -29,7 +29,7 @@ test('Inner display correct initial values', () => {
 })
 
 test('Inner update when service changed', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   service.name = 'dave'
   div.update()
   expect(div).toShow(`
@@ -42,7 +42,7 @@ test('Inner update when service changed', () => {
 })
 
 test('Inner update when props changed', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   props.name = 'boris'
   div.update()
   expect(div).toShow(`
@@ -55,7 +55,7 @@ test('Inner update when props changed', () => {
 })
 
 test('Inner update when new props passed', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   div.setProps({name: 'alice'})
   expect(div).toShow(`
     <div>

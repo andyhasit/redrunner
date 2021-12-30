@@ -8,7 +8,7 @@ import {doc} from './helpers'
  */
 export function Wrapper(element) {
   this.e = element
-  this._cache = undefined
+  this._pool = undefined
 }
 
 Wrapper.prototype = {
@@ -48,8 +48,8 @@ Wrapper.prototype = {
     }
     return this
   },
-  cache: function(cache) {
-    this._cache = cache
+  pool: function(pool) {
+    this._pool = pool
     return this
   },
   clear: function() {
@@ -108,10 +108,10 @@ Wrapper.prototype = {
     return this
   },
   /*
-   * Set items from cache.
+   * Set items from pool.
    */
   items: function(items, parent) {
-    this._cache.patch(this.e, items, parent)
+    this._pool.patch(this.e, items, parent)
     return this
   },
   on: function(event, callback) {
@@ -130,7 +130,7 @@ Wrapper.prototype = {
     return this
   },
   swap: function(key, parent) {
-    this.child(this._cache.getOne(key, parent))
+    this.child(this._pool.getOne(key, parent))
     return this
   },
   text: function(value) {

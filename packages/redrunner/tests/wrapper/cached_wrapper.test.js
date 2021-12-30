@@ -1,11 +1,11 @@
-import {c, load, View, Wrapper} from '../utils'
-import {KeyedCache, SequentialCache} from '../../src/index'
+import {c, load, Component, Wrapper} from '../utils'
+import {KeyedPool, SequentialPool} from '../../src/index'
 
-class Container extends View {
+class Container extends Component {
   __html__ = '<div :items=".props|Child"></div>'
 }
 
-class Child extends View {
+class Child extends Component {
   __html__ = '<div>{.props}</div>'
 }
 

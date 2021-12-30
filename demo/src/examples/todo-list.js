@@ -1,6 +1,6 @@
-import {View} from 'redrunner'
+import {Component} from 'redrunner'
 
-export class TodoList extends View{
+export class TodoList extends Component{
   __html__ = html`
   <div>
     <div>Completed: {stats(c)}</div>
@@ -19,7 +19,7 @@ export class TodoList extends View{
   }
 }
 const prettyFormat = (n, p) => {console.log(p)}
-const TodoItem = View.__ex__(html`
+const TodoItem = Component.__ex__(html`
   <div>
     <input type="checkbox" :checked="..done" :onChange="toggleTask(w, p, c)"/>
     <input type="text" :onBlur="textChanged(w, p, c)" value="{..text}"/>

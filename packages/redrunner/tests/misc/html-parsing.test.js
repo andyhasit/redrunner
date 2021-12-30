@@ -1,6 +1,6 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = html`
     <div>
       <div>This one's HTML has multiple 's in it                </div>
@@ -11,7 +11,7 @@ class TestView extends View {
 
 
 test("HTML parsing preserves quotes and spaces", () => {
-  let div = load(TestView)
+  let div = load(TestComponent)
   expect(div).toShow(`
     <div>
       <div>This one's HTML has multiple 's in it</div>

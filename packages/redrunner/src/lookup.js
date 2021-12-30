@@ -1,8 +1,8 @@
 /**
  * Used internally.
- * An object which caches the results of lookup queries so we don't have to
- * repeat them in the same view.
- * The Lookup instance will be shared between instances of a view.
+ * An object which pools the results of lookup queries so we don't have to
+ * repeat them in the same component.
+ * The Lookup instance will be shared between instances of a component.
  * Must call reset() on every update.
  */
 export function Lookup(callbacks) {
@@ -11,15 +11,15 @@ export function Lookup(callbacks) {
 }
 
 Lookup.prototype = {
-  get: function(view, key) {
+  get: function(component, key) {
     const run = this.run
     if (run[key] === undefined) {
       // Verbose but efficient way as it avoids lookups?
       // Or is this harmful to performance because we're just reading values more than calling functions?
-      const o = view.__ov[key]
-      const n = this.callbacks[key](view, view.props)
+      const o = component.__ov[key]
+      const n = this.callbacks[key](component, component.props)
       const c = n !== o
-      view.__ov[key] = n
+      component.__ov[key] = n
       const rtn = {n, o, c}
       run[key] = rtn
       return rtn

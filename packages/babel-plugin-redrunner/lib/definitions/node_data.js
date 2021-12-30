@@ -85,25 +85,25 @@ class NodeData {
     this.additionalLookups[key] = statement
   }
   /**
-   * Builds the call to create a cache for child views.
+   * Builds the call to create a pool for child components.
    * 
-   * @param {string} cacheDef - the name of the view class to cache, or if it
-   * starts with @ then it is the path to a cache object (e.g. @..sharedCache ).
-   * @param {string} cacheKey - the field on the props to cache by.
+   * @param {string} poolDef - the name of the component class to pool, or if it
+   * starts with @ then it is the path to a pool object (e.g. @..sharedPool ).
+   * @param {string} poolKey - the field on the props to pool by.
    */
-  buildCacheInit (cacheDef, cacheKey){
-    let cacheStatement
-    if (cacheDef.startsWith('@')) {
-      cacheStatement = this.expandDots(cacheDef.substr(1))
+  buildPoolInit (poolDef, poolKey){
+    let poolStatement
+    if (poolDef.startsWith('@')) {
+      poolStatement = this.expandDots(poolDef.substr(1))
     } else {
-      if (cacheKey) {
-        const keyFn = `function(props) {return props.${cacheKey}}`
-        cacheStatement = `view.__kc(${cacheDef}, ${keyFn})`
+      if (poolKey) {
+        const keyFn = `function(props) {return props.${poolKey}}`
+        poolStatement = `component.__kc(${poolDef}, ${keyFn})`
       } else {
-        cacheStatement = `view.__sc(${cacheDef})`
+        poolStatement = `component.__sc(${poolDef})`
       }
     }
-    return cacheStatement
+    return poolStatement
   }
   /**
    * Expands a value slot.

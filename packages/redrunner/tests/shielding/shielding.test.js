@@ -1,6 +1,6 @@
-import {c, h, load, View} from '../utils'
+import {c, h, load, Component} from '../utils'
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
       <div :show="..show">
@@ -18,7 +18,7 @@ const props = {
 
 
 test("The :show directive stops shielded elements from updating.", () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
 
   // Run some sanity checks first...
   expect(div).toShow(`

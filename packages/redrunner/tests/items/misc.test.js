@@ -1,7 +1,7 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = html`
     <div :items=".items|Child">
     </div>
@@ -14,13 +14,13 @@ class TestView extends View {
 }
 
 
-class Child extends View {
+class Child extends Component {
   __html__ = '<span>{.parent.name}</span>'
 }
 
 
 test('Items are linked to parent', () => {
-  const div = load(TestView)
+  const div = load(TestComponent)
   expect(div).toShow(`
     <div>
       <span>jo</span>

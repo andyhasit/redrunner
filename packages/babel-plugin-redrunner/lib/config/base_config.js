@@ -59,28 +59,28 @@ const config = {
       }
     },
     ':items': {
-      params: 'converter, cacheDef?, cacheKey?',
-      handle: function(converter, cacheDef, cacheKey) {
-        if (cacheDef) {
-          this.chainedCalls.push(`cache(${this.buildCacheInit(cacheDef, cacheKey)})`)
+      params: 'converter, poolDef?, poolKey?',
+      handle: function(converter, poolDef, poolKey) {
+        if (poolDef) {
+          this.chainedCalls.push(`pool(${this.buildPoolInit(poolDef, poolKey)})`)
         }
         this.addWatch(watchAlways, converter, 'items', componentRefVariable)
       }
     },
     ':items-o': {
-      params: 'converter, cacheDef?, cacheKey?',
-      handle: function(converter, cacheDef, cacheKey) {
-        if (cacheDef) {
-          this.chainedCalls.push(`cache(${this.buildCacheInit(cacheDef, cacheKey)})`)
+      params: 'converter, poolDef?, poolKey?',
+      handle: function(converter, poolDef, poolKey) {
+        if (poolDef) {
+          this.chainedCalls.push(`pool(${this.buildPoolInit(poolDef, poolKey)})`)
         }
         this.addWatch(watchNever, converter, 'items', componentRefVariable)
       }
     },
     ':items-w': {
-      params: 'watch, converter, cacheDef?, cacheKey?',
-      handle: function(watch, converter, cacheDef, cacheKey) {
-        if (cacheDef) {
-          this.chainedCalls.push(`cache(${this.buildCacheInit(cacheDef, cacheKey)})`)
+      params: 'watch, converter, poolDef?, poolKey?',
+      handle: function(watch, converter, poolDef, poolKey) {
+        if (poolDef) {
+          this.chainedCalls.push(`pool(${this.buildPoolInit(poolDef, poolKey)})`)
         }
         this.addWatch(watch, converter, 'items', componentRefVariable)
       }
@@ -117,14 +117,14 @@ const config = {
         if (fallback) {
           args += ', ' + this.expandDots(fallback)
         }
-        this.chainedCalls.push(`cache(view.__ic(${args}))`)
+        this.chainedCalls.push(`pool(component.__ic(${args}))`)
         this.addWatch(watch, undefined, 'swap', componentRefVariable)
       }
     },
     ':use': {
-      params: 'viewCls, props?',
-      handle: function(viewCls, props) {
-        this.replaceWith = viewCls
+      params: 'componentCls, props?',
+      handle: function(componentCls, props) {
+        this.replaceWith = componentCls
         if (props) {
           this.props = this.expandProps(props)
         }

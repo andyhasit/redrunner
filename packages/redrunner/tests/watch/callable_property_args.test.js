@@ -1,11 +1,11 @@
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
 function getCss(p, c) {
   return `${c.size} ${p.color}`
 }
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
       <span :watch="getCss(p,c)||css"></span>
@@ -20,7 +20,7 @@ class TestView extends View {
 const props = {color: 'red'}
 
 test('Basic watch updates text', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   expect(div).toShow(`
     <div>
       <span class="big red"></span>

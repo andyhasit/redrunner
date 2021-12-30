@@ -2,7 +2,7 @@ const c = console
 const {prettyPrint} = require('html')
 
 import diff from 'jest-diff'
-import {h, createView, mount, View, Wrapper} from '../src/index'
+import {h, createComponent, mount, Component, Wrapper} from '../src/index'
 
 /**
  * Returns a new div appended to the document body.
@@ -17,21 +17,21 @@ function getDiv(id) {
 }
 
 /**
- * A class for testing views
+ * A class for testing components
  */
 class TestMount {
   constructor(cls, props) {
-    this.view = mount(getDiv(), cls, props)
-    this.el = this.view.e
+    this.component = mount(getDiv(), cls, props)
+    this.el = this.component.e
     this.html = undefined
     this.setHtml()
   }
   setProps(props) {
-    this.view.setProps(props)
+    this.component.setProps(props)
     this.setHtml()
   }
   update() {
-    this.view.update()
+    this.component.update()
     this.setHtml()
   }
   setHtml() {
@@ -91,12 +91,12 @@ expect.extend({
 
 module.exports = {
   c,
-  createView,
+  createComponent,
   getDiv,
   h,
   load,
   mount,
   TestMount,
-  View,
+  Component,
   Wrapper
 }

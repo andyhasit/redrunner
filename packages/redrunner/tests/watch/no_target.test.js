@@ -1,11 +1,11 @@
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
 function setSpan(n, w) {
   w.text(n.toUpperCase()).css('alert')
 }
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
       <span :watch="..name|setSpan(n,w)"></span>
@@ -16,7 +16,7 @@ class TestView extends View {
 const props = {name: 'joe'}
 
 test('Watch with no target updates element', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   expect(div).toShow(`
     <div>
       <span class="alert">JOE</span>

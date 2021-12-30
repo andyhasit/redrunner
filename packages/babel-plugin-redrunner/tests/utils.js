@@ -57,11 +57,11 @@ function stripBlankLines(text) {
 
 
 /**
- * Builds a string defining a view class, to help with quasi quotes in snapshots.
+ * Builds a string defining a component class, to help with quasi quotes in snapshots.
  */
-function view(html) {
+function component(html) {
   return `
-    class MyView extends View {
+    class MyComponent extends Component {
       __html__ = \`${html}\`
     }
   `
@@ -81,4 +81,4 @@ function transform(src) {
 }
 
 
-module.exports = {c, EOL, getNode, transform, stripBlankLines, view}
+module.exports = {c, EOL, getNode, transform, stripBlankLines, component}

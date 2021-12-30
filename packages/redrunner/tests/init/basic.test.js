@@ -1,8 +1,8 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
 const data = {}
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
     </div>
@@ -13,6 +13,6 @@ class TestView extends View {
 }
 
 test('Init method can access props', () => {
-  load(TestView, {name: 'tim'})
+  load(TestComponent, {name: 'tim'})
   expect(data.name).toEqual('tim')
 })

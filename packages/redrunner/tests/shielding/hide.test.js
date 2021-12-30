@@ -1,6 +1,6 @@
-import {c, h, load, View} from '../utils'
+import {c, h, load, Component} from '../utils'
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
       <div :hide="..hide" :watch="*|.getContents()|inner">
@@ -19,7 +19,7 @@ const props = {
 
 
 test("Hide masks", () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   expect(div).toShow(`
     <div>
       <div>

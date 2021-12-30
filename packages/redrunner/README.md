@@ -60,7 +60,7 @@ I recommend using [webpack](https://webpack.js.org/) instead of alternatives as 
 
 #### Source maps
 
-The babel plugin replaces each view's `__html__` field with generated code, and debugging is a lot easier if you can see that generated code.
+The babel plugin replaces each component's `__html__` field with generated code, and debugging is a lot easier if you can see that generated code.
 
 With webpack you can set the config's `devtools` to something like `'eval-cheap-source-map'` which makes the source maps show the *transformed* code, but preserves the module separation which is nice. However this will include *all* transformations, so if you're transpiling to ES5 (which you probably do using a preset) then it will make it harder to track your own code.
 

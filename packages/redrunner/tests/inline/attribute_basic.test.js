@@ -1,7 +1,7 @@
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
       <span class="{..style}"></span>
@@ -18,7 +18,7 @@ const props = {style: 'alert'}
 const service = {style: 'danger'}
 
 test('Attributes display correct initial values', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   expect(div).toShow(`
     <div>
       <span class="alert"></span>
@@ -29,7 +29,7 @@ test('Attributes display correct initial values', () => {
 })
 
 test('Attributes update when service changed', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   service.style = 'ok'
   div.update()
   expect(div).toShow(`
@@ -42,7 +42,7 @@ test('Attributes update when service changed', () => {
 })
 
 test('Attributes update when props changed', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   props.style = 'boo'
   div.update()
   expect(div).toShow(`
@@ -55,7 +55,7 @@ test('Attributes update when props changed', () => {
 })
 
 test('Attributes update when new props passed', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   div.setProps({style: 'different'})
   expect(div).toShow(`
     <div>

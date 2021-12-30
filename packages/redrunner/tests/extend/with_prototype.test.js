@@ -1,4 +1,4 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
 const methods = {
   getName: function(p) {
@@ -6,7 +6,7 @@ const methods = {
   }  
 }
 
-const TestView = View.__ex__({
+const TestComponent = Component.__ex__({
   html: html`
     <div>{.getName(p)}</div>
   `,
@@ -14,7 +14,7 @@ const TestView = View.__ex__({
 })
 
 test("Component uses provided constructor", () => {
-  let div = load(TestView, {name: 'A'})
+  let div = load(TestComponent, {name: 'A'})
   expect(div).toShow(`
     <div>A</div>
   `)

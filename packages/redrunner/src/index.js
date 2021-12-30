@@ -1,17 +1,17 @@
-import {createView, h, mount} from  './utils'
+import {createComponent, h, mount} from  './utils'
 import {isStr} from  './helpers'
-import {View} from './view'
-import {KeyedCache, InstanceCache, SequentialCache} from './viewcache'
+import {Component} from './component'
+import {KeyedPool, InstancePool, SequentialPool} from './pool'
 import {Wrapper} from './wrapper'
 
 module.exports = {
-  createView,
+  createComponent,
   h,
   mount,
-  KeyedCache,
-  InstanceCache,
+  KeyedPool,
+  InstancePool,
   isStr,
-  SequentialCache,
-  View,
+  SequentialPool,
+  Component,
   Wrapper
 }

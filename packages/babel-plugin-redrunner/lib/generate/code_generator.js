@@ -27,7 +27,7 @@ const vars = {
 }
 
 /**
- * Builds all the generated statements for a RedRunner View.
+ * Builds all the generated statements for a RedRunner Component.
  * Deals with:
  *
  *  - Building the fields and methods for the prototype
@@ -55,7 +55,7 @@ class CodeGenerator {
     this.buildMethod = new FunctionStatement(`${componentRefInBuild}, prototype`)
     this.watches = new ArrayStatement()
     this.protoLookupCallbacks = new ObjectStatement()
-    this.nestedViewProps = new ObjectStatement()
+    this.nestedComponentProps = new ObjectStatement()
     this.createLookupCall = new CallStatement(`${this.prototypeVariable}.${vars.getLookup}`)
     this.createLookupCall.add(this.protoLookupCallbacks)
   }
@@ -70,7 +70,7 @@ class CodeGenerator {
       this.htmlString.buildAssign(`${this.prototypeVariable}.__ht`),
       this.watches.buildAssign(`${this.prototypeVariable}.__wc`),
       this.createLookupCall.buildAssign(`${this.prototypeVariable}.__qc`),
-      this.nestedViewProps.buildAssign(`${this.prototypeVariable}.__ip`),
+      this.nestedComponentProps.buildAssign(`${this.prototypeVariable}.__ip`),
       this.buildMethod.buildAssign(`${this.prototypeVariable}.__bv`),
     ]
     statements.push(new ValueStatement('undefined').buildAssign(`${this.prototypeVariable}.__cn`))
@@ -146,9 +146,9 @@ class CodeGenerator {
       // TODO: warn if starts with '___'
       saveAs = saveAs ? saveAs : this.getNextElementRef()
 
-      // If replaceWith, then it's a nested view, which needs special treatment.
+      // If replaceWith, then it's a nested component, which needs special treatment.
       if (replaceWith) {
-        this.saveNestedView(nodePath, saveAs, nodeData, replaceWith, props, replaceWith)
+        this.saveNestedComponent(nodePath, saveAs, nodeData, replaceWith, props, replaceWith)
       } else {
         // TODO: do we always want to save the wrapper?
         this.saveWrapper(nodePath, saveAs, nodeData)
@@ -293,21 +293,21 @@ class CodeGenerator {
     }
     return `${componentRefInBuild}.__gw(${path})`
   }
-  saveNestedView(nodePath, saveAs, nodeData, tagName, props, replaceWith) {
-    const nestedViewClass = replaceWith || tagName
+  saveNestedComponent(nodePath, saveAs, nodeData, tagName, props, replaceWith) {
+    const nestedComponentClass = replaceWith || tagName
     if (props) {
-      this.nestedViewProps.add(saveAs, new FunctionStatement(propsCallbackArgs, [`return ${props}`]))
+      this.nestedComponentProps.add(saveAs, new FunctionStatement(propsCallbackArgs, [`return ${props}`]))
     } else {
-      this.nestedViewProps.add(saveAs, '0')
+      this.nestedComponentProps.add(saveAs, '0')
     }
-    const initCall = `${componentRefInBuild}.__ni(${getLookupArgs(nodePath)}, ${nestedViewClass})`
+    const initCall = `${componentRefInBuild}.__ni(${getLookupArgs(nodePath)}, ${nestedComponentClass})`
     this.saveElement(saveAs, initCall, nodeData.chainedCalls)
   }
   saveStub(stubName, nodePath) {
     if (!re_lnu.test(stubName)) {
       this.walker.throw('Stub name may only contain letters numbers and underscores')
     }
-    this.nestedViewProps.add(stubName, new FunctionStatement(propsCallbackArgs, ['return c.props']))
+    this.nestedComponentProps.add(stubName, new FunctionStatement(propsCallbackArgs, ['return c.props']))
     const initCall = `${componentRefInBuild}.__ni(${getLookupArgs(nodePath)}, this.__stubs__${stubName})`
     this.saveElement(stubName, initCall, [])
   }

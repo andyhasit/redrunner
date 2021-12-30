@@ -2,42 +2,42 @@ import {doc, isStr, makeEl} from './helpers'
 import {Wrapper} from './wrapper'
 
 /**
- * Creates and mounts a view onto an element.
+ * Creates and mounts a component onto an element.
  *
  * @param {unsure} elementOrId Either a string representing an id, or an element.
- * @param {class} cls The class of View to create
- * @param {object} props The props to pass to the view (optional)
- * @param {object} parent The parent view (optional)
+ * @param {class} cls The class of Component to create
+ * @param {object} props The props to pass to the component (optional)
+ * @param {object} parent The parent component (optional)
  */
 export function mount(elementOrId, cls, props, parent) {
-  const view = createView(cls, parent, props)
+  const component = createComponent(cls, parent, props)
   const nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId) : elementOrId
-  nodeToReplace.parentNode.replaceChild(view.e, nodeToReplace)
-  return view
+  nodeToReplace.parentNode.replaceChild(component.e, nodeToReplace)
+  return component
 }
 
 /**
- * Creates a view and initialises it.
+ * Creates a component and initialises it.
  *
- * @param {class} cls The class of View to create
- * @param {object} parent The parent view (optional)
- * @param {object} props The props to pass to the view (optional)
+ * @param {class} cls The class of Component to create
+ * @param {object} parent The parent component (optional)
+ * @param {object} props The props to pass to the component (optional)
  */
-export function createView(cls, parent, props) {
-  const view = buildView(cls, parent)
-  view.props = props
-  view.init()
-  view.update()
-  return view
+export function createComponent(cls, parent, props) {
+  const component = buildComponent(cls, parent)
+  component.props = props
+  component.init()
+  component.update()
+  return component
 }
 
 /**
- * Builds a view.
+ * Builds a component.
  */
-export function buildView(cls, parent) {
-  const view = new cls(parent)
-  view.__bv(view, cls.prototype)
-  return view
+export function buildComponent(cls, parent) {
+  const component = new cls(parent)
+  component.__bv(component, cls.prototype)
+  return component
 }
 
 

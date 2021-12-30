@@ -1,7 +1,7 @@
 const {parseHTML, preprocessHTML} = require('../utils/dom')
 
 /**
- * Handles the task of parsing a RedRunner view, including:
+ * Handles the task of parsing a RedRunner component, including:
  *
  *  - DOM traversal
  *  - Error context

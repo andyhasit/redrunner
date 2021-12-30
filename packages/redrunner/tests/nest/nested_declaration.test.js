@@ -1,15 +1,15 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
 
-class Child extends View {
+class Child extends Component {
   __html__ = '<span>{..name}</span>'
 }
 
-class Www extends View {
+class Www extends Component {
   __html__ = '<span>www</span>'
 }
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = html`
     <div>
       <use:Child :props="child1">
@@ -44,7 +44,7 @@ function child4Props (c) {
 
 
 test('Nest accepts props', () => {
-  const div = load(TestView)
+  const div = load(TestComponent)
   expect(div).toShow(`
     <div>
       <span>jo</span>
@@ -72,6 +72,6 @@ test('Nest accepts props', () => {
       <span>www</span>
       </div>
       `)
-  expect(args3).toEqual(div.view)
-  expect(args4).toEqual(div.view)
+  expect(args3).toEqual(div.component)
+  expect(args4).toEqual(div.component)
 })

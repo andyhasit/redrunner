@@ -1,4 +1,4 @@
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 const props = {
   name: 'bob',
@@ -11,7 +11,7 @@ function foo(n) {
   return `${n} from global`
 }
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
       <span>{..name|..foo(n)}</span>
@@ -26,7 +26,7 @@ class TestView extends View {
 
 
 test('Convert functions called on load', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   expect(div).toShow(`
     <div>
       <span>bob from props</span>
@@ -37,7 +37,7 @@ test('Convert functions called on load', () => {
 })
 
 test('Convert functions called on update', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   props.name = 'jane'
   div.update()
   expect(div).toShow(`

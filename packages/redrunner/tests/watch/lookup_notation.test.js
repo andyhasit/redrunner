@@ -1,11 +1,11 @@
-import {c, load, View} from '../utils'
+import {c, load, Component} from '../utils'
 
 
 function getName() {
   return 'alice'
 }
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
       <span :watch="..name||text"></span>
@@ -21,7 +21,7 @@ class TestView extends View {
 const props = {name: 'joe'}
 
 test('Lookup notation selects correct reference', () => {
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   expect(div).toShow(`
     <div>
       <span>joe</span>

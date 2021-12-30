@@ -63,7 +63,7 @@ module.exports = () => {
       Class(path, state) {
         if (path.type === 'ClassDeclaration') {
 
-          // TODO: tidy up how args are passed, and whether we bother with viewData...
+          // TODO: tidy up how args are passed, and whether we bother with componentData...
           let html, stubs, componentName = path.node.id.name
 
           // Iterate over class nodes to find ones we care about

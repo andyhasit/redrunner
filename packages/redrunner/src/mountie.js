@@ -2,21 +2,21 @@
  * RedRunner's crude way of tracking mounting and unmounting.
  */
 
-const trackedViews = []
+const trackedComponents = []
 
 export default {
-  track: function (view) {
-    trackedViews.push({view: view, isAttached: view.__ia()})
+  track: function (component) {
+    trackedComponents.push({component: component, isAttached: component.__ia()})
   },
   flush: function () {
-    for (let i=0, il=trackedViews.length; i<il; i++) {
-      let trackedView = trackedViews[i]
-      let view = trackedView.view
-      let attachedNow = view.__ia()
-      if (attachedNow !== trackedView.isAttached) {
-        let fn = attachedNow ? view.mount : view.unmount
-        fn.apply(view)
-        trackedView.isAttached = attachedNow
+    for (let i=0, il=trackedComponents.length; i<il; i++) {
+      let trackedComponent = trackedComponents[i]
+      let component = trackedComponent.component
+      let attachedNow = component.__ia()
+      if (attachedNow !== trackedComponent.isAttached) {
+        let fn = attachedNow ? component.mount : component.unmount
+        fn.apply(component)
+        trackedComponent.isAttached = attachedNow
       }
     }
   }

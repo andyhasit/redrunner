@@ -1,7 +1,7 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div>
       <div>{..title}</div>
@@ -12,8 +12,8 @@ class TestView extends View {
 }
 
 
-test("Second instance of view works", () => {
-  let div = load(TestView, {title: 'Confirm', content: 'Really?', footer: 'ok'})
+test("Second instance of component works", () => {
+  let div = load(TestComponent, {title: 'Confirm', content: 'Really?', footer: 'ok'})
   expect(div).toShow(`
     <div>
       <div>Confirm</div>
@@ -24,7 +24,7 @@ test("Second instance of view works", () => {
 
   // We must do this a second time to test a regression bug
 
-  div = load(TestView, {title: 'Confirm', content: 'Really?', footer: 'ok'})
+  div = load(TestComponent, {title: 'Confirm', content: 'Really?', footer: 'ok'})
   expect(div).toShow(`
     <div>
       <div>Confirm</div>

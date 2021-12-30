@@ -1,8 +1,8 @@
-import {h, load, View} from '../utils'
+import {h, load, Component} from '../utils'
 
 const names = ['joe', 'bob', 'alice']
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
     <div :inner="*|.items()">
     </div>
@@ -12,8 +12,8 @@ class TestView extends View {
   }
 }
 
-test('Nest without cache declaration adds wrappers', () => {
-  const div = load(TestView)
+test('Nest without pool declaration adds wrappers', () => {
+  const div = load(TestComponent)
   expect(div).toShow(`
     <div>
       <span>joe</span>

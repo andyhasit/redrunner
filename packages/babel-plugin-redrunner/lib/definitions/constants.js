@@ -29,9 +29,9 @@ const propsCallbackArgs = 'c, p'
 const eventCallbackArgs = 'w, e'
 
 /**
- * The name of the arg representing the view in the buildView method.
+ * The name of the arg representing the component in the buildComponent method.
  */
-const componentRefInBuild = 'view'
+const componentRefInBuild = 'component'
 const callableWatchArgs = `${componentRefInBuild}, props`
 
 function FrameworkError (msg) {

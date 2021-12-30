@@ -1,6 +1,6 @@
-import {c, load, View, Wrapper} from '../utils'
+import {c, load, Component, Wrapper} from '../utils'
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = html`
     <div>
       <span :el="label"></span>
@@ -17,7 +17,7 @@ class TestView extends View {
 
 
 test('Misc wrapper properties', () => {
-  const div = load(TestView)
+  const div = load(TestComponent)
   expect(div).toShow(`
   <div>
     <span class="bold">Name:</span>

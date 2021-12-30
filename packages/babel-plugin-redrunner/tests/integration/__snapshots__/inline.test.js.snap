@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Inline leaves atts alone 1`] = `
-"class MyView extends View {}
+"class MyComponent extends Component {}
 
-var p = MyView.prototype;
+var p = MyComponent.prototype;
 p.__ht = '<div><span></span><span id=\\"hey\\"></span></div>';
 p.__wc = [p.__wa('_1_', 0, 0, 0, {
   'name': function (n, o) {
@@ -24,20 +24,20 @@ p.__qc = p.__lu({
 });
 p.__ip = {};
 
-p.__bv = function (view, prototype) {
-  view.__bd(prototype, false);
+p.__bv = function (component, prototype) {
+  component.__bd(prototype, false);
 
-  view.dom = {
-    '_1_': view.__gw([]),
-    '_2_': view.__gw([])
+  component.dom = {
+    '_1_': component.__gw([]),
+    '_2_': component.__gw([])
   };
 };"
 `;
 
 exports[`Inline with different endings 1`] = `
-"class MyView extends View {}
+"class MyComponent extends Component {}
 
-var p = MyView.prototype;
+var p = MyComponent.prototype;
 p.__ht = '<div><span></span><span></span><span></span></div>';
 p.__wc = [p.__wa('_1_', 0, 0, 0, {
   'name': function (n, o) {
@@ -59,21 +59,21 @@ p.__qc = p.__lu({
 });
 p.__ip = {};
 
-p.__bv = function (view, prototype) {
-  view.__bd(prototype, false);
+p.__bv = function (component, prototype) {
+  component.__bd(prototype, false);
 
-  view.dom = {
-    '_1_': view.__gw([]),
-    '_2_': view.__gw([]),
-    '_3_': view.__gw([])
+  component.dom = {
+    '_1_': component.__gw([]),
+    '_2_': component.__gw([]),
+    '_3_': component.__gw([])
   };
 };"
 `;
 
 exports[`Simple inline 1`] = `
-"class MyView extends View {}
+"class MyComponent extends Component {}
 
-var p = MyView.prototype;
+var p = MyComponent.prototype;
 p.__ht = '<div><span></span></div>';
 p.__wc = [p.__wa('_1_', 0, 0, 0, {
   'name': function (n, o) {
@@ -87,11 +87,11 @@ p.__qc = p.__lu({
 });
 p.__ip = {};
 
-p.__bv = function (view, prototype) {
-  view.__bd(prototype, false);
+p.__bv = function (component, prototype) {
+  component.__bd(prototype, false);
 
-  view.dom = {
-    '_1_': view.__gw([])
+  component.dom = {
+    '_1_': component.__gw([])
   };
 };"
 `;

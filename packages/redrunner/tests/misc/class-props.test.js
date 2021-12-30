@@ -1,6 +1,6 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
-class View1 extends View {
+class Component1 extends Component {
   __html__ = html`
     <div>meh</div>
   `
@@ -8,7 +8,7 @@ class View1 extends View {
 }
 
 
-class View2 extends View {
+class Component2 extends Component {
   __html__ = html`
     <div>meh</div>
   `
@@ -18,9 +18,9 @@ class View2 extends View {
   yolo = 2
 }
 
-test("Views retain class properties", () => {
-  const div1 = load(View1)
-  const div2 = load(View2)
-  expect(div1.view.yolo).toBe(1)
-  expect(div2.view.yolo).toBe(2)
+test("Components retain class properties", () => {
+  const div1 = load(Component1)
+  const div2 = load(Component2)
+  expect(div1.component.yolo).toBe(1)
+  expect(div2.component.yolo).toBe(2)
 })

@@ -1,6 +1,6 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = html`
     <div>
       <div :el="main"></div>
@@ -14,14 +14,14 @@ class TestView extends View {
 }
 
 
-class Child extends View {
+class Child extends Component {
   __html__ = '<span>{..name}</span>'
 }
 
 
 test('Nest can access parent props', () => {
   const props = {name: 'jo'}
-  const div = load(TestView, props)
+  const div = load(TestComponent, props)
   expect(div).toShow(`
     <div>
       <div><span>jo</span></div>

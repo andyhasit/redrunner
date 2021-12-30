@@ -1,20 +1,20 @@
 /*
-This checks whether nested views which are detached get told to update,
+This checks whether nested components which are detached get told to update,
 which they shouldn't.
 
 */
 
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
 
-class TestView extends View {
+class TestComponent extends Component {
   __html__ = `
-    <div :items="names|NestedView">
+    <div :items="names|NestedComponent">
     </div>
   `
 }
 
-class NestedView extends View {
+class NestedComponent extends Component {
   __clone__ = `
     <span>{.props}</span>
   `
@@ -28,7 +28,7 @@ class NestedView extends View {
 }
 
 /*
-Code to track how many times each view was updated.
+Code to track how many times each component was updated.
 */
 let _seq = 0
 const _counter = {}
@@ -45,9 +45,9 @@ const updateCounter = (uniqueSeq) => {
 
 
 const names = ['apple', 'carrot', 'kiwi']
-const div = load(TestView)
+const div = load(TestComponent)
 
-test('Nested views update just once on load', () => {
+test('Nested components update just once on load', () => {
   expect(div).toShow(`
     <div>
       <span>apple</span>

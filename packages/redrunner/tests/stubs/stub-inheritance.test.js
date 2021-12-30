@@ -1,7 +1,7 @@
-import {load, View} from '../utils'
+import {load, Component} from '../utils'
 
 
-class BaseModal extends View {
+class BaseModal extends Component {
   __html__ = `
     <div>
       <div>{..title}</div>
@@ -21,7 +21,7 @@ class CustomModal extends BaseModal {
   }
 }
 
-test("View can use stubs defined in parent", () => {
+test("Component can use stubs defined in parent", () => {
   let div = load(CustomModal, {title: 'Confirm', content: 'Really?', footer: 'ok'})
   expect(div).toShow(`
     <div>

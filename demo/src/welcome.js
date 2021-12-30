@@ -1,6 +1,6 @@
-import {View} from 'redrunner'
+import {Component} from 'redrunner'
 
-export const WelcomePage = View.__ex__(html`
+export const WelcomePage = Component.__ex__(html`
   <div>
     <h1>RedRunner Demo</h1>
   </div>
