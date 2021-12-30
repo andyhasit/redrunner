@@ -2,7 +2,14 @@ const c = console
 const {prettyPrint} = require('html')
 
 import diff from 'jest-diff'
-import {h, createComponent, mount, Component, Wrapper} from '../src/index'
+import {
+  h, 
+  createComponent, 
+  mount, 
+  Component, 
+  SequentialPool, 
+  Wrapper
+} from '../src/index'
 
 /**
  * Returns a new div appended to the document body.
@@ -98,5 +105,6 @@ module.exports = {
   mount,
   TestMount,
   Component,
+  SequentialPool,
   Wrapper
 }

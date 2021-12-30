@@ -73,6 +73,12 @@ const config = {
         this.addEventListener(event, callbackStr)
       }
     },
+    ':pool': {
+      params: 'poolInstance',
+      handle: function(poolInstance) {
+        this.chainedCalls.push(`pool(${poolInstance})`)
+      }
+    },
     ':props': {
       params: 'args',
       handle: function(args) {
