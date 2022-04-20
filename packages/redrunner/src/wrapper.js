@@ -83,6 +83,10 @@ Wrapper.prototype = {
     this.e.classList.toggle(style)
     return this
   },
+  disabled: function(disabled) {
+    this.e.disabled = disabled
+    return this
+  },
   href: function(value) {
     return this.att('href', value)
   },

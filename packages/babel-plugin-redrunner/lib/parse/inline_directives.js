@@ -48,7 +48,7 @@ const processInlineWatches = (nodeData, node) => {
 
   if (node.nodeType === 3) {
     if (addInlineWatches(nodeData, node.textContent, 'text', true)) {
-      node.textContent = 'x'
+      node.textContent = 'x' // This is necessary for some reason
     }
   }
 

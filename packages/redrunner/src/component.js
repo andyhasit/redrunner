@@ -252,7 +252,7 @@ proto.pool = function(cls, keyFn) {
 }
 
 /**
- * Create an instanc pool, for switches.
+ * Create an instance pool, for switches.
  */
 proto.__ic = function(mappings, fallback) {
   return new InstancePool(mappings, fallback)

@@ -10,8 +10,8 @@ export const Navbar = Component.__ex__(html`
 `)
 
 export const Menu = Component.__ex__(html`
-  <div class="menu"">
-    <div :items="p|MenuEntry"></div>
+  <div class="menu">
+    <div :use="MenuEntry" :items="*|p"></div>
   </div>
 `)
 

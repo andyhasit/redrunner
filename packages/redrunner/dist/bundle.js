@@ -107,6 +107,10 @@ Wrapper.prototype = {
     this.e.classList.toggle(style);
     return this;
   },
+  disabled: function disabled(_disabled) {
+    this.e.disabled = _disabled;
+    return this;
+  },
   href: function href(value) {
     return this.att('href', value);
   },
@@ -787,17 +791,17 @@ Component.prototype.__ex = function (baseClass, prototypeExtras, constructorFunc
   return subClass;
 };
 /**
- * Create pools.
+ * Create a component pool.
  */
 
 
-proto$1.__kc = function (cls, keyFn) {
-  return new KeyedPool(cls, keyFn);
+proto$1.pool = function (cls, keyFn) {
+  return keyFn ? new KeyedPool(cls, keyFn) : new SequentialPool(cls);
 };
+/**
+ * Create an instance pool, for switches.
+ */
 
-proto$1.__sc = function (cls) {
-  return new SequentialPool(cls);
-};
 
 proto$1.__ic = function (mappings, fallback) {
   return new InstancePool(mappings, fallback);

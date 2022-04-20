@@ -6,7 +6,7 @@ export class TodoList extends Component{
     <div>Completed: {stats(c)}</div>
     <div>Meh: {c.todos.length * 2|prettyFormat(n, p)}</div>
     <button :onClick=".addItem()">+</button>
-    <div :items="c.todos|TodoItem"></div>
+    <div :use="TodoItem" :items="*|c.todos"></div>
   </div>
   `
   todos = []
