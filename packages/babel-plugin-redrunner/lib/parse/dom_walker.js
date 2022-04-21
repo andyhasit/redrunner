@@ -17,7 +17,7 @@ class DomWalker {
   }
   parse() {
     this.dom = parseHTML(preprocessHTML(this.html))
-    const nodePath = [0]    // The path of current node recursion
+    const nodePath = []    // The path of current node recursion
 
     /**
      * Called recursively to process each node in the DOM
@@ -25,11 +25,11 @@ class DomWalker {
     const walkNode = (node, i) => {
       const childNodes = Array.from(node.childNodes)
       this.currentNode = node
-      nodePath.push(i)
+      if (i !== undefined) {
+        nodePath.push(i)
+      }
       const tagName = node.tagName
       this.processNode({nodePath, node, tagName})
-      // if (tagName) {
-      // }
       childNodes.forEach(walkNode)
       nodePath.pop()
     }

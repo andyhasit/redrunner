@@ -157,7 +157,7 @@ function preprocessHTML(htmlString) {
  *    tree e.g. [1, 0]
  */
 const getLookupArgs = (nodePath) => {
-  return `[${nodePath.slice(2)}]`
+  return `[${nodePath}]`
 }
 
 module.exports = {

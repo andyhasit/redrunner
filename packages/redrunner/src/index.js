@@ -1,4 +1,4 @@
-import {createComponent, h, mount} from  './utils'
+import {createComponent, h, mount, wrap} from  './utils'
 import {isStr} from  './helpers'
 import {Component} from './component'
 import {KeyedPool, InstancePool, SequentialPool} from './pool'
@@ -13,5 +13,6 @@ module.exports = {
   isStr,
   SequentialPool,
   Component,
-  Wrapper
+  Wrapper,
+  wrap
 }

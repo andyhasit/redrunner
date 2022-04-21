@@ -1,3 +1,5 @@
+import {und} from './helpers'
+
 /**
  * Used internally.
  * An object which pools the results of lookup queries so we don't have to
@@ -16,7 +18,8 @@ Lookup.prototype = {
     if (run[key] === undefined) {
       // Verbose but efficient way as it avoids lookups?
       // Or is this harmful to performance because we're just reading values more than calling functions?
-      const o = component.__ov[key]
+      let o = component.__ov[key]
+      o = und(o) ? '' : o 
       const n = this.callbacks[key](component, component.props)
       const c = n !== o
       component.__ov[key] = n

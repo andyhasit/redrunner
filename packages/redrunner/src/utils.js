@@ -11,10 +11,25 @@ import {Wrapper} from './wrapper'
  */
 export function mount(elementOrId, cls, props, parent) {
   const component = createComponent(cls, parent, props)
-  const nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId) : elementOrId
+  const nodeToReplace = getElement(elementOrId)
   nodeToReplace.parentNode.replaceChild(component.e, nodeToReplace)
   return component
 }
+
+/**
+ * returns a Wrapper around an element.
+ *
+ * @param {unsure} elementOrId Either a string representing an id, or an element.
+ */
+export function wrap(elementOrId) {
+  return new Wrapper(getElement(elementOrId))
+}
+
+
+function getElement(elementOrId) {
+  return isStr(elementOrId) ? document.getElementById(elementOrId) : elementOrId
+}
+
 
 /**
  * Creates a component and initialises it.

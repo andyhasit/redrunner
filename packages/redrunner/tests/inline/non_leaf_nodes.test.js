@@ -1,13 +1,11 @@
 import {load, Component} from '../utils'
 
 
-class TestComponent extends Component {
-  __html__ = html`
-    <div>
-      Title: {..title} <a href="#more">Read more</a> Written by {..author}
-    </div>
-  ` 
-}
+const TestComponent = Component.__ex__(html`
+  <div>
+    Title: {..title} <a href="#more">Read more</a> Written by {..author}
+  </div>
+`)
 
 const props = {title: 'Flowers for Algernon', author: 'Daniel Keyes'}
 

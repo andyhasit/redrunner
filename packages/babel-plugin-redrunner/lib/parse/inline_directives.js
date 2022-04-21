@@ -19,14 +19,7 @@ if (startDelimiter.length !== 1 || endDelimiter .length !== 1) {
 /**
  * Finds the inline calls and adds watches. Also modifies the
  * actual node object to remove inline call code.
- *
- * Notes:
- *
- *  - It only detects the first inline call in a given string
- *  - Text detection only works with leaf nodes
- *
- * TODO: resolve or throw warnings for the above cases!
- *
+ * 
  * @param {node} node A node from babel.
  *
  * @return {number} An array of watch objects as [{name, converter, wrapperMethod}...]
@@ -38,17 +31,31 @@ const processInlineWatches = (nodeData, node) => {
   // extract from node's attributes
   for (let [key, value] of Object.entries(atts)) {
     if (value && !restrictedAtts.includes(key)) {
-      // The @ notation is handled downstream, but it's class we can conver it to css()
+      // The @ notation is handled downstream, but if class we can just convert to css()
       let usedKey = key === 'class' ? 'css' : `@${key}`
       if (addInlineWatches(nodeData, value, usedKey, false)) {
         removeAtt(node, key)
       }
     }
   }
-
+  
   if (node.nodeType === 3) {
+    /*
+    This means we are in a text node:
+
+      <div>
+        hello {name}      <<<
+        <br>
+        goodbye           <<<
+      </div>
+
+    If it has inline directives it must be replaced with something so that
+    the final dom has a textElement there too, else the structure will differ
+    and the path to node will be wrong, so we use a placeholder instead of
+    an empty string.
+    */
     if (addInlineWatches(nodeData, node.textContent, 'text', true)) {
-      node.textContent = 'x' // This is necessary for some reason
+      node.textContent = '#'
     }
   }
 
