@@ -1,16 +1,26 @@
 # RedRunner
 
-This mono-repo includes the following packages:
+*A JavaScript framework with legs!*
+
+> Update April 2022:
+>
+> I've been using this framework on personal projects for a while and refining it as I go.
+>
+> It performs a lot better than React, is about 1/10th the size, and has a lot of cool features too.
+>
+> I'll soon be doing a proper release in the next month or two, so come back then.
+
+### About this repo
+
+This is a mono-repo which includes the following npm packages:
 
 1. [redrunner](https://github.com/andyhasit/redrunner/tree/develop/packages/redrunner)
 2. [redrunner-router](https://github.com/andyhasit/redrunner/tree/develop/packages/redrunner-router)
 3. [babel-plugin-redrunner](https://github.com/andyhasit/redrunner/tree/develop/packages/babel-plugin-redrunner)
 
-You are probably looking for [redrunner](https://github.com/andyhasit/redrunner/tree/develop/packages/redrunner).
+You are probably looking for [redrunner](https://github.com/andyhasit/redrunner/tree/develop/packages/redrunner), the rest of this README is aimed at contibutors.
 
-### Installation
-
-*Note: these instructions are for the monorepo, for contributors. If you simply want to use RedRunner, see [redrunner](https://github.com/andyhasit/redrunner/tree/develop/packages/redrunner).*
+### Installing the monorepo
 
 ##### Install Lerna
 
@@ -34,34 +44,7 @@ Install all the packages and their dependencies, linking any cross-dependencies.
 lerna bootstrap
 ```
 
-Note that the demo is not a package, and must be installed separately.
-
-##### Install the demo
-
-There is a minimal demo app, which you can run like so:
-
-```
-cd demo
-npm i
-npm run start
-```
-
-You can also run these to inspect the output and bundle sizes:
-
-```
-npm run build-dev
-npm run build-prod
-```
-
-The demo was deliberately *not* made into a lerna package because bundlers often treat symlinked modules differently. That could result in a configuration working fine for the demo, but not in a real world project.
-
-There are is a scripts for copying changes to packages made during development:
-
-```
-./copy-local-packages.sh
-```
-
-But if you want to set up symlinks on your system, go ahead.
+Note that the canary app is deliberately not a lerna package, and must be installed separately. See its [README](./canary/README.md) for more details.
 
 ### Contributing
 
@@ -80,13 +63,11 @@ cd packages/redrunner
 npm test
 ```
 
-##### Use the demo
+##### Canary app
 
-Use the demo as validation in addition to unit tests. New features should be included in the demo.
+Use the canary app to ensure RedRunner works when installed normally.
 
-##### Tooling
-
-This repo uses [lerna](https://lerna.js.org/). Useful commands:
+##### Useful commands
 
 ```
 lerna bootstrap

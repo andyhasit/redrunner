@@ -143,7 +143,7 @@ These changes allow for a much more functional approach to designing components.
 
 #### Fixed
 
-- Horrible bug which injected the entire contenst of "he" (npm packge) into bundles, because of node-html-parser.
+- Horrible bug which injected the entire contents of "he" (npm packge) into bundles, because of node-html-parser.
 
 ### [0.4.5] - 2020-10-27
 

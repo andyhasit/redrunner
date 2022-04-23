@@ -1,7 +1,7 @@
 .cache/
 coverage/
 node_modules/
-demo/dist/
+canary/dist/
 packages/playground/dist/
 packages/playground/src/
 packages/playground/package-lock.json

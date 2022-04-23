@@ -3,8 +3,8 @@ body {
   margin: 0;
 }
 
-.main {
-  margin: 20px auto;
+.content {
+  margin: 30px;
   max-width: 400px;
 }
 
@@ -40,8 +40,4 @@ nav a {
 
 .menu-entry a {
   text-decoration: none;
-}
-
-.click-counter {
-  
 }

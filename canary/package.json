@@ -1,13 +1,11 @@
 {
-  "name": "redrunner-demo",
+  "name": "redrunner-canary",
   "version": "0.0.1",
-  "description": "A demo app for RedRunner",
+  "description": "A canary app for RedRunner",
   "author": "Andrew Buchan",
   "private": "true",
   "scripts": {
-    "build-prod": "webpack -p",
-    "build-dev": "webpack -d",
-    "copy-local": "./copy-local-packages.sh",
+    "build": "webpack -p && cd dist && tar -zcvf main.js.gz main.js && ls -lh",
     "start": "webpack-dev-server --host 0.0.0.0",
     "watch": "webpack --watch"
   },
