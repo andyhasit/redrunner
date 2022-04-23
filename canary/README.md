@@ -1,4 +1,4 @@
-# RedRunner Demo
+# RedRunner Canary
 
 A minimal app to ensure RedRunner works correctly when installed via npm, as opposed to being a Lerna package in the same project.
 

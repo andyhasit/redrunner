@@ -1,6 +1,6 @@
 # RedRunner
 
-*A small JavaScript framework with legs.*
+*A JavaScript framework with legs!*
 
 ## Overview
 
@@ -8,32 +8,13 @@ RedRunner is a JavaScript framework for building dynamic pages and apps.
 
 It is in early development and not ready to use.
 
-## Demo
-
-There is a very minimal demo app, which you can run like so:
-
-```
-git clone git@github.com:andyhasit/redrunner.git
-cd redrunner/demo
-npm i
-npm run start
-```
-
-You can also inspect the bundle size:
-
-```
-npm run build-prod
-gzip dist/main.js
-ls -lh dist
-```
-
 ## Installation
 
 #### Quick start
 
-For new projects use the [demo](https://github.com/andyhasit/redrunner/tree/master/demo) as a starting point. For existing projects you can copy the relevant parts from **package.json** and **webpack.config.js** into your project.
+It's easiest to copy the **canary** app from the [monorepo](https://github.com/andyhasit/redrunner/tree/develop/canary) and adapt that.
 
-Alternatively, you can install RedRunner manually with npm and follow the rest of the instructions here.
+Alternatively follow the rest of these instructions.
 
 ```
 npm i -D redrunner
@@ -66,13 +47,13 @@ With webpack you can set the config's `devtools` to something like `'eval-cheap-
 
 One solution is not transpile to ES5 during development, meaning the only transformations you'll see are RedRunner's, which makes debugging a lot nicer.
 
-The [demo's webpack.config.js](https://github.com/andyhasit/redrunner/tree/demo/webpack.config.js) file shows one way to achieve this. 
+The canary app's [webpack.config.js](https://github.com/andyhasit/redrunner/tree/canary/webpack.config.js) file shows one way to achieve this. 
 
 You can read more about webpack's devtools option [here](https://webpack.js.org/configuration/devtool/).
 
 ## User Guide
 
-This is coming, but so is Christmas.
+This is coming, in the meantime you can check out the canary app and unit tests.
 
 ## Contributing
 
