@@ -4,6 +4,7 @@ export class TodoList extends Component{
   __html__ = html`
   <div>
     <div>Completed: {stats(c)}</div>
+    <h1>{.t}</h1>
     <div>Meh: {c.todos.length * 2|prettyFormat(n, p)}</div>
     <button :onClick=".addItem()">+</button>
     <div :use="TodoItem" :items="*|c.todos"></div>
@@ -17,8 +18,14 @@ export class TodoList extends Component{
   taskChanged() {
     this.update()
   }
+  onInit () {
+    this.t = 0
+  }
+  onUpdate () {
+    this.t += 10
+  }
 }
-const prettyFormat = (n, p) => {console.log(p)}
+const prettyFormat = (n, p) => p
 const TodoItem = Component.__ex__(html`
   <div>
     <input type="checkbox" :checked="..done" :onChange="toggleTask(w, p, c)"/>

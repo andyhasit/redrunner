@@ -1,15 +1,12 @@
 # RedRunner Demo
 
-This directory contains ***Smoothie Maker*** - a working demo of RedRunner which includes:
+A minimal app to ensure RedRunner works correctly when installed via npm, as opposed to being a Lerna package in the same project.
 
-* A router
-* A webpack config (may add parcel?)
-* CSS assets
-* A showcase of most of the features of RedRunner.
-
-You can use this as a starting point for your own project.
+The reason is that some bundlers (like Parcel) treat symlinks differently, and allow things to work when running as a Lerna package which do not.
 
 ### Running:
+
+#### 1. install
 
 First install the node modules:
 
@@ -17,25 +14,23 @@ First install the node modules:
 npm i
 ```
 
+#### 2. link
+
+Link the packages as symlinks in node_modules:
+
+```
+./link.sh
+```
+
+Repeat this whenever you make changes to packages.
+
+#### 3. run
+
 Then run the webpack-dev-server:
 
 ```
 npm run start
 ```
 
-Then got to http://localhost:8080 if webpack doesn't do it for you.
-
-### Dev notes:
-
-This demo also serves as a way of checking the configuration files of the various packages work correctly.
-
-It is purposefully not a packages itself. This is to prevent Lerna from creating symlinks in its node_modules, as certain bundlers (notably parcel) treat symlinks differently, which can hide configuration errors.
-
-Run the script to copy packages over instead:
-
-```
-./copy-local-packages.sh
-```
-
-
+This will run at http://0.0.0.0:8080.
 

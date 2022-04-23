@@ -196,9 +196,22 @@ Wrapper.prototype = {
 
 function mount(elementOrId, cls, props, parent) {
   var component = createComponent(cls, parent, props);
-  var nodeToReplace = isStr(elementOrId) ? doc.getElementById(elementOrId) : elementOrId;
+  var nodeToReplace = getElement(elementOrId);
   nodeToReplace.parentNode.replaceChild(component.e, nodeToReplace);
   return component;
+}
+/**
+ * returns a Wrapper around an element.
+ *
+ * @param {unsure} elementOrId Either a string representing an id, or an element.
+ */
+
+function wrap(elementOrId) {
+  return new Wrapper(getElement(elementOrId));
+}
+
+function getElement(elementOrId) {
+  return isStr(elementOrId) ? document.getElementById(elementOrId) : elementOrId;
 }
 /**
  * Creates a component and initialises it.
@@ -207,6 +220,7 @@ function mount(elementOrId, cls, props, parent) {
  * @param {object} parent The parent component (optional)
  * @param {object} props The props to pass to the component (optional)
  */
+
 
 function createComponent(cls, parent, props) {
   var component = buildComponent(cls, parent);
@@ -464,6 +478,7 @@ var mountie = {
  * The Lookup instance will be shared between instances of a component.
  * Must call reset() on every update.
  */
+
 function Lookup(callbacks) {
   this.callbacks = callbacks;
   this.run = {};
@@ -476,6 +491,7 @@ Lookup.prototype = {
       // Verbose but efficient way as it avoids lookups?
       // Or is this harmful to performance because we're just reading values more than calling functions?
       var o = component.__ov[key];
+      o = und(o) ? '' : o;
       var n = this.callbacks[key](component, component.props);
       var c = n !== o;
       component.__ov[key] = n;
@@ -495,9 +511,11 @@ Lookup.prototype = {
   }
 };
 
+var noop = function noop() {};
 /**
  * Represents a component.
  */
+
 
 function Component(parent) {
   var s = this;
@@ -516,6 +534,10 @@ function Component(parent) {
   s.__ov = {}; // The old values for watches to compare against
 }
 var proto$1 = Component.prototype;
+proto$1.onUpdate = noop;
+proto$1.afterUpdate = noop;
+proto$1.onInit = noop;
+proto$1.afterInit = noop;
 /**
  * Gets called once immediately after building.
  * Sets initial props extracted from __html__.
@@ -524,6 +546,8 @@ var proto$1 = Component.prototype;
  */
 
 proto$1.init = function () {
+  this.onInit();
+
   for (var key in this.__ip) {
     var nestedComponent = this.el[key];
     var callback = this.__ip[key];
@@ -534,6 +558,8 @@ proto$1.init = function () {
 
     nestedComponent.init();
   }
+
+  this.afterInit();
 };
 /**
  * Calls a function somewhere up the parent tree.
@@ -622,9 +648,11 @@ proto$1.trackMounting = function () {
 
 
 proto$1.update = function () {
+  this.onUpdate();
   this.resetLookups();
   this.updateSelf();
   this.updateNested();
+  this.afterUpdate();
 };
 /**
  * Loops over watches skipping shielded watches if elements are hidden.
@@ -905,5 +933,6 @@ module.exports = {
   isStr: isStr,
   SequentialPool: SequentialPool,
   Component: Component,
-  Wrapper: Wrapper
+  Wrapper: Wrapper,
+  wrap: wrap
 };

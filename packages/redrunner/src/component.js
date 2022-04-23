@@ -5,6 +5,8 @@ import mountie from './mountie'
 import {Wrapper} from './wrapper'
 import {Lookup} from './lookup'
 
+const noop = function() {}
+
 /**
  * Represents a component.
  */
@@ -25,6 +27,10 @@ export function Component(parent) {
 
 var proto = Component.prototype
 
+proto.onUpdate = noop
+proto.afterUpdate = noop
+proto.onInit = noop
+proto.afterInit = noop
 
 /**
  * Gets called once immediately after building.
@@ -33,6 +39,7 @@ var proto = Component.prototype
  * on nested components.
  */
 proto.init = function() {
+  this.onInit()
   for (let key in this.__ip) {
     let nestedComponent = this.el[key]
     let callback = this.__ip[key]
@@ -41,6 +48,7 @@ proto.init = function() {
     }
     nestedComponent.init()
   }
+  this.afterInit()
 }
 /**
  * Calls a function somewhere up the parent tree.
@@ -107,9 +115,11 @@ proto.trackMounting = function() {
  * Updates the component.
  */
 proto.update = function() {
+  this.onUpdate()
   this.resetLookups()
   this.updateSelf()
   this.updateNested()
+  this.afterUpdate()
 }
 /**
  * Loops over watches skipping shielded watches if elements are hidden.
